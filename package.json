@@ -1,7 +1,24 @@
 {
   "name": "tagtime",
-  "description": "desktop tagtime",
+  "description": "Desktop TagTime",
   "version": "0.1.0",
-  "main": "main.js"
+  "license": "MIT",
+  "author": "Michael Macnair",
+  "main": "main.js",
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "random-js": "^1.0.8"
+  },
+  "devDependencies": {
+    "electron": "^1.4.15",
+    "electron-mocha": "^3.3.0",
+    "should": "^11.2.0",
+    "google-closure-compiler": "20170124.0.0",
+		"stats-lite": "^2.0.3"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "electron-mocha",
+    "lint": "./lint.sh"
+  }
 }
-

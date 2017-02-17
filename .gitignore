@@ -1,1 +1,7 @@
+# vim
 .*.swp
+
+./node_modules/
+
+# jsdoc
+./out/
