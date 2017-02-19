@@ -18,6 +18,14 @@ var rand;
  * Re-initialise rand with the root seed
  */
 var reseed = function() {
+  /* NOTE: because we're using a different PRNG to original tagtime,
+   * sequences generated from the same seed won't match up.
+   * This doesn't matter - we never validate a logfile against the
+   * expected ping sequence. Subsequent pings will continue to follow
+   * the same distribution.
+   * The only problem might arise if a user was very frequently swapping
+   * between implementations?
+   */
   engine = Random.engines.mt19937().seed(config.seed);
   /**
    * random number generator using the engine's seed
