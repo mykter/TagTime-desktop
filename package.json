@@ -19,6 +19,7 @@
   "scripts": {
     "start": "electron .",
     "test": "electron-mocha",
-    "lint": "./lint.sh"
+    "lint": "./lint.sh",
+    "debugtest": "electron-mocha --renderer --debug --interactive ./test/"
   }
 }

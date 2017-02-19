@@ -15,5 +15,5 @@ $ npm test test/specific_test_file.js
 Debugging
 =========
 Add a 'debugger;' statement in your test of choice, then:
-$ ./node_modules/.bin/electron-mocha --renderer --debug --interactive ./test/
-
+$ npm run debugtest
+to get Chrome DevTools debugging interface
