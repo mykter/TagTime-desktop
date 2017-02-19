@@ -7,14 +7,17 @@
   "main": "main.js",
   "dependencies": {
     "lodash": "^4.17.4",
-    "random-js": "^1.0.8"
+    "moment": "^2.17.1",
+    "random-js": "^1.0.8",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
     "electron": "^1.4.15",
     "electron-mocha": "^3.3.0",
-    "should": "^11.2.0",
     "google-closure-compiler": "20170124.0.0",
-		"stats-lite": "^2.0.3"
+    "should": "^11.2.0",
+    "stats-lite": "^2.0.3",
+    "tmp": "0.0.31"
   },
   "scripts": {
     "start": "electron .",

@@ -5,6 +5,8 @@ var stats = require("stats-lite");
 const pings = require('../pings');
 var config = require('../config');
 
+process.env.NODE_ENV = 'test'; // suppress logging
+
 describe('Pings', function() {
   var time = 1300000000;
 
@@ -21,7 +23,6 @@ describe('Pings', function() {
   describe('next() & prev()', function() {
     it('should be idempotent', function() {
       ping = pings.next(time);
-      debugger;
       pings.prev(pings.next(ping)).should.equal(ping);
     });
   });
@@ -62,12 +63,12 @@ describe('Pings', function() {
 		// https://en.wikipedia.org/wiki/Poisson_distribution#Mean
 
 		// a smaller period should require a smaller sample for the same error margin?
-		config.period = 5*60; 
+		config.period = 5*60;
 		pings.reset();
 
 		// generate a bunch of pings, and record the gap between them
 		var gaps = [];
-		var prev = pings.epoch + 10000; // speed things up a little
+		var prev = config.epoch + 10000; // speed things up a little
 		var next;
 		for (var x = 1; x<=5000; x++) {
 			next = pings.next(prev);
@@ -76,13 +77,12 @@ describe('Pings', function() {
 		}
 
 		// i_have_no_idea_what_im_doing_dog.gif
-    debugger;
 
     Math.round(_.mean(gaps)).should.be.approximately(config.period, 0.05 * config.period);
 
 		mode = stats.mode(gaps);
 		if (typeof mode != "number") { mode = mode[0]; } // pick an arbitrary one
-    (config.period - mode).should.be.approximately(config.period-1, 0.1 * config.period); 
+    (config.period - mode).should.be.approximately(config.period-1, 0.1 * config.period);
   });
 });
 

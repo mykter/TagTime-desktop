@@ -10,12 +10,6 @@ var Random = require('random-js');
 var config = require('./config');
 
 /**
- * The birth of timepie/tagtime!
- * Treat as const
- */
-exports.epoch = 1184083200;
-
-/**
  * The random number engine using this sequence's root seed
  */
 var engine;
@@ -30,6 +24,15 @@ var reseed = function() {
    * @returns {real} in [0,1]
    */
   rand = function() { return Random.real(0, 1)(engine); };
+};
+
+/**
+ * Re-initialise module state, including config settings
+ */
+exports.reset = function() {
+  period = config.period;
+  reseed();
+  _pings = undefined;
 };
 
 /**
@@ -69,7 +72,7 @@ var prev_ping_index = function(time) {
   if (!_pings || time < _pings[0]) {
     // we don't have a record of a ping this early
     exports.reset();
-    var prev = exports.epoch;
+    var prev = config.epoch;
     var nxt = prev;
     while (nxt < time) {
       prev = nxt;
@@ -110,13 +113,4 @@ exports.next = function(time) {
     idx += 1;
   }
   return _pings[idx];
-};
-
-/**
- * Re-initialise module state, including config settings
- */
-exports.reset = function() {
-  period = config.period;
-  reseed();
-  _pings = undefined;
 };
