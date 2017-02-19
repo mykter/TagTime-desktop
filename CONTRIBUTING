@@ -1,0 +1,19 @@
+Code Style
+==========
+Code is formatted using clang-format. e.g. in vimrc:
+  map <C-K> :py3f /usr/share/vim/addons/syntax/clang-format.py<cr>
+
+Code is linted using closure (which has limited node support, but it works on individual files):
+$ npm run lint
+
+Tests
+=====
+$ npm test
+ or
+$ npm test test/specific_test_file.js
+
+Debugging
+=========
+Add a 'debugger;' statement in your test of choice, then:
+$ ./node_modules/.bin/electron-mocha --renderer --debug --interactive ./test/
+
