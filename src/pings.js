@@ -25,8 +25,10 @@ var reseed = function() {
    * the same distribution.
    * The only problem might arise if a user was very frequently swapping
    * between implementations?
+   *
+   * Seed with a 32bit integer
    */
-  engine = Random.engines.mt19937().seed(config.seed);
+  engine = Random.engines.mt19937().seed(config.user.get('seed'));
   /**
    * random number generator using the engine's seed
    * @returns {real} in [0,1]
@@ -38,7 +40,7 @@ var reseed = function() {
  * Re-initialise module state, including config settings
  */
 exports.reset = function() {
-  period = config.period;
+  period = config.user.get('period');
   reseed();
   _pings = undefined;
 };

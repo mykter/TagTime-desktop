@@ -1,7 +1,49 @@
+/**
+ * Run before anything else to do initial log config.
+ * Contains global constants.
+ * Contains persisted non-constant data under 'user'.
+ */
 'use strict';
 
+// Global constants
+//==================================
+
+/**
+ * The birth of timepie/tagtime!
+ * Treat as const
+ * The first ping in all sequences is on the epoch.
+ */
+exports.epoch = 1184083200;
+
+
+// User config
+//==================================
+
+const Configstore = require('configstore');
+const pkg = require('../package.json');
+
+var default_user_conf = {
+  /** @type {seconds} */
+  period : 45 * 60,
+  /**
+   * The seed for the ping sequence.
+   * Random initial value based on date/time of first run.
+   */
+  seed : require('random-js')().integer(0, 2**32 - 1),
+  loglevel : 'warn'
+};
+
+/** The per-user config object
+ * We are not storing it under the configstore path, to make it
+ * easier for users to find the config file.
+ */
+exports.user = new Configstore(pkg.name, default_user_conf, {globalConfigPath: true});
+
+// Log config
+// ==============================
+
 const winston = require('winston');
-winston.level = 'debug';
+winston.level = exports.user.get('loglevel');
 if (process.env.NODE_ENV === 'test') {
   /* don't pollute test console output with anything except errors,
      which shouldn't be triggerable via module APIs.
@@ -19,21 +61,3 @@ if (process.env.NODE_ENV === 'test') {
     ]
   });
 }
-
-const path = require('path');
-
-/**
- * The birth of timepie/tagtime!
- * Treat as const
- * The first ping in all sequences is on the epoch.
- */
-exports.epoch = 1184083200;
-
-/** @type {seconds} */
-exports.period = 45*60;
-
-/** The seed for the ping sequence */
-exports.seed = 666;
-
-// var someObj = JSON.parse(fs.readFileSync(path, {encoding: "utf8"}))
-// fs.writeFileSync(path, JSON.stringify(someObj)});
