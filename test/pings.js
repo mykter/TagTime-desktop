@@ -2,8 +2,8 @@ var should = require('should');
 var _ = require('lodash');
 var stats = require("stats-lite");
 
-const pings = require('../pings');
-var config = require('../config');
+const pings = require('../src/pings');
+var config = require('../src/config');
 
 process.env.NODE_ENV = 'test'; // suppress logging
 

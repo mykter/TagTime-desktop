@@ -6,7 +6,7 @@ const fs = require('fs');
 process.env.NODE_ENV = 'test'; // suppress logging
 
 describe('PingFile', function() {
-  var PingFile = require('../pingfile');
+  var PingFile = require('../src/pingfile');
 
   describe('parse()', function() {
     it('should parse time-only entries', function() {
