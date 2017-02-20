@@ -173,8 +173,8 @@ describe('PingFile', function() {
       tags : new Set([ "one", "two" ]),
       comment : "c"
     };
-    var p_str = "1487459622 one two [c]";
-    var p_anno_str = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d\ c]/;
+    var pStr = "1487459622 one two [c]";
+    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d\ c]/;
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name);
@@ -187,27 +187,27 @@ describe('PingFile', function() {
     it('should create a non-existent file', function() {
       f.removeCallback();
       pf.push(p, false);
-      should(fs.readFileSync(f.name, 'utf8').trim()).equal(p_str);
+      should(fs.readFileSync(f.name, 'utf8').trim()).equal(pStr);
       fs.unlinkSync(f.name);
     });
 
     it('should annotate pings', function() {
       pf.push(p);
-      should(fs.readFileSync(f.name, 'utf8').trim()).match(p_anno_str);
+      should(fs.readFileSync(f.name, 'utf8').trim()).match(pAnnoStr);
     });
 
     it('should append to existing files that don\'t end in \\n', function() {
       fs.writeSync(f.fd, "some stuff!");
       pf.push(p, false);
       should(fs.readFileSync(f.name, 'utf8').trim())
-          .equal('some stuff!\n' + p_str);
+          .equal('some stuff!\n' + pStr);
     });
 
     it('should append to existing files that do end in \\n', function() {
       fs.writeSync(f.fd, "some stuff!\n");
       pf.push(p, false);
       should(fs.readFileSync(f.name, 'utf8').trim())
-          .equal('some stuff!\n' + p_str);
+          .equal('some stuff!\n' + pStr);
     });
   });
 

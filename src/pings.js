@@ -66,7 +66,7 @@ var _pings;
  * @param {pingtime} ping Previous ping
  * @returns {pingtime} The next ping time
  */
-var next_ping = function(ping) {
+var nextPing = function(ping) {
   // Adds a random number drawn from an exponential distribution with mean
   // period
   // Round gaps of <1s up to 1s
@@ -78,7 +78,7 @@ var next_ping = function(ping) {
  * @returns {int} the index into _pings of the ping preceding time
  * Side effect: the next ping is present at the next index in _pings
  */
-var prev_ping_index = function(time) {
+var prevPingIndex = function(time) {
   if (!_pings || time < _pings[0]) {
     // we don't have a record of a ping this early
     exports.reset();
@@ -86,38 +86,38 @@ var prev_ping_index = function(time) {
     var nxt = prev;
     while (nxt < time) {
       prev = nxt;
-      nxt = next_ping(prev);
+      nxt = nextPing(prev);
     }
     _pings = [ prev, nxt ];
   }
 
   // grow _pings as needed until we have a ping after time
   while (_pings[_pings.length - 1] <= time) {
-    _pings.push(next_ping(_pings[_pings.length - 1]));
+    _pings.push(nextPing(_pings[_pings.length - 1]));
   }
 
   /**
    *  @returns {bool} true if e is not before time
    *  @param {unixtime} e
    */
-  var time_or_later = function(e) { return e >= time; };
+  var timeOrLater = function(e) { return e >= time; };
 
   // the index of the ping before the first ping later than time
-  return _pings.findIndex(time_or_later) - 1;
+  return _pings.findIndex(timeOrLater) - 1;
 };
 
 /**
  * @param {unixtime} time - point in time after epoch
  * @return {pingtime} The ping that preceded time
  */
-exports.prev = function(time) { return _pings[prev_ping_index(time)]; };
+exports.prev = function(time) { return _pings[prevPingIndex(time)]; };
 
 /**
  * @param {unixtime} time - reference point in time
  * @returns {pingtime} the ping that follows time
  */
 exports.next = function(time) {
-  var idx = prev_ping_index(time) + 1;
+  var idx = prevPingIndex(time) + 1;
   // if time was a ping, then next(prev(ping)) == ping, which isn't what we want
   if (_pings[idx] == time) {
     idx += 1;
