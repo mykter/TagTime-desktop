@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "license": "MIT",
   "author": "Michael Macnair",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mykter/TagTime-desktop.git"
+  },
   "main": "main.js",
   "dependencies": {
     "lodash": "^4.17.4",
