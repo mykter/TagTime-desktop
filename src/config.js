@@ -30,7 +30,9 @@ var defaultUserConf = {
    * Random initial value based on date/time of first run.
    */
   seed : require('random-js')().integer(0, 2**32 - 1),
-  loglevel : 'warn'
+  loglevel : 'warn',
+  promptWidth: 600,
+  promptHeight: 250
 };
 
 /** The per-user config object

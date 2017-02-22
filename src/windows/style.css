@@ -1,0 +1,12 @@
+body{
+}
+
+input[type="tags"] {
+  -webkit-appearance: textfield;
+  box-sizing: content-box;
+}
+
+/* For frameless draggable window
+ * Clickable things: -webkit-app-region: no-drag;
+ * Body: -webkit-app-region: no-drag
+ */
