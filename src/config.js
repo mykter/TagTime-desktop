@@ -9,7 +9,7 @@
 //==================================
 
 /**
- * The birth of timepie/tagtime!
+ * The birth of tagtime
  * Treat as const
  * The first ping in all sequences is on the epoch.
  */

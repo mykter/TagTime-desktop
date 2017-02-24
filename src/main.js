@@ -20,7 +20,7 @@ const secondInstance = app.makeSingleInstance((argv, cwd) => {
 if (secondInstance) {
   winston.warn("An instance of " + app.getName() +
                " is already running, quitting...");
-  app.quit()
+  app.quit();
 }
 
 winston.debug(app.getName() + " v" + app.getVersion()  +" starting up");
@@ -35,7 +35,8 @@ var now = function() { return Math.round(Date.now() / 1000); };
 //var a = pings.next(now());
 
 /**
- * Returns a file:// url to path (which must be relative to the script location)
+ * @param {string} path A path relative to the script location
+ * @returns {string} a file:// url of path
  */
 function getFileUrl(path) {
   return require('url').format({
@@ -60,6 +61,9 @@ function createTray() {
   ]));
 }
 
+/**
+ * Open a ping prompt window
+ */
 function openPrompt() {
   winston.debug("Showing prompt");
   if(promptWindow) {
