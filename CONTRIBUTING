@@ -5,6 +5,9 @@ Code is formatted using clang-format. e.g. in vimrc:
 
 Code is linted using closure (which has limited node support, but it works on individual files):
 $ npm run lint
+or
+$ npm run lint test/main.js
+(linux only)
 
 Tests
 =====
