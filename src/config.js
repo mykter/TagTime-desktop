@@ -22,7 +22,7 @@ exports.epoch = 1184083200;
 const Configstore = require('configstore');
 const pkg = require('../package.json');
 
-var defaultUserConf = {
+exports.defaultUserConf = {
   /** @type {seconds} */
   period : 45 * 60,
   /**
@@ -39,7 +39,7 @@ var defaultUserConf = {
  * We are not storing it under the configstore path, to make it
  * easier for users to find the config file.
  */
-exports.user = new Configstore(pkg.name, defaultUserConf, {globalConfigPath: true});
+exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigPath: true});
 
 // Log config
 // ==============================

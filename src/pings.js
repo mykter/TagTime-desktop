@@ -1,5 +1,6 @@
 /**
  * @module A continuous sequence of ping times
+ * Uses the global config to determine seed and period
  */
 
 'use strict';

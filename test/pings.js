@@ -1,6 +1,7 @@
 var should = require('should');
 var _ = require('lodash');
 var stats = require("stats-lite");
+const sinon = require('sinon');
 
 const pings = require('../src/pings');
 var config = require('../src/config');
@@ -10,9 +11,23 @@ process.env.NODE_ENV = 'test'; // suppress logging
 describe('Pings', function() {
   var time = 1300000000;
 
-  var oldseed;
-  before(function() { oldconf = config.user.all; });
-  after(function() { config.user.all = oldconf; });
+  var stub;
+  var currentConfig;
+
+  // Stub out the config with a local in-memory copy
+  // Ideally we'd want something like
+  //   stub.withArgs('seed').returns(1)
+  // whilst leaving the rest alone, but sinon doesn't support that:
+  // https://github.com/sinonjs/sinon/pull/278
+  beforeEach(function() {
+    currentConfig = _.clone(config.defaultUserConf);
+    stub = sinon.stub(config.user, 'get', function(key) {
+      return currentConfig[key];
+    });
+  });
+  afterEach(function() {
+    stub.restore();
+  });
 
   describe('next()', function() {
     it('should return a ping after the requested time',
@@ -40,25 +55,25 @@ describe('Pings', function() {
      });
 
   it('should give different results for different seeds', function() {
-    config.user.set('seed', 1);
+    currentConfig['seed'] = 1;
     pings.reset();
     a = pings.next(time);
 
-    config.user.set('seed', 2);
+    currentConfig['seed'] = 2;
     pings.reset();
     pings.next(time).should.not.equal(a);
   });
 
   it('should give the same results for the same seeds', function() {
-    config.user.set('seed', 3);
+    currentConfig['seed'] = 3;
     pings.reset();
     a = pings.next(time);
 
-    config.user.set('seed', 4);
+    currentConfig['seed'] = 4;
     pings.reset();
     pings.next(time);
 
-    config.user.set('seed', 3);
+    currentConfig['seed'] = 3;
     pings.reset();
     pings.next(time).should.equal(a);
   });
@@ -69,7 +84,7 @@ describe('Pings', function() {
 
        // a smaller period should require a smaller sample for the same error
        // margin?
-       config.user.set('period', 5*60);
+       currentConfig['period'] = 5*60;
        pings.reset();
 
        // generate a bunch of pings, and record the gap between them
