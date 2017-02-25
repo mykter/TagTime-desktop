@@ -5,10 +5,13 @@
 
 LINT_CMD="java -jar ./node_modules/google-closure-compiler/compiler.jar --jscomp_warning=lintChecks --checks_only --language_out=ES5"
 
-if [ $# -eq 1 ]
+if [ $# -gt 0 ]
 then
-  echo $1;
-  $LINT_CMD $1;
+  for f in $*
+  do
+    echo $f;
+    $LINT_CMD $f;
+  done
 else
   for f in src/*.js test/*.js
   do
