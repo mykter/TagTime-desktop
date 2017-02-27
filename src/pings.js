@@ -1,6 +1,7 @@
 /**
  * @module A continuous sequence of ping times
  * Uses the global config to determine seed and period
+ * Times are all javascript milliseconds since unix epoch
  */
 
 'use strict';
@@ -41,14 +42,14 @@ var reseed = function() {
  * Re-initialise module state, including config settings
  */
 exports.reset = function() {
-  period = config.user.get('period');
+  period = config.period();
   reseed();
   _pings = undefined;
 };
 
 /**
  * The period for this sequence (independent of any changes to the config)
- * @type {minutes}
+ * @type {time}
  */
 var period;
 
@@ -71,11 +72,11 @@ var nextPing = function(ping) {
   // Adds a random number drawn from an exponential distribution with mean
   // period
   // Round gaps of <1s up to 1s
-  return ping + Math.round(Math.max(1, -1 * period * Math.log(rand())));
+  return ping + Math.round(Math.max(1000, -1 * period * Math.log(rand())));
 };
 
 /**
- * @param {unixtime} time
+ * @param {time} time
  * @returns {int} the index into _pings of the ping preceding time
  * Side effect: the next ping is present at the next index in _pings
  */
@@ -108,13 +109,13 @@ var prevPingIndex = function(time) {
 };
 
 /**
- * @param {unixtime} time - point in time after epoch
+ * @param {time} time - point in time after epoch
  * @return {pingtime} The ping that preceded time
  */
 exports.prev = function(time) { return _pings[prevPingIndex(time)]; };
 
 /**
- * @param {unixtime} time - reference point in time
+ * @param {time} time - reference point in time
  * @returns {pingtime} the ping that follows time
  */
 exports.next = function(time) {

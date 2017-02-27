@@ -9,7 +9,7 @@ var config = require('../src/config');
 process.env.NODE_ENV = 'test'; // suppress logging
 
 describe('Pings', function() {
-  var time = 1300000000;
+  var time = 1300000000 * 1000;
 
   var stub;
   var currentConfig;
@@ -32,6 +32,9 @@ describe('Pings', function() {
   describe('next()', function() {
     it('should return a ping after the requested time',
        function() { pings.next(time).should.be.greaterThan(time); });
+
+    it('should return a ping after the requested ping',
+       function() { pings.next(pings.next(time)).should.be.greaterThan(pings.next(time)); });
   });
 
   describe('prev()', function() {
@@ -50,7 +53,7 @@ describe('Pings', function() {
      function() {
        a = pings.next(time);
        b = pings.prev(a);
-       c = pings.prev(b - 100000);
+       c = pings.prev(b - 100000000);
        pings.next(time).should.equal(a);
      });
 
@@ -84,12 +87,12 @@ describe('Pings', function() {
 
        // a smaller period should require a smaller sample for the same error
        // margin?
-       currentConfig['period'] = 5*60;
+       currentConfig['period'] = 5;
        pings.reset();
 
        // generate a bunch of pings, and record the gap between them
        var gaps = [];
-       var prev = config.epoch + 10000; // speed things up a little
+       var prev = config.epoch + 10000000; // speed things up a little
        var next;
        for (var x = 1; x <= 5000; x++) {
          next = pings.next(prev);
@@ -100,16 +103,17 @@ describe('Pings', function() {
        // i_have_no_idea_what_im_doing_dog.gif
 
        Math.round(_.mean(gaps))
-           .should.be.approximately(config.user.get('period'),
-                                    0.05 * config.user.get('period'));
+           .should.be.approximately(config.period(),
+                                    0.05 * config.period());
 
        mode = stats.mode(gaps);
        if (typeof mode != "number") {
-         mode = mode[0];
-       } // pick an arbitrary one
-       (config.user.get('period') - mode)
-           .should.be.approximately(config.user.get('period') - 1,
-                                    0.1 * config.user.get('period'));
+         // pick an arbitrary one
+         mode = Array.from(mode)[0];
+       }
+       (config.period() - mode)
+           .should.be.approximately(config.period() - 1,
+                                    0.1 * config.period());
      });
 });
 

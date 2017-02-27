@@ -13,7 +13,7 @@
  * Treat as const
  * The first ping in all sequences is on the epoch.
  */
-exports.epoch = 1184083200;
+exports.epoch = 1184083200 * 1000;
 
 
 // User config
@@ -23,8 +23,8 @@ const Configstore = require('configstore');
 const pkg = require('../package.json');
 
 exports.defaultUserConf = {
-  /** @type {seconds} */
-  period : 45 * 60,
+  /** @type {minutes} */
+  period : 45,
   /**
    * The seed for the ping sequence.
    * Random initial value based on date/time of first run.
@@ -40,6 +40,15 @@ exports.defaultUserConf = {
  * easier for users to find the config file.
  */
 exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigPath: true});
+
+/**
+ * Period is stored in minutes in the config file.
+ * Use this helper to get it in a useful form.
+ * @returns {time} period in milliseconds
+ */
+exports.period = function() {
+  return exports.user.get('period') * 60 * 1000;
+}
 
 // Log config
 // ==============================

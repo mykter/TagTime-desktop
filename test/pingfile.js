@@ -10,7 +10,7 @@ describe('PingFile', function() {
 
   describe('parse()', function() {
     it('should parse time-only entries', function() {
-      ping = {time : 1487459622, tags : new Set(), comment : null};
+      ping = {time : 1487459622000, tags : new Set(), comment : null};
       // use _.isEqual as it copes with Sets, whereas should.eql doesn't
       ['1487459622', '1487459622 ', '1487459622  '].forEach(function(entry) {
         _.isEqual(PingFile.parse(entry), ping).should.be.true();
@@ -18,7 +18,6 @@ describe('PingFile', function() {
     });
 
     it('should reject times before the epoch', function() {
-      // use _.isEqual as it copes with Sets, whereas should.eql doesn't
       should(PingFile.parse('1000000')).be.null();
     });
 
@@ -29,7 +28,7 @@ describe('PingFile', function() {
        function() { should(PingFile.parse('1487459622 [half')).be.null(); });
 
     it('should parse a single tag', function() {
-      ping = {time : 1487459622, tags : new Set([ 'atag' ]), comment : null};
+      ping = {time : 1487459622000, tags : new Set([ 'atag' ]), comment : null};
       var entries = [
         '1487459622 atag', '1487459622  atag', '1487459622\tatag',
         '1487459622 \tatag \t ', '1487459622      atag            '
@@ -42,7 +41,7 @@ describe('PingFile', function() {
 
     it('should parse multiple tags (incl special chars)', function() {
       var tags = new Set([ 'one:', 't\'w\'o', 'th-ree', 'four,', 'fi;ve' ]);
-      ping = {time : 1487459622, tags : tags, comment : null};
+      ping = {time : 1487459622000, tags : tags, comment : null};
       var entries = [
         // vanilla
         '1487459622 one: t\'w\'o th-ree four, fi;ve',
@@ -70,9 +69,9 @@ describe('PingFile', function() {
   describe('encode()', function() {
     it('should throw on malformed pings', function() {
       [{}, {time : 1, tags : null, comment : null},
-       {time : '1487459622a', tags : null, comment : null},
+       {time : '1487459622000a', tags : null, comment : null},
        {time : 'a', tags : null, comment : null},
-       {time : 1487459622, tags : 'atag', comment : null}]
+       {time : 1487459622000, tags : 'atag', comment : null}]
           .forEach(function(ping) {
             should(function() { PingFile.encode(ping); }).throw();
           });
@@ -80,35 +79,35 @@ describe('PingFile', function() {
 
     it('should encode a time only ping', function() {
       PingFile
-          .encode({time : 1487459622, tags : new Set(), comment : null}, false)
+          .encode({time : 1487459622000, tags : new Set(), comment : null}, false)
           .trim() // don't care
           .should.equal("1487459622");
     });
 
     it('should annotate pings', function() {
       // we don't know what timezone this is running in, so ignore that
-      PingFile.encode({time : 1487459622, tags : new Set(), comment : null})
+      PingFile.encode({time : 1487459622000, tags : new Set(), comment : null})
           .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d\]/);
       PingFile
           .encode({
-            time : 1487459622,
+            time : 1487459622000,
             tags : new Set([ 1, 2, 'three' ]),
             comment : null
           })
           .should.match(
               /1487459622 1 2 three \[2017-02-18T23:13:42\+\d\d:\d\d\]/);
-      PingFile.encode({time : 1487459622, tags : new Set(), comment : "hi"})
+      PingFile.encode({time : 1487459622000, tags : new Set(), comment : "hi"})
           .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d\ hi]/);
     });
 
     it('should encode tags', function() {
       PingFile
-          .encode({time : 1487459622, tags : new Set([ 1 ]), comment : null},
+          .encode({time : 1487459622000, tags : new Set([ 1 ]), comment : null},
                   false)
           .should.equal("1487459622 1");
       PingFile
           .encode({
-            time : 1487459622,
+            time : 1487459622000,
             tags : new Set([ 1, 2, 'three' ]),
             comment : null
           },
@@ -116,11 +115,11 @@ describe('PingFile', function() {
           .should.equal("1487459622 1 2 three");
       PingFile
           .encode(
-              {time : 1487459622, tags : new Set([ 3, 2, 1 ]), comment : null},
+              {time : 1487459622000, tags : new Set([ 3, 2, 1 ]), comment : null},
               false)
           .should.equal("1487459622 3 2 1");
       PingFile
-          .encode({time : 1487459622, tags : [ 1, 2 ], comment : null}, false)
+          .encode({time : 1487459622000, tags : [ 1, 2 ], comment : null}, false)
           .should.equal("1487459622 1 2");
     });
   });
@@ -144,7 +143,7 @@ describe('PingFile', function() {
 
     it('should parse a single entry', function() {
       res = get('1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]');
-      should(res[0].time).equal(1487459622);
+      should(res[0].time).equal(1487459622000);
       should(res[0].comment).equal('2017-02-18T23:13:42+00:00 hi');
       _.isEqual(res[0].tags, new Set([ '1', '2', 'three' ])).should.be.true();
     });
@@ -157,11 +156,11 @@ describe('PingFile', function() {
                 '1487459623 1 2 three [2017-02-18T23:13:42+00:00 hi]\n');
       should(res[0]).equal(null);
       should(res[1]).equal(null);
-      should(res[2].time).equal(1487459622);
+      should(res[2].time).equal(1487459622000);
       should(res[2].comment).equal('2017-02-18T23:13:42+00:00 hi');
       _.isEqual(res[2].tags, new Set([ '1', '2', 'three' ])).should.be.true();
       should(res[3]).equal(null);
-      should(res[4].time).equal(1487459623);
+      should(res[4].time).equal(1487459623000);
     });
   });
 
@@ -169,7 +168,7 @@ describe('PingFile', function() {
     var pf;
     var f;
     var p = {
-      time : 1487459622,
+      time : 1487459622000,
       tags : new Set([ "one", "two" ]),
       comment : "c"
     };
@@ -215,7 +214,7 @@ describe('PingFile', function() {
     var f = tmp.fileSync();
     var pf = new PingFile(f.name);
     var p = {
-      time : 1487459622,
+      time : 1487459622000,
       tags : new Set([ "one", "two" ]),
       comment : "c"
     };

@@ -6,7 +6,7 @@ var winston = require('winston');
 /**
  * Parse a tagtime log into pings and append pings to it
  * Pings have:
- *  .time {unixtime}
+ *  .time {time} javascript time - milliseconds since unix epoch
  *  .tags {Set of tags}
  *  .comment {string} - the contents in [] at the end of an entry
  * PingFile doesn't hold the file opened.
@@ -33,6 +33,8 @@ module.exports = class PingFile {
                   " must be integer after the epoch");
     }
 
+    var time = Math.round(ping.time / 1000);
+
     var tags = "";
     if (ping.tags) { // cope with no tags
       if (typeof ping.tags == "string") {
@@ -45,7 +47,7 @@ module.exports = class PingFile {
     if (annotate) {
       // ISO 8601, with local timezone
       // TODO support other formats? What does original tagtime do?
-      comment = moment(ping.time, "X").format() + " ";
+      comment = moment(ping.time).format() + " ";
     }
     if (ping.comment) {
       comment += ping.comment;
@@ -56,7 +58,7 @@ module.exports = class PingFile {
     }
 
     // trims to deal with empty tags or comment
-    return ((ping.time + " " + tags).trim() + " " + comment).trim();
+    return ((time + " " + tags).trim() + " " + comment).trim();
   };
 
   /**
@@ -73,10 +75,11 @@ module.exports = class PingFile {
 
     // Time must be an integer after the epoch
     var time = parseInt(m[1]);
-    if (isNaN(time) || time < config.epoch) {
+    if (isNaN(time) || (time*1000) < config.epoch) {
       winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
       return null;
     }
+    time = time * 1000; // upscale to js time
 
     if (m[2]) {
       var tags = new Set(m[2].trim().split(/\s+/));
