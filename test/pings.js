@@ -35,6 +35,14 @@ describe('Pings', function() {
 
     it('should return a ping after the requested ping',
        function() { pings.next(pings.next(time)).should.be.greaterThan(pings.next(time)); });
+
+    it('should only generate pings on the second', function() {
+      var next = config.epoch + 10000000; // speed things up a little
+      for (var x = 1; x <= 50; x++) {
+        next = pings.next(next);
+        should(next % 1000).equal(0);
+      }
+    });
   });
 
   describe('prev()', function() {

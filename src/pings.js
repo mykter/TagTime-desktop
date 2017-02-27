@@ -72,7 +72,8 @@ var nextPing = function(ping) {
   // Adds a random number drawn from an exponential distribution with mean
   // period
   // Round gaps of <1s up to 1s
-  return ping + Math.round(Math.max(1000, -1 * period * Math.log(rand())));
+  var gap = -1 * period * Math.log(rand());
+  return ping + Math.max(1000, 1000 * Math.round(gap/1000));
 };
 
 /**
