@@ -15,9 +15,51 @@ module.exports = class PingFile {
   /**
    * Create a PingFile. Note the file isn't opened until pings is read
    * or push is called.
+   * On first run of the application, this will create the file if it doesn't
+   * exist.
    * @param {path} path The file to use
+   * @param {bool=} keep_invalid Whether to ignore invalid lines or return them
+   *                             as nulls. Defaults to false (discard).
    */
-  constructor(path) { this.path = path; };
+  constructor(path, keep_invalid = false) {
+    this.path = path;
+    this.keep_invalid = keep_invalid;
+
+    // On first run, create the ping file if it doesn't exist
+    if (config.firstRun()) {
+      if (!fs.existsSync(this.path)) {
+        try {
+          var fd = fs.openSync(this.path, 'a');
+          fs.closeSync(fd);
+        } catch (err) {
+          winston.warn("Couldn't create ping file at location " + this.path);
+          const {dialog} = require('electron');
+          dialog.showErrorBox("TagTime - can't create ping file",
+                              "Can't create the ping file '" + this.path +
+                                  "'. Please change the path in settings.");
+        }
+      }
+    }
+  };
+
+  /**
+   * @returns {bool} Whether this instance replaces invalid entries with nulls,
+   * or ignores them
+   */
+  get keep_invalid() {
+    return this._keep_invalid;
+  }
+  /**
+   * @param {bool} value Whether this instance replaces invalid entries with
+   * nulls, or ignores them
+   */
+  set keep_invalid(value) {
+    if(typeof(value) === "boolean") {
+      this._keep_invalid = value;
+    } else {
+      throw("PingFile.keep_invalid must be a boolean");
+    }
+  }
 
   /**
    * @returns {string} The ping formatted for the log file (no trailing
@@ -37,7 +79,7 @@ module.exports = class PingFile {
 
     var tags = "";
     if (ping.tags) { // cope with no tags
-      if (typeof ping.tags == "string") {
+      if (typeof ping.tags === "string") {
         throw "Tags of ping to be encoded is a string";
       }
       tags = Array.from(ping.tags).join(" ");
@@ -69,6 +111,7 @@ module.exports = class PingFile {
   static parse(entry) {
     var m = entry.match(/^(\d+)\s*(\s[^\[]+)?(\[.*\])?\s*$/);
     if (!m) {
+      // TODO what is the comment syntax for ping files?
       winston.warn("Could not parse entry: '" + entry + "'");
       return null;
     }
@@ -97,15 +140,31 @@ module.exports = class PingFile {
 
   /**
    * @returns {[ping]} the log file as a list of pings (no caching)
-   * Invalid entries appears as nulls in the list
+   * Behaviour depends on instance's keep_invalid property.
    * @throws fs exceptions if the file can't be read from
    */
   get pings() {
-    return fs.readFileSync(this.path, 'utf8')
-        .toString()
-        .trim()  // trailing new line would give us a spurious null
-        .split("\n")
-        .map(PingFile.parse);
+    try {
+      return fs.readFileSync(this.path, 'utf8')
+          .toString()
+          .trim() // trailing new line would give us a spurious null
+          .split("\n")
+          .map(PingFile.parse)
+          .filter((e, i, a) => { return this.keep_invalid || (e !== null); });
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        // File couldn't be opened
+        winston.error("Couldn't open ping file '" + this.path +
+                      "', got error " + err);
+        const {dialog} = require('electron');
+        dialog.showErrorBox("TagTime - can't open ping file",
+                            "Can't open the ping file '" + this.path +
+                                "'. Please check the path in settings.");
+        return [];
+      } else {
+        throw err;
+      }
+    }
   };
 
   /**
@@ -121,7 +180,7 @@ module.exports = class PingFile {
       // already is \n
       var buffer = new Buffer(1);
       var fd = fs.openSync(this.path, 'r');
-      if (fs.readSync(fd, buffer, 0, 1, fs.fstatSync(fd).size - 1) == 1) {
+      if (fs.readSync(fd, buffer, 0, 1, fs.fstatSync(fd).size - 1) === 1) {
         // test bytes read to cope with empty file
         if (buffer[0] !== 10) { // 10 is ASCII \n
           nl = '\n';

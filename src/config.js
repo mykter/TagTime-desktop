@@ -4,6 +4,9 @@
  * Contains persisted non-constant data under 'user'.
  */
 'use strict';
+const {app} = require('electron');
+const path = require('path');
+const fs = require('fs');
 
 // Global constants
 //==================================
@@ -31,8 +34,10 @@ exports.defaultUserConf = {
    */
   seed : require('random-js')().integer(0, 2**32 - 1),
   loglevel : 'warn',
+  pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
   promptWidth: 600,
-  promptHeight: 250
+  promptHeight: 250,
+  firstRun: true
 };
 
 /** The per-user config object
@@ -41,6 +46,19 @@ exports.defaultUserConf = {
  */
 exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigPath: true});
 
+var _firstRun;
+/**
+ * @returns {bool} Whether this is the first time the application has been opened
+ */
+exports.firstRun = function() {
+  if (_firstRun === undefined) {
+    if (_firstRun = exports.user.get('firstRun')) {
+      exports.user.set('firstRun', false);
+    }
+  }
+  return _firstRun;
+};
+
 /**
  * Period is stored in minutes in the config file.
  * Use this helper to get it in a useful form.
@@ -48,7 +66,7 @@ exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigP
  */
 exports.period = function() {
   return exports.user.get('period') * 60 * 1000;
-}
+};
 
 // Log config
 // ==============================

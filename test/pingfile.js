@@ -129,7 +129,7 @@ describe('PingFile', function() {
     var pf;
     beforeEach(function() {
       f = tmp.fileSync();
-      pf = new PingFile(f.name);
+      pf = new PingFile(f.name, true);
     });
     afterEach(function() { f.removeCallback(); });
 
@@ -161,6 +161,19 @@ describe('PingFile', function() {
       _.isEqual(res[2].tags, new Set([ '1', '2', 'three' ])).should.be.true();
       should(res[3]).equal(null);
       should(res[4].time).equal(1487459623000);
+    });
+
+    it('should ignore invalid entries when configured to do so', function() {
+      pf.keep_invalid = false;
+      res = get('header\n' +
+                '\n' +
+                '1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]\n' +
+                '123invalid tags\n' +
+                '1487459623 1 2 three [2017-02-18T23:13:42+00:00 hi]\n');
+      should(res[0].time).equal(1487459622000);
+      should(res[0].comment).equal('2017-02-18T23:13:42+00:00 hi');
+      _.isEqual(res[0].tags, new Set([ '1', '2', 'three' ])).should.be.true();
+      should(res[1].time).equal(1487459623000);
     });
   });
 

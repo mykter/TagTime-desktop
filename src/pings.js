@@ -1,7 +1,7 @@
 /**
  * @module A continuous sequence of ping times
  * Uses the global config to determine seed and period
- * Times are all javascript milliseconds since unix epoch
+ * Times are all javascript milliseconds
  */
 
 'use strict';
@@ -69,10 +69,9 @@ var _pings;
  * @returns {pingtime} The next ping time
  */
 var nextPing = function(ping) {
-  // Adds a random number drawn from an exponential distribution with mean
-  // period
-  // Round gaps of <1s up to 1s
+  // Add a random number drawn from an exponential distribution with mean period
   var gap = -1 * period * Math.log(rand());
+  // Round gaps of <1s up to 1s, and only add a whole number of seconds
   return ping + Math.max(1000, 1000 * Math.round(gap/1000));
 };
 
@@ -101,7 +100,7 @@ var prevPingIndex = function(time) {
 
   /**
    *  @returns {bool} true if e is not before time
-   *  @param {unixtime} e
+   *  @param {time} e
    */
   var timeOrLater = function(e) { return e >= time; };
 
@@ -121,8 +120,8 @@ exports.prev = function(time) { return _pings[prevPingIndex(time)]; };
  */
 exports.next = function(time) {
   var idx = prevPingIndex(time) + 1;
-  // if time was a ping, then next(prev(ping)) == ping, which isn't what we want
-  if (_pings[idx] == time) {
+  // if time was a ping, then next(prev(ping)) === ping, which isn't what we want
+  if (_pings[idx] === time) {
     idx += 1;
   }
   return _pings[idx];
