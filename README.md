@@ -1,4 +1,6 @@
 # TagTime-desktop
+[![Linux & macOS Build Status](https://travis-ci.org/mykter/TagTime-desktop.svg?branch=master)](https://travis-ci.org/mykter/TagTime-desktop)
+
 This is a cross-platform desktop GUI re-implementation of [TagTime](https://github.com/dreeves/TagTime).
 
 To determine how you spend your time, TagTime literally randomly samples you. At random times it pops up and asks what you're doing right at that moment. You answer with tags.
