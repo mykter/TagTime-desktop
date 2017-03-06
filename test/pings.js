@@ -112,7 +112,7 @@ describe('Pings', function() {
 
        Math.round(_.mean(gaps))
            .should.be.approximately(config.period(),
-                                    0.2 * config.period());
+                                    0.1 * config.period());
 
        mode = stats.mode(gaps);
        if (typeof mode != "number") {
@@ -121,7 +121,7 @@ describe('Pings', function() {
        }
        (config.period() - mode)
            .should.be.approximately(config.period() - 1,
-                                    0.1 * config.period());
+                                    0.2 * config.period());
      });
 });
 
