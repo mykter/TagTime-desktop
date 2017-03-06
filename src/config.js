@@ -78,7 +78,7 @@ if (process.env.NODE_ENV === 'test') {
      which shouldn't be triggerable via module APIs.
      Send logs to a temporary file instad.
      Requires tests to set NODE_ENV.
-     Requires all modules to import config - dubious, but they probably will
+     Requires all modules to import config after winston - could do better
   */
   var tmp = require('tmp');
   var logfile = tmp.tmpNameSync();
