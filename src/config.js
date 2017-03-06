@@ -79,6 +79,7 @@ if (process.env.NODE_ENV === 'test') {
      Send logs to a temporary file instad.
      Requires tests to set NODE_ENV.
      Requires all modules to import config after winston - could do better
+     TODO - don't use a global logger, expose one via the config
   */
   var tmp = require('tmp');
   var logfile = tmp.tmpNameSync();
