@@ -1,7 +1,8 @@
 const fs = require('fs');
 const moment = require('moment');
+const winston = require('winston');
+
 const config = require('./config');
-var winston = require('winston');
 
 /**
  * Parse a tagtime log into pings and append pings to it
