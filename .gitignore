@@ -1,7 +1,11 @@
 # vim
 .*.swp
 
+# created on npm install
 node_modules/
+
+# created by electron-builder
+dist/
 
 # jsdoc
 out/
