@@ -8,7 +8,7 @@ See messymatters.com/tagtime for the whole story.
 # Installation and Quick Start
 Download the latest installer from [Releases](https://github.com/mykter/TagTime-desktop/releases) and run it.
 
-The application auto-updates.
+The application auto-updates on Windows.
 
 # Contributing
 Please see the CONTRIBUTING file.
