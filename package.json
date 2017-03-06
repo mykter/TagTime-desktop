@@ -27,11 +27,12 @@
     "sinon": "^1.17.7",
     "spectron": "^3.6.0",
     "stats-lite": "^2.0.3",
-    "tmp": "0.0.31"
+    "tmp": "0.0.31",
+    "xvfb-maybe": "^0.1.3"
   },
   "scripts": {
     "start": "electron .",
-    "test": "electron-mocha",
+    "test": "xvfb-maybe electron-mocha",
     "lint": "./lint.sh",
     "debugtest": "electron-mocha --renderer --debug --interactive ./test/",
     "pack": "build --dir",
@@ -40,10 +41,18 @@
   "build": {
     "appId": "com.mykter.tagtime",
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "resources/tagtime.icns"
+    },
+    "win": {
+      "icon": "resources/tagtime.ico"
     },
     "linux": {
-      "category": "Utility"
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   }
 }

@@ -50,7 +50,7 @@ function getFileUrl(path) {
  */
 function createTray() {
   winston.debug("Creating tray");
-  tray = new Tray('resources/tray.png');
+  tray = new Tray('resources/tagtime.png');
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
     {label : 'Prompt - debug', click : function() { prompts.openPrompt(); }},
