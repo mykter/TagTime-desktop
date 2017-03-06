@@ -26,14 +26,15 @@ describe('Application', function() {
    */
   var tree_kill = function(parentPid) {
     psTree(parentPid, function(err, children) {
-      children.forEach(function(child) { process.kill(child.PID); });
+      children.forEach(function(child) { process.kill(child.PID, 'SIGKILL'); });
     });
   };
 
+
+  var app1, app2; // child_process
+
   it('should only allow one instance to run', function() {
     this.timeout(10000);
-
-    var app1, app2; // child_process
 
     // un-suppress logging, so we can track child progress
     // Requires the app to be logging in debug level
@@ -42,16 +43,6 @@ describe('Application', function() {
     process.env.NODE_ENV = 'test';
 
     app1.on('exit', function() { app1 = null; });
-
-    var kill_apps = function() {
-      [app1, app2].forEach(function(a) {
-        // a.kill doesn't work - it kills the node process, but its descendents
-        // live on
-        if (a) {
-          tree_kill(a.pid);
-        }
-      });
-    };
 
     return new Promise(function(fulfill, reject) {
              var app1startup = function(buffer) {
@@ -81,6 +72,17 @@ describe('Application', function() {
              app1.stdout.on('data', app1startup);
              app1.stderr.on('data', app1startup);
            })
-        .then(kill_apps, kill_apps);
   });
+
+  afterEach(function() {
+    [app1, app2].forEach(function(a) {
+      // a.kill doesn't work - it kills the node process, but its descendents
+      // live on
+      if (a) {
+        console.log("tree killing " + a.pid);
+        tree_kill(a.pid);
+      }
+    });
+  });
+
 });
