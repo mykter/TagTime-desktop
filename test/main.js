@@ -31,7 +31,7 @@ describe('Application', function() {
   };
 
   it('should only allow one instance to run', function() {
-    this.timeout(5000);
+    this.timeout(10000);
 
     var app1, app2; // child_process
 
