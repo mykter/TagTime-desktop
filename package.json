@@ -1,6 +1,6 @@
 {
   "name": "TagTime-desktop",
-  "description": "Desktop TagTime",
+  "description": "Time tracking for space cadets - desktop edition",
   "version": "0.1.0",
   "license": "ISC",
   "author": "Michael Macnair",
@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "electron": "^1.4.15",
+    "electron-builder": "^14.5.3",
     "electron-mocha": "^3.3.0",
     "google-closure-compiler": "20170124.0.0",
     "ps-tree": "^1.1.0",
@@ -32,6 +33,17 @@
     "start": "electron .",
     "test": "electron-mocha",
     "lint": "./lint.sh",
-    "debugtest": "electron-mocha --renderer --debug --interactive ./test/"
+    "debugtest": "electron-mocha --renderer --debug --interactive ./test/",
+    "pack": "build --dir",
+    "dist": "build"
+  },
+  "build": {
+    "appId": "com.mykter.tagtime",
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "category": "Utility"
+    }
   }
 }
