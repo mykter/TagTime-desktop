@@ -1,6 +1,11 @@
-dist: trusty
-language: node_js
+branches:
+  only:
+    - master
 
+dist: trusty
+sudo: false
+
+language: node_js
 node_js:
   - 6
 
@@ -9,13 +14,12 @@ os:
   - osx
 
 addons:
+  # artefacts TODO
   apt:
     packages:
       - xvfb
-
-branches:
-  only:
-    - master
+      - icnsutils # this + gm are for electron-builder's icon work
+      - graphicsmagick
 
 cache:
   directories:

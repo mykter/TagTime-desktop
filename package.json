@@ -3,7 +3,10 @@
   "description": "Time tracking for space cadets - desktop edition",
   "version": "0.1.0",
   "license": "ISC",
-  "author": "Michael Macnair",
+  "author": {
+    "name": "Michael Macnair",
+    "email": "tagtime@mykter.com"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/mykter/TagTime-desktop.git"
@@ -42,7 +45,7 @@
     "appId": "com.mykter.tagtime",
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "resources/tagtime.icns"
+      "icon": "resources/icon.icns"
     },
     "win": {
       "icon": "resources/tagtime.ico"
