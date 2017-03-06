@@ -1,0 +1,23 @@
+dist: trusty
+language: node_js
+
+os:
+  - linux
+  - osx
+
+addons:
+  apt:
+    packages:
+      - xvfb
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - node_modules
+
+script:
+  - npm test
+  - npm run dist
