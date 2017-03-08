@@ -17,7 +17,6 @@ addons:
   apt:
     packages:
       - rpm       # dist
-      - snapcraft # dist
       - xvfb      # testing
       - icnsutils # this + gm for electron-builder's icon work
       - graphicsmagick

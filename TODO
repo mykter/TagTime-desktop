@@ -1,2 +1,4 @@
-snap distribution - electron-builder looks like it Just-Works, but missing sigs
-means it won't install
+## snap distribution format
+electron-builder looks like it Just-Works, but missing sigs means it won't
+install. Travis also doesn't have snapcraft available which is a bit of a
+blocker.
