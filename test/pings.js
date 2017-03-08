@@ -95,8 +95,9 @@ describe('Pings', function() {
 
        this.timeout(10000); // When coverage instrumented, this is slooow
 
-       // a smaller period should require a smaller sample for the same error
-       // margin?
+       // Fix the seed so we don't get spurious failures
+       currentConfig['seed'] = 1;
+       // a smaller period should lead to more collisions, so a better mode
        currentConfig['period'] = 3;
        pings.reset();
 
@@ -112,19 +113,24 @@ describe('Pings', function() {
 
        // i_have_no_idea_what_im_doing_dog.gif
 
+       console.log(Math.round(_.mean(gaps)));
        Math.round(_.mean(gaps))
            .should.be.approximately(config.period(),
                                     0.1 * config.period());
 
        mode = stats.mode(gaps);
-       if (typeof mode != "number") {
-         // pick an arbitrary one
-         // better: check that at least one matches
-         mode = Array.from(mode)[0];
+
+       mode_matcher = function(mode) {
+         (config.period() - mode)
+           .should.be.approximately(config.period(),
+               0.2 * config.period());
+       };
+       if (typeof mode !== "number") {
+         // check that at least one matches
+         Array.from(mode).should.matchAny(mode_matcher);
+       } else {
+         mode_matcher(mode);
        }
-       (config.period() - mode)
-           .should.be.approximately(config.period() - 1,
-                                    0.2 * config.period());
      });
 });
 
