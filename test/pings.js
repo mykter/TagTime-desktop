@@ -113,7 +113,6 @@ describe('Pings', function() {
 
        // i_have_no_idea_what_im_doing_dog.gif
 
-       console.log(Math.round(_.mean(gaps)));
        Math.round(_.mean(gaps))
            .should.be.approximately(config.period(),
                                     0.1 * config.period());
