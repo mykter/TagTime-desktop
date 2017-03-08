@@ -16,8 +16,10 @@ os:
 addons:
   apt:
     packages:
-      - xvfb
-      - icnsutils # this + gm are for electron-builder's icon work
+      - rpm       # dist
+      - snapcraft # dist
+      - xvfb      # testing
+      - icnsutils # this + gm for electron-builder's icon work
       - graphicsmagick
 
 cache:
@@ -26,3 +28,6 @@ cache:
 
 after_success:
   - npm run dist
+  - if [[ $TRAVIS_OS_NAME = "linux" ]]; then
+      npm run coveralls;
+    fi

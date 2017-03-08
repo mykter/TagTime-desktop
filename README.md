@@ -1,5 +1,6 @@
 # TagTime-desktop
 [![Linux & macOS Build Status](https://travis-ci.org/mykter/TagTime-desktop.svg?branch=master)](https://travis-ci.org/mykter/TagTime-desktop)
+[![Coverage Status](https://coveralls.io/repos/github/mykter/TagTime-desktop/badge.svg?branch=master)](https://coveralls.io/github/mykter/TagTime-desktop?branch=master)
 
 This is a cross-platform desktop GUI re-implementation of [TagTime](https://github.com/dreeves/TagTime).
 
