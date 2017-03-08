@@ -140,7 +140,7 @@ module.exports = class PingFile {
   };
 
   /**
-   * @returns {[ping]} the log file as a list of pings (no caching)
+   * @returns {ping[]} the log file as a list of pings (no caching)
    * Behaviour depends on instance's keep_invalid property.
    * @throws fs exceptions if the file can't be read from
    */

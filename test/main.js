@@ -3,10 +3,9 @@ const child_process = require('child_process');
 const psTree = require('ps-tree');
 const sinon = require('sinon');
 
-const pings = require('../src/pings');
 const {appPath, electronPath} = require('./helper');
 
-process.env.NODE_ENV = 'test'; // suppress logging
+const pings = require('../src/pings');
 
 describe('Application', function() {
   // Spectron doesn't work with apps that don't open a window,

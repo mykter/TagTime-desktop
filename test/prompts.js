@@ -2,11 +2,10 @@ const should = require('should');
 const sinon = require('sinon');
 var Application = require('spectron').Application;
 
-const prompts = require('../src/prompts');
-const pings = require('../src/pings');
 const {appPath, electronPath} = require('./helper');
 
-process.env.NODE_ENV = 'test'; // suppress logging
+const prompts = require('../src/prompts');
+const pings = require('../src/pings');
 
 describe('Prompts', function() {
   // We don't test this end-to-end. Spectron just isn't well

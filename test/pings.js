@@ -3,13 +3,13 @@ var _ = require('lodash');
 var stats = require("stats-lite");
 const sinon = require('sinon');
 
+const helper = require('./helper');
+
 const pings = require('../src/pings');
 var config = require('../src/config');
 
-process.env.NODE_ENV = 'test'; // suppress logging
-
 describe('Pings', function() {
-  var time = 1300000000 * 1000;
+  var time = config.epoch + 20000000; // close to the epoch speeds things up
 
   var stub;
   var currentConfig;
@@ -37,7 +37,7 @@ describe('Pings', function() {
        function() { pings.next(pings.next(time)).should.be.greaterThan(pings.next(time)); });
 
     it('should only generate pings on the second', function() {
-      var next = config.epoch + 10000000; // speed things up a little
+      var next = time;
       for (var x = 1; x <= 50; x++) {
         next = pings.next(next);
         should(next % 1000).equal(0);
@@ -93,16 +93,18 @@ describe('Pings', function() {
      function() {
        // https://en.wikipedia.org/wiki/Poisson_distribution#Mean
 
+       this.timeout(10000); // When coverage instrumented, this is slooow
+
        // a smaller period should require a smaller sample for the same error
        // margin?
-       currentConfig['period'] = 5;
+       currentConfig['period'] = 3;
        pings.reset();
 
        // generate a bunch of pings, and record the gap between them
        var gaps = [];
-       var prev = config.epoch + 10000000; // speed things up a little
+       var prev = time;
        var next;
-       for (var x = 1; x <= 5000; x++) {
+       for (var x = 1; x <= 2000; x++) {
          next = pings.next(prev);
          gaps.push(next - prev);
          prev = next;
@@ -117,6 +119,7 @@ describe('Pings', function() {
        mode = stats.mode(gaps);
        if (typeof mode != "number") {
          // pick an arbitrary one
+         // better: check that at least one matches
          mode = Array.from(mode)[0];
        }
        (config.period() - mode)

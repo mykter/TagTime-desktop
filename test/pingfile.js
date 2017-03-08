@@ -3,7 +3,7 @@ const _ = require('lodash');
 const tmp = require('tmp');
 const fs = require('fs');
 
-process.env.NODE_ENV = 'test'; // suppress logging
+const helper = require('./helper');
 
 describe('PingFile', function() {
   var PingFile = require('../src/pingfile');

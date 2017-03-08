@@ -32,7 +32,7 @@ exports.defaultUserConf = {
    * The seed for the ping sequence.
    * Random initial value based on date/time of first run.
    */
-  seed : require('random-js')().integer(0, 2**32 - 1),
+  seed : require('random-js')().integer(0, Math.pow(2,32) - 1),
   loglevel : 'warn',
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
   promptWidth: 600,
