@@ -12,3 +12,5 @@ doc/
 
 #ctags
 tags
+
+coverage/

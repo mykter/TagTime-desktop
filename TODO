@@ -1,0 +1,2 @@
+snap distribution - electron-builder looks like it Just-Works, but missing sigs
+means it won't install
