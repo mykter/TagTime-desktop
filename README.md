@@ -19,8 +19,8 @@ The application auto-updates on Windows.
 # Contributing
 Please see the CONTRIBUTING file.
 
-# Mac OS
-This app has not been tested on Mac. Bug reports and pull requests welcome.
+# macOS
+This app has not been tested on macOS by a human, only travis-ci. Bug reports and pull requests welcome.
 
 # Beeminder
 I don't use [Beeminder](https://beeminder.com), so haven't implemented support. Pull requests welcome.
