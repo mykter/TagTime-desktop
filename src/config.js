@@ -52,7 +52,8 @@ var _firstRun;
  */
 exports.firstRun = function() {
   if (_firstRun === undefined) {
-    if (_firstRun = exports.user.get('firstRun')) {
+    _firstRun = exports.user.get('firstRun');
+    if (_firstRun) {
       exports.user.set('firstRun', false);
     }
   }

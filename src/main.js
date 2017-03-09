@@ -54,8 +54,8 @@ function createTray() {
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
     {label : 'Prompt - debug', click : function() { prompts.openPrompt(); }},
-    {label : 'Preferences', click : function() { openPreferences(); }},
-    {label : 'Edit Pings', click : function() { editPings(); }},
+    {label : 'Preferences', click : function() { return; }},
+    {label : 'Edit Pings', click : function() { return; }},
     {label : 'Quit', click : app.quit},
   ]));
 }
