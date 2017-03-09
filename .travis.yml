@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - /^greenkeeper/.*$/
 
 dist: trusty
 sudo: false
