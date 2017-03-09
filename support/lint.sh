@@ -13,7 +13,7 @@ then
     $LINT_CMD $f;
   done
 else
-  for f in src/*.js test/*.js
+  for f in src/*.js test/*.js support/*.js
   do
     echo $f;
     $LINT_CMD $f;

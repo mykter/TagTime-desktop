@@ -74,7 +74,7 @@ describe('Application', function() {
         // don't care which stream the notification will come on
         app1.stdout.on('data', app1startup);
         app1.stderr.on('data', app1startup);
-      })
+      });
     });
   }
 
