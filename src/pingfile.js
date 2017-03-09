@@ -41,7 +41,7 @@ module.exports = class PingFile {
         }
       }
     }
-  };
+  }
 
   /**
    * @returns {bool} Whether this instance replaces invalid entries with nulls,
@@ -102,7 +102,7 @@ module.exports = class PingFile {
 
     // trims to deal with empty tags or comment
     return ((time + " " + tags).trim() + " " + comment).trim();
-  };
+  }
 
   /**
    * Not information preserving - tags are deduplicated, spacing lost
@@ -125,10 +125,11 @@ module.exports = class PingFile {
     }
     time = time * 1000; // upscale to js time
 
+    var tags;
     if (m[2]) {
-      var tags = new Set(m[2].trim().split(/\s+/));
+      tags = new Set(m[2].trim().split(/\s+/));
     } else {
-      var tags = new Set();
+      tags = new Set();
     }
 
     var comment = null;
@@ -137,7 +138,7 @@ module.exports = class PingFile {
     }
 
     return {time : time, tags : tags, comment : comment};
-  };
+  }
 
   /**
    * @returns {ping[]} the log file as a list of pings (no caching)
@@ -166,7 +167,7 @@ module.exports = class PingFile {
         throw err;
       }
     }
-  };
+  }
 
   /**
    * Saves a ping to the log file
@@ -192,5 +193,5 @@ module.exports = class PingFile {
 
     fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate) + '\n',
                       'utf8');
-  };
+  }
 };

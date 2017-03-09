@@ -66,25 +66,25 @@ describe('Pings', function() {
      });
 
   it('should give different results for different seeds', function() {
-    currentConfig['seed'] = 1;
+    currentConfig.seed = 1;
     pings.reset();
     a = pings.next(time);
 
-    currentConfig['seed'] = 2;
+    currentConfig.seed = 2;
     pings.reset();
     pings.next(time).should.not.equal(a);
   });
 
   it('should give the same results for the same seeds', function() {
-    currentConfig['seed'] = 3;
+    currentConfig.seed = 3;
     pings.reset();
     a = pings.next(time);
 
-    currentConfig['seed'] = 4;
+    currentConfig.seed = 4;
     pings.reset();
     pings.next(time);
 
-    currentConfig['seed'] = 3;
+    currentConfig.seed = 3;
     pings.reset();
     pings.next(time).should.equal(a);
   });
@@ -96,9 +96,9 @@ describe('Pings', function() {
        this.timeout(10000); // When coverage instrumented, this is slooow
 
        // Fix the seed so we don't get spurious failures
-       currentConfig['seed'] = 1;
+       currentConfig.seed = 1;
        // a smaller period should lead to more collisions, so a better mode
-       currentConfig['period'] = 3;
+       currentConfig.period = 3;
        pings.reset();
 
        // generate a bunch of pings, and record the gap between them
