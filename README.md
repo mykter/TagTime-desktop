@@ -12,6 +12,8 @@ To determine how you spend your time, TagTime literally randomly samples you. At
 
 See messymatters.com/tagtime for the whole story.
 
+Inspired by [alice0meta](https://github.com/alice0meta/TagTime).
+
 # Installation and Quick Start
 Download the latest installer from [Releases](https://github.com/mykter/TagTime-desktop/releases) and run it.
 
