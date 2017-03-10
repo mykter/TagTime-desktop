@@ -32,8 +32,9 @@ describe('Application', function() {
 
   var app1, app2; // child_process
 
-  if(process.env.DEBIAN_FRONTEND === 'noninteractive') {
-    // TODO this test times out on travis
+  if ((process.env.DEBIAN_FRONTEND === 'noninteractive') ||
+      process.env.APPVEYOR) {
+    // TODO this test times out on travis and appveyor
     it('should only allow one instance to run');
   } else {
     it('should only allow one instance to run', function() {
