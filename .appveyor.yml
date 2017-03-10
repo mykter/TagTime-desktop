@@ -1,0 +1,31 @@
+build: off
+
+os: unstable
+
+branches:
+  only:
+    - master
+
+shallow_clone: true
+clone_depth: 1
+
+skip_tags: true
+
+environment:
+  nodejs_version: "6"
+# GH_TOKEN set via UI
+
+cache:
+  - node_modules -> package.json
+
+install:
+  - ps: Install-Product node $env:nodejs_version
+  - npm install
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test
+
+after_test:
+  - npm run dist
