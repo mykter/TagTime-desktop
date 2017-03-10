@@ -4,6 +4,11 @@
 
 const path = require('path');
 exports.appPath = path.resolve(__dirname, '../');
-exports.electronPath = path.resolve(__dirname, '../node_modules/.bin/electron');
+
+var exe_suffix = "";
+if(process.platform === 'win32') {
+  exe_suffix = '.exe';
+}
+exports.electronPath = path.resolve(__dirname, '../node_modules/.bin/electron' + exe_suffix);
 
 process.env.NODE_ENV = 'test'; // suppress logging
