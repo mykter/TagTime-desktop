@@ -2,6 +2,10 @@ build: off
 
 os: unstable
 
+platform:
+  - x64
+  - x86
+
 branches:
   only:
     - master
