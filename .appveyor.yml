@@ -20,13 +20,12 @@ cache:
 
 install:
   - ps: Install-Product node $env:nodejs_version
-  - npm install npm
-  - .\node_modules\.bin\npm install
+  - npm install
 
 test_script:
   - node --version
-  - .\node_modules\.bin\npm --version
-  - .\node_modules\.bin\npm test
+  - npm --version
+  - npm test
 
 after_test:
-  - .\node_modules\.bin\npm run dist
+  - npm run dist
