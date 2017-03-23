@@ -26,6 +26,7 @@
     "electron-builder": "^16.1.0",
     "electron-mocha": "^3.3.0",
     "google-closure-compiler": "20170218.0.0",
+    "is-electron-renderer": "^2.0.1",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
     "ps-tree": "^1.1.0",
@@ -38,17 +39,16 @@
   },
   "scripts": {
     "start": "electron .",
-
-    "test": "xvfb-maybe electron-mocha",
-    "debugtest": "electron-mocha --renderer --debug --interactive ./test/",
-
+    "test": "npm run testrenderer && npm run testapp",
+    "testrenderer": "xvfb-maybe electron-mocha --renderer",
+    "testapp": "xvfb-maybe electron-mocha ./test/app",
+    "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./test/",
+    "debugtestapp": "xvfb-maybe electron-mocha --debug --interactive ./test/app",
     "precover": "xvfb-maybe electron-mocha --require ./support/istanbul-reporter",
     "cover": "istanbul report --root ./coverage html lcov",
     "coveralls": "npm run cover && coveralls < ./coverage/lcov.info",
-
     "pack": "build --dir",
     "dist": "build",
-
     "clean": "rm -rf ./coverage ./dist ./doc",
     "lint": "./support/lint.sh",
     "doc": "jsdoc src --destination doc --package ./package.json --readme ./README"

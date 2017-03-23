@@ -1,9 +1,10 @@
 const winston = require('winston');
 const {BrowserWindow} = require('electron');
 
-const pings = require('./pings');
 const config = require('./config');
 const pingfile = require('./pingfile');
+
+'use strict';
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -58,7 +59,7 @@ var _scheduleTimer;
  */
 exports.schedulePings = function() {
   var now = Date.now();
-  var next = pings.next(now);
+  var next = global.pings.next(now);
 
   _scheduleTimer = setTimeout(() => {
     if (promptWindow) {
@@ -87,7 +88,7 @@ exports.editorIfMissed = function() {
     return;
   }
 
-  if (Date.now() >= pings.next(pingFile.pings[0].time)) {
+  if (Date.now() >= global.pings.next(pingFile.pings[0].time)) {
     if (promptWindow) {
       winston.info(
           "Skipping editor because prompt hasn't been answered");

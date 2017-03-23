@@ -10,7 +10,7 @@ This is a cross-platform desktop GUI re-implementation of [TagTime](https://gith
 
 To determine how you spend your time, TagTime literally randomly samples you. At random times it pops up and asks what you're doing right at that moment. You answer with tags.
 
-See messymatters.com/tagtime for the whole story.
+See http://messymatters.com/tagtime for the whole story.
 
 Inspired by [alice0meta](https://github.com/alice0meta/TagTime).
 

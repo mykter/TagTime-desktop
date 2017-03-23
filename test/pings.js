@@ -1,32 +1,17 @@
-var should = require('should');
-var _ = require('lodash');
-var stats = require("stats-lite");
+'use strict';
+const should = require('should');
+const _ = require('lodash');
+const stats = require("stats-lite");
 const sinon = require('sinon');
 
-const helper = require('./helper');
-
-const pings = require('../src/pings');
-var config = require('../src/config');
+const Pings = require('../src/pings');
 
 describe('Pings', function() {
-  var time = config.epoch + 20000000; // close to the epoch speeds things up
+  const time = Pings.epoch + 20000000; // close to the epoch speeds things up
+  var pings;
 
-  var stub;
-  var currentConfig;
-
-  // Stub out the config with a local in-memory copy
-  // Ideally we'd want something like
-  //   stub.withArgs('seed').returns(1)
-  // whilst leaving the rest alone, but sinon doesn't support that:
-  // https://github.com/sinonjs/sinon/pull/278
   beforeEach(function() {
-    currentConfig = _.clone(config.defaultUserConf);
-    stub = sinon.stub(config.user, 'get', function(key) {
-      return currentConfig[key];
-    });
-  });
-  afterEach(function() {
-    stub.restore();
+    pings = new Pings(45*60*1000, 1);
   });
 
   describe('next()', function() {
@@ -47,44 +32,46 @@ describe('Pings', function() {
 
   describe('prev()', function() {
     it('should return a ping before the requested time',
-       function() { pings.prev(time).should.be.lessThan(time); });
+       function() {
+         pings.prev(time).should.be.lessThan(time);
+       });
   });
 
   describe('next() & prev()', function() {
     it('should be idempotent', function() {
-      ping = pings.next(time);
+      var ping = pings.next(time);
       pings.prev(pings.next(ping)).should.equal(ping);
     });
   });
 
   it('should return consistent answers when requesting an earlier time',
      function() {
-       a = pings.next(time);
-       b = pings.prev(a);
-       c = pings.prev(b - 100000000);
+       var a = pings.next(time);
+       var b = pings.prev(a);
+       var c = pings.prev(b - 100000000);
        pings.next(time).should.equal(a);
      });
 
   it('should give different results for different seeds', function() {
-    currentConfig.seed = 1;
+    pings.seed = 1;
     pings.reset();
-    a = pings.next(time);
+    var a = pings.next(time);
 
-    currentConfig.seed = 2;
+    pings.seed = 2;
     pings.reset();
     pings.next(time).should.not.equal(a);
   });
 
   it('should give the same results for the same seeds', function() {
-    currentConfig.seed = 3;
+    pings.seed = 3;
     pings.reset();
-    a = pings.next(time);
+    var a = pings.next(time);
 
-    currentConfig.seed = 4;
+    pings.seed = 4;
     pings.reset();
     pings.next(time);
 
-    currentConfig.seed = 3;
+    pings.seed = 3;
     pings.reset();
     pings.next(time).should.equal(a);
   });
@@ -96,9 +83,9 @@ describe('Pings', function() {
        this.timeout(10000); // When coverage instrumented, this is slooow
 
        // Fix the seed so we don't get spurious failures
-       currentConfig.seed = 1;
+       pings.seed = 1;
        // a smaller period should lead to more collisions, so a better mode
-       currentConfig.period = 3;
+       pings.period = 3 * 1000 * 60;
        pings.reset();
 
        // generate a bunch of pings, and record the gap between them
@@ -114,15 +101,15 @@ describe('Pings', function() {
        // i_have_no_idea_what_im_doing_dog.gif
 
        Math.round(_.mean(gaps))
-           .should.be.approximately(config.period(),
-                                    0.1 * config.period());
+           .should.be.approximately(pings.period,
+                                    0.1 * pings.period);
 
-       mode = stats.mode(gaps);
+       var mode = stats.mode(gaps);
 
-       mode_matcher = function(mode) {
-         (config.period() - mode)
-           .should.be.approximately(config.period(),
-               0.2 * config.period());
+       var mode_matcher = function(mode) {
+         (pings.period - mode)
+           .should.be.approximately(pings.period,
+               0.2 * pings.period);
        };
        if (typeof mode !== "number") {
          // check that at least one matches

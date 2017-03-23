@@ -3,6 +3,9 @@ const moment = require('moment');
 const winston = require('winston');
 
 const config = require('./config');
+const pings = require('./pings');
+
+'use strict';
 
 /**
  * Parse a tagtime log into pings and append pings to it
@@ -71,7 +74,7 @@ module.exports = class PingFile {
    * format
    */
   static encode(ping, annotate = true) {
-    if (isNaN(ping.time) || ping.time < config.epoch) {
+    if (isNaN(ping.time) || ping.time < pings.epoch) {
       throw("Invalid ping time in ping to be encoded: " + ping.time +
                   " must be integer after the epoch");
     }
@@ -119,7 +122,7 @@ module.exports = class PingFile {
 
     // Time must be an integer after the epoch
     var time = parseInt(m[1]);
-    if (isNaN(time) || (time*1000) < config.epoch) {
+    if (isNaN(time) || (time*1000) < pings.epoch) {
       winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
       return null;
     }

@@ -1,22 +1,12 @@
 /**
- * Run before anything else to do initial log config.
- * Contains global constants.
+ * Config for the main process - dependent on access to the user's config file
  * Contains persisted non-constant data under 'user'.
  */
+
 'use strict';
 const {app} = require('electron');
 const path = require('path');
 const fs = require('fs');
-
-// Global constants
-//==================================
-
-/**
- * The birth of tagtime
- * Treat as const
- * The first ping in all sequences is on the epoch.
- */
-exports.epoch = 1184083200 * 1000;
 
 
 // User config
@@ -68,27 +58,3 @@ exports.firstRun = function() {
 exports.period = function() {
   return exports.user.get('period') * 60 * 1000;
 };
-
-// Log config
-// ==============================
-
-const winston = require('winston');
-winston.level = exports.user.get('loglevel');
-if (process.env.NODE_ENV === 'test') {
-  /* don't pollute test console output with anything except errors,
-     which shouldn't be triggerable via module APIs.
-     Send logs to a temporary file instad.
-     Requires tests to set NODE_ENV.
-     Requires all modules to import config after winston - could do better
-     TODO - don't use a global logger, expose one via the config
-  */
-  var tmp = require('tmp');
-  var logfile = tmp.tmpNameSync();
-  winston.info("Test mode log config - only errors to console, all to " + logfile);
-  winston.configure({
-    transports : [
-      new (winston.transports.File)({filename : logfile, json : false}),
-      new (winston.transports.Console)({level : 'error'})
-    ]
-  });
-}

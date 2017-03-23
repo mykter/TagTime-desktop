@@ -1,11 +1,10 @@
 const should = require('should');
 const child_process = require('child_process');
 const psTree = require('ps-tree');
-const sinon = require('sinon');
 
 const {appPath, electronPath} = require('./helper');
 
-const pings = require('../src/pings');
+const pings = require('../../src/pings');
 
 describe('Application', function() {
   // Spectron doesn't work with apps that don't open a window,

@@ -6,6 +6,7 @@ const winston = require('winston');
 
 const config = require('./config');
 const prompts = require('./prompts');
+const Pings = require('./pings');
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -64,10 +65,15 @@ function createTray() {
  * Application init
  */
 var main = function() {
+  winston.level = config.user.get('loglevel');
+  global.logger = winston; // expose the logger to renderer windows
+
   // Prevent second instance from running
   singleInstance();
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
+
+  global.pings = new Pings(config.period(), config.user.get('seed'));
 
   // The tray doesn't count as a window, so don't quit when the other windows
   // are closed

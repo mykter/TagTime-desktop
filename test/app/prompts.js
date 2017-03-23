@@ -1,18 +1,17 @@
+'use strict';
 const should = require('should');
 const sinon = require('sinon');
-var Application = require('spectron').Application;
 
-const {appPath, electronPath} = require('./helper');
-
-const prompts = require('../src/prompts');
-const pings = require('../src/pings');
+const prompts = require('../../src/prompts');
+const Pings = require('../../src/pings');
 
 describe('Prompts', function() {
+  // TODO - revisit this
   // We don't test this end-to-end. Spectron just isn't well
   // suited to it. Instead we check the right looking calls
   // are made at the right time.
 
-  var pingStub, app, start, sandbox;
+  var start, sandbox;
 
   /**
    * Create the spectron instance
@@ -20,8 +19,6 @@ describe('Prompts', function() {
   beforeEach(function() {
     sandbox = sinon.sandbox.create();
     sandbox.useFakeTimers(start);
-    app = new Application({path : electronPath, args : [ appPath ]});
-    // don't start it - not all our tests involve spectron
   });
 
   /**
@@ -29,9 +26,6 @@ describe('Prompts', function() {
    */
   afterEach(function() {
     sandbox.restore();
-    if (app && app.isRunning()) {
-      return app.stop();
-    }
   });
 
 
@@ -42,7 +36,8 @@ describe('Prompts', function() {
     // pings ~= [<now throw(), now+1000, now+3000, now+4000, throw()]
     start = Date.now();
 
-    pingStub = sinon.stub(pings, "next", function(time) {
+    global.pings = {};
+    global.pings.next = sinon.stub().callsFake(function(time) {
       if (time < start) {
         throw("ping.next called with a time before start (" + start + "): " + time);
       } else if (time < start + 1000) {
@@ -55,13 +50,6 @@ describe('Prompts', function() {
         throw("ping.next called with a time after start+4000:" + time);
       }
     });
-  });
-
-  /**
-   * Clean up the stubs
-   */
-  after(function() {
-    pingStub.restore();
   });
 
   it('should not prompt before the first ping', function() {

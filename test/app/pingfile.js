@@ -4,10 +4,9 @@ const tmp = require('tmp');
 const fs = require('fs');
 
 const helper = require('./helper');
+const PingFile = require('../../src/pingfile');
 
 describe('PingFile', function() {
-  var PingFile = require('../src/pingfile');
-
   describe('parse()', function() {
     it('should parse time-only entries', function() {
       ping = {time : 1487459622000, tags : new Set(), comment : null};
