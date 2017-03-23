@@ -35,18 +35,6 @@ var singleInstance = function() {
 };
 
 /**
- * @param {string} path A path relative to the script location
- * @returns {string} a file:// url of path
- */
-function getFileUrl(path) {
-  return require('url').format({
-    protocol : 'file',
-    slashes : true,
-    pathname : require('path').join(__dirname, path)
-  });
-}
-
-/**
  * Create a system tray icon with context menu
  */
 function createTray() {
@@ -54,11 +42,20 @@ function createTray() {
   tray = new Tray('resources/tagtime.png');
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
-    {label : 'Prompt - debug', click : function() { prompts.openPrompt(); }},
     {label : 'Preferences', click : function() { return; }},
     {label : 'Edit Pings', click : function() { return; }},
     {label : 'Quit', click : app.quit},
   ]));
+}
+
+var test = function(option) {
+  switch(option) {
+    case "prompt":
+      app.on('ready', prompts.openPrompt);
+      break;
+    default:
+      throw("Didn't recognise test option" + option);
+  }
 }
 
 /**
@@ -73,18 +70,28 @@ var main = function() {
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
 
+  var program = require('commander');
+  program
+    .version(process.env.npm_package_version)
+    .option('--test [option]', "Development test mode")
+    .parse(process.argv);
+
   global.pings = new Pings(config.period(), config.user.get('seed'));
 
-  // The tray doesn't count as a window, so don't quit when the other windows
-  // are closed
-  app.on('window-all-closed', () => {});
+  if(program.test) {
+    test(program.test);
+  } else {
+    // The tray doesn't count as a window, so don't quit when the other windows
+    // are closed
+    app.on('window-all-closed', () => {});
 
-  // This method will be called when Electron has finished
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  app.on('ready', createTray);
-  app.on('ready', prompts.schedulePings);
-  app.on('ready', prompts.editorIfMissed);
+    // This method will be called when Electron has finished
+    // initialization and is ready to create browser windows.
+    // Some APIs can only be used after this event occurs.
+    app.on('ready', createTray);
+    app.on('ready', prompts.schedulePings);
+    app.on('ready', prompts.editorIfMissed);
+  }
 };
 
 main();

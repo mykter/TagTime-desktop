@@ -3,6 +3,7 @@ const {BrowserWindow} = require('electron');
 
 const config = require('./config');
 const pingfile = require('./pingfile');
+const helper = require('./helper');
 
 'use strict';
 
@@ -37,7 +38,7 @@ exports.openPrompt = function () {
     webPreferences: {defaultEncoding: 'utf8'},
   });
 
-  promptWindow.loadURL(getFileUrl('windows/prompt.html'));
+  promptWindow.loadURL(helper.getFileUrl('windows/prompt.html'));
   // don't show until rendering complete
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
