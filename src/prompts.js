@@ -1,11 +1,10 @@
+'use strict';
+
 const winston = require('winston');
 const {BrowserWindow} = require('electron');
 
 const config = require('./config');
-const pingfile = require('./pingfile');
 const helper = require('./helper');
-
-'use strict';
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -84,12 +83,11 @@ exports.cancelSchedule = function() {
  * Show an editor if the time is after the next ping in the pingfile
  */
 exports.editorIfMissed = function() {
-  pingFile = new pingfile(config.user.get('pingFilePath'));
-  if(pingFile.pings.length === 0) {
+  if(global.pingFile.pings.length === 0) {
     return;
   }
 
-  if (Date.now() >= global.pings.next(pingFile.pings[0].time)) {
+  if (Date.now() >= global.pings.next(global.pingFile.pings[0].time)) {
     if (promptWindow) {
       winston.info(
           "Skipping editor because prompt hasn't been answered");

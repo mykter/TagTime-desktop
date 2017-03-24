@@ -10,5 +10,4 @@ exports.getFileUrl = function(path) {
     slashes : true,
     pathname : require('path').join(__dirname, path)
   });
-}
-
+};

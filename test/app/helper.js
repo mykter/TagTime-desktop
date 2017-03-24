@@ -4,7 +4,7 @@
 'use strict';
 
 const path = require('path');
-exports.appPath = path.resolve(__dirname, '../../');
+exports.appPath = path.resolve(__dirname, '..', '..');
 
 var exe_suffix = "";
 if(process.platform === 'win32') {

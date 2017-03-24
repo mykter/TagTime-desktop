@@ -62,7 +62,11 @@ function report() {
   const collector = new Collector();
   collector.add(cov);
 
-  const reporter = new Reporter();
+  // Save the coverage data to a location dependent on the process type
+  // because we do a different test run for browser + renderer and don't
+  // want to overwrite it.
+  const reporter =
+      new Reporter(null, resolve(__dirname, '..', 'coverage', process.type));
   reporter.addAll([ 'text-summary', 'json' ]);
   reporter.write(collector, true, () => {});
 }
@@ -72,7 +76,7 @@ const transformer = instrumenter.instrumentSync.bind(instrumenter);
 const cov = global.__coverage__ = {};
 
 // Create a matcher for all source files
-const matched = match(__dirname, 'src/*.js');
+const matched = match(resolve(__dirname, '..'), 'src/*.js');
 hook.hookRequire(matched, transformer, {});
 
 if (process.type === 'browser') {

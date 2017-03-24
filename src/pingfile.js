@@ -1,11 +1,11 @@
+'use strict';
+
 const fs = require('fs');
 const moment = require('moment');
 const winston = require('winston');
 
 const config = require('./config');
 const pings = require('./pings');
-
-'use strict';
 
 /**
  * Parse a tagtime log into pings and append pings to it

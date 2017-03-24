@@ -30,7 +30,7 @@ describe('Prompts', function() {
     it('should open a window', function() {
       return this.app.client.getWindowCount().then(function(count) {
         count.should.equal(1);
-      })
+      });
     });
 
   });

@@ -7,11 +7,11 @@ const winston = require('winston');
 const config = require('./config');
 const prompts = require('./prompts');
 const Pings = require('./pings');
+const pingfile = require('./pingfile');
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
-var pingFile;
 
 /**
  * Ensures only one instance of the app is running at a time.
@@ -48,6 +48,10 @@ function createTray() {
   ]));
 }
 
+/**
+ * Handle invocations in --test mode
+ * @param {string} option The requested test mode
+ */
 var test = function(option) {
   switch(option) {
     case "prompt":
@@ -56,7 +60,7 @@ var test = function(option) {
     default:
       throw("Didn't recognise test option" + option);
   }
-}
+};
 
 /**
  * Application init
@@ -76,6 +80,7 @@ var main = function() {
     .option('--test [option]', "Development test mode")
     .parse(process.argv);
 
+  global.pingFile = new pingfile(config.user.get('pingFilePath'));
   global.pings = new Pings(config.period(), config.user.get('seed'));
 
   if(program.test) {

@@ -11,7 +11,7 @@ var Random = require('random-js');
 
 module.exports = class Pings {
   /**
-   * The birth of tagtime
+   * @return {time} The birth of tagtime
    * The first ping in all sequences is on the epoch.
    */
   static get epoch(){ return 1184083200 * 1000; }
@@ -136,4 +136,4 @@ module.exports = class Pings {
     }
     return this.pings[idx];
   };
-}
+};
