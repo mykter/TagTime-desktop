@@ -17,6 +17,7 @@ let tray;
  * Ensures only one instance of the app is running at a time.
  * On launch of second instance, it quits and the first instance
  * notifies the user.
+ * @return {bool} true if this is the only instance, false otherwise
  */
 var singleInstance = function() {
   const secondInstance = app.makeSingleInstance((argv, cwd) => {
@@ -31,7 +32,9 @@ var singleInstance = function() {
     winston.warn("An instance of " + app.getName() +
                  " is already running, quitting...");
     app.quit();
+	return false;
   }
+  return true;
 };
 
 /**
@@ -70,7 +73,9 @@ var main = function() {
   global.logger = winston; // expose the logger to renderer windows
 
   // Prevent second instance from running
-  singleInstance();
+  if (!singleInstance()) {
+    return;
+  }
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
 
