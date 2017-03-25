@@ -22,11 +22,13 @@ let tray;
 var singleInstance = function() {
   const secondInstance = app.makeSingleInstance((argv, cwd) => {
     // Runs in the existing app when another instance is launched
+    /*
     const notify = require('electron-main-notification');
     notify(app.getName() + " is already running", {
       body :
           "You can't run multiple copies of TagTime, please quit first if you want to restart."
     });
+    */
   });
   if (secondInstance) {
     winston.warn("An instance of " + app.getName() +
