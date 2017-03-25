@@ -72,6 +72,7 @@ var main = function() {
   var program = require('commander');
   program.version(process.env.npm_package_version)
       .option('--test [option]', "Development test mode")
+      .option('--notray', "Don't display the tray icon")
       .option('-v --verbose', "Debug logging")
       .parse(process.argv);
 
@@ -99,10 +100,9 @@ var main = function() {
     // are closed
     app.on('window-all-closed', () => {});
 
-    // This method will be called when Electron has finished
-    // initialization and is ready to create browser windows.
-    // Some APIs can only be used after this event occurs.
-    app.on('ready', createTray);
+    if (!program.notray) {
+      app.on('ready', createTray);
+    }
     app.on('ready', prompts.schedulePings);
     app.on('ready', prompts.editorIfMissed);
   }

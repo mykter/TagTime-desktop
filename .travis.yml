@@ -21,7 +21,6 @@ addons:
       - xvfb      # testing
       - icnsutils # this + gm for electron-builder's icon work
       - graphicsmagick
-      - libappindicator1 # tray support
 
 cache:
   directories:
