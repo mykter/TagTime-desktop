@@ -22,7 +22,6 @@ describe('Application', function() {
    * @param {number} parentPid The root of the process tree to kill
    */
   var tree_kill = function(parentPid) {
-    console.log("tree killing " + parentPid);
     psTree(parentPid, function(err, children) {
       children.forEach(function(child) {
         try {
@@ -48,7 +47,6 @@ describe('Application', function() {
       if (isrunning(pid)) {
         setTimeout(check, 100);
       } else {
-        console.log(pid + " is dead");
         callback();
       }
     };
@@ -59,84 +57,78 @@ describe('Application', function() {
    * @returns {app} a new instance of the app
    */
   var spawnApp = function() {
-    var trayArg;
-    if (process.env['TRAVIS_OS_NAME'] === 'linux') {
-      console.log("Travis: not launching tray");
-      trayArg = '--notray';
-    } else {
-      trayArg = '';
-    }
-    return child_process.spawn(electronPath, [ appPath, '--verbose', trayArg ]);
+    return child_process.spawn(electronPath, [ appPath, '--verbose' ]);
   }
 
   var app1, app2; // child_process
   var app1pid, app2pid;
 
-  it('should only allow one instance to run', function() {
-    this.timeout(10000);
+  if (process.env['TRAVIS_OS_NAME'] === 'linux') {
+    // As best I can tell, makeSingleInstance doesn't work on travis Linux (or
+    // at least this travis config)
+    it('should only allow one instance to run');
+  } else {
+    it('should only allow one instance to run', function() {
+      this.timeout(10000);
 
-    app1 = spawnApp();
-    app1pid = app1.pid;
+      app1 = spawnApp();
+      app1pid = app1.pid;
 
-    return new Promise(function(fulfill, reject) {
-      var app1startup = function(buffer) {
-        console.log("app1 output: " + buffer);
-        if (buffer.toString().includes("ready")) {
-          app2 = spawnApp()
-          app2pid = app2.pid;
-          app2.on('exit', function(code) { fulfill(true); });
+      return new Promise(function(fulfill, reject) {
+        var app1startup = function(buffer) {
+          if (buffer.toString().includes("ready")) {
+            app2 = spawnApp() app2pid = app2.pid;
+            app2.on('exit', function(code) { fulfill(true); });
 
-          // don't care which stream the notification will come on
-          app2.stdout.on('data', app2startup);
-          app2.stderr.on('data', app2startup);
-        }
-      };
+            // don't care which stream the notification will come on
+            app2.stdout.on('data', app2startup);
+            app2.stderr.on('data', app2startup);
+          }
+        };
 
-      var app2startup = function(buffer) {
-        console.log("app2 output: " + buffer);
-        if (buffer.toString().includes("starting up")) {
-          reject("Second instance is starting up");
-        }
-      };
+        var app2startup = function(buffer) {
+          if (buffer.toString().includes("starting up")) {
+            reject("Second instance is starting up");
+          }
+        };
 
-      // don't care which stream the notification will come on
-      app1.stdout.on('data', app1startup);
-      app1.stderr.on('data', app1startup);
+        // don't care which stream the notification will come on
+        app1.stdout.on('data', app1startup);
+        app1.stderr.on('data', app1startup);
+      });
     });
-  });
 
-  afterEach(function() {
-    // Kill any processes spawned, and all their descendents.
-    // app[12].kill doesn't work - it kills the node process, but its
-    // descendants live on.
-    if (app1pid) {
-      tree_kill(app1pid);
-    }
-    if (app2pid) {
-      tree_kill(app2pid);
-    }
-
-    // Only move on from this test when all the processes spawned are dead.
-    // No longer sure if this is necessary, but keeping in case it is helping
-    // with hard-to-debug errors in CI.
-    return new Promise(function(resolve, reject) {
-      // resolve() if/when app2pid doesn't exist
-      var waitapp2 = function() {
-        if (app2pid) {
-          console.log("Waiting on app2: " + app2pid);
-          setTimeout(callWhenDead(app2pid, resolve), 100);
-        } else {
-          resolve();
-        }
-      };
-
-      // Once app1pid is gone, wait for app2pid
+    afterEach(function() {
+      // Kill any processes spawned, and all their descendents.
+      // app[12].kill doesn't work - it kills the node process, but its
+      // descendants live on.
       if (app1pid) {
-        console.log("Waiting on app1: " + app1pid);
-        setTimeout(callWhenDead(app1pid, waitapp2), 100);
-      } else {
-        waitapp2();
+        tree_kill(app1pid);
       }
+      if (app2pid) {
+        tree_kill(app2pid);
+      }
+
+      // Only move on from this test when all the processes spawned are dead.
+      // No longer sure if this is necessary, but keeping in case it is helping
+      // with hard-to-debug errors in CI.
+      return new Promise(function(resolve, reject) {
+        // resolve() if/when app2pid doesn't exist
+        var waitapp2 = function() {
+          if (app2pid) {
+            setTimeout(callWhenDead(app2pid, resolve), 100);
+          } else {
+            resolve();
+          }
+        };
+
+        // Once app1pid is gone, wait for app2pid
+        if (app1pid) {
+          setTimeout(callWhenDead(app1pid, waitapp2), 100);
+        } else {
+          waitapp2();
+        }
+      });
     });
-  });
+  }
 });

@@ -22,13 +22,11 @@ let tray;
 var singleInstance = function() {
   const secondInstance = app.makeSingleInstance((argv, cwd) => {
     // Runs in the existing app when another instance is launched
-    /*
     const notify = require('electron-main-notification');
     notify(app.getName() + " is already running", {
       body :
           "You can't run multiple copies of TagTime, please quit first if you want to restart."
     });
-    */
   });
   if (secondInstance) {
     winston.warn("An instance of " + app.getName() +
@@ -74,7 +72,6 @@ var main = function() {
   var program = require('commander');
   program.version(process.env.npm_package_version)
       .option('--test [option]', "Development test mode")
-      .option('--notray', "Don't display the tray icon")
       .option('-v --verbose', "Debug logging")
       .parse(process.argv);
 
@@ -103,12 +100,10 @@ var main = function() {
     app.on('window-all-closed', () => {});
 
     app.on('ready', function () {
-      winston.debug("App ready");
+      winston.debug(app.getName() + " ready");
     });
 
-    if (!program.notray) {
-      app.on('ready', createTray);
-    }
+    app.on('ready', createTray);
     app.on('ready', prompts.schedulePings);
     app.on('ready', prompts.editorIfMissed);
   }
