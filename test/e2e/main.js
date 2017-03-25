@@ -61,6 +61,7 @@ describe('Application', function() {
   var spawnApp = function() {
     var trayArg;
     if (process.env['TRAVIS_OS_NAME'] === 'linux') {
+      console.log("Travis: not launching tray");
       trayArg = '--notray';
     } else {
       trayArg = '';
