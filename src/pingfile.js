@@ -155,7 +155,7 @@ module.exports = class PingFile {
           .trim() // trailing new line would give us a spurious null
           .split("\n")
           .map(PingFile.parse)
-          .filter((e, i, a) => { return this.keep_invalid || (e !== null); });
+          .filter((e, _i, _a) => { return this.keep_invalid || (e !== null); });
     } catch (err) {
       if (err.code === 'ENOENT') {
         // File couldn't be opened

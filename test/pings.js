@@ -2,7 +2,6 @@
 const should = require('should');
 const _ = require('lodash');
 const stats = require("stats-lite");
-const sinon = require('sinon');
 
 const Pings = require('../src/pings');
 
@@ -48,7 +47,7 @@ describe('Pings', function() {
      function() {
        var a = pings.next(time);
        var b = pings.prev(a);
-       var c = pings.prev(b - 100000000);
+       pings.prev(b - 100000000);
        pings.next(time).should.equal(a);
      });
 

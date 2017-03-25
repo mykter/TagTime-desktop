@@ -1,4 +1,4 @@
-const should = require('should');
+require('should');
 const child_process = require('child_process');
 const psTree = require('ps-tree');
 const isrunning = require('is-running');
@@ -79,7 +79,7 @@ describe('Application', function() {
           if (buffer.toString().includes("ready")) {
             app2 = spawnApp();
             app2pid = app2.pid;
-            app2.on('exit', function(code) { fulfill(true); });
+            app2.on('exit', function(_code) { fulfill(true); });
 
             // don't care which stream the notification will come on
             app2.stdout.on('data', app2startup);
@@ -113,7 +113,7 @@ describe('Application', function() {
       // Only move on from this test when all the processes spawned are dead.
       // No longer sure if this is necessary, but keeping in case it is helping
       // with hard-to-debug errors in CI.
-      return new Promise(function(resolve, reject) {
+      return new Promise(function(resolve, _reject) {
         // resolve() if/when app2pid doesn't exist
         var waitapp2 = function() {
           if (app2pid) {

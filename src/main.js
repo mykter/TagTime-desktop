@@ -1,7 +1,6 @@
 'use strict';
 
 const {app, Menu, Tray} = require('electron');
-const url = require('url');
 const winston = require('winston');
 
 const config = require('./config');
@@ -20,7 +19,7 @@ let tray;
  * @return {bool} true if this is the only instance, false otherwise
  */
 var singleInstance = function() {
-  const secondInstance = app.makeSingleInstance((argv, cwd) => {
+  const secondInstance = app.makeSingleInstance((_argv, _cwd) => {
     // Runs in the existing app when another instance is launched
     const notify = require('electron-main-notification');
     notify(app.getName() + " is already running", {

@@ -1,11 +1,10 @@
 'use strict';
-const should = require('should');
+require('should');
 const sinon = require('sinon');
 
-const helper = require('./helper');
+require('./helper');
 
 const prompts = require('../../src/prompts');
-const Pings = require('../../src/pings');
 
 describe('Prompts', function() {
   describe('should trigger a prompt at the right time', function() {

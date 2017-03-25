@@ -3,13 +3,13 @@ const _ = require('lodash');
 const tmp = require('tmp');
 const fs = require('fs');
 
-const helper = require('./helper');
+require('./helper');
 const PingFile = require('../../src/pingfile');
 
 describe('PingFile', function() {
   describe('parse()', function() {
     it('should parse time-only entries', function() {
-      ping = {time : 1487459622000, tags : new Set(), comment : null};
+      var ping = {time : 1487459622000, tags : new Set(), comment : null};
       // use _.isEqual as it copes with Sets, whereas should.eql doesn't
       ['1487459622', '1487459622 ', '1487459622  '].forEach(function(entry) {
         _.isEqual(PingFile.parse(entry), ping).should.be.true();
@@ -27,7 +27,6 @@ describe('PingFile', function() {
        function() { should(PingFile.parse('1487459622 [half')).be.null(); });
 
     it('should parse a single tag', function() {
-      ping = {time : 1487459622000, tags : new Set([ 'atag' ]), comment : null};
       var entries = [
         '1487459622 atag', '1487459622  atag', '1487459622\tatag',
         '1487459622 \tatag \t ', '1487459622      atag            '
@@ -40,7 +39,6 @@ describe('PingFile', function() {
 
     it('should parse multiple tags (incl special chars)', function() {
       var tags = new Set([ 'one:', 't\'w\'o', 'th-ree', 'four,', 'fi;ve' ]);
-      ping = {time : 1487459622000, tags : tags, comment : null};
       var entries = [
         // vanilla
         '1487459622 one: t\'w\'o th-ree four, fi;ve',
@@ -141,14 +139,14 @@ describe('PingFile', function() {
        function() { get('').should.deepEqual([ null ]); });
 
     it('should parse a single entry', function() {
-      res = get('1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]');
+      var res = get('1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]');
       should(res[0].time).equal(1487459622000);
       should(res[0].comment).equal('2017-02-18T23:13:42+00:00 hi');
       _.isEqual(res[0].tags, new Set([ '1', '2', 'three' ])).should.be.true();
     });
 
     it('should parse a multiline file with invalid entries', function() {
-      res = get('header\n' +
+      var res = get('header\n' +
                 '\n' +
                 '1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]\n' +
                 '123invalid tags\n' +
@@ -164,7 +162,7 @@ describe('PingFile', function() {
 
     it('should ignore invalid entries when configured to do so', function() {
       pf.keep_invalid = false;
-      res = get('header\n' +
+      var res = get('header\n' +
                 '\n' +
                 '1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]\n' +
                 '123invalid tags\n' +

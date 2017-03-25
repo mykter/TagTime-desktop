@@ -6,7 +6,6 @@
 
 'use strict';
 
-var _ = require('lodash');
 var Random = require('random-js');
 
 module.exports = class Pings {

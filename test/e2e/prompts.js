@@ -1,6 +1,5 @@
 'use strict';
-const should = require('should');
-const sinon = require('sinon');
+require('should');
 
 const helper = require('./helper');
 
