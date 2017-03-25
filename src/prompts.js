@@ -76,7 +76,7 @@ exports.schedulePings = function() {
  * Cancel future pings set up by schedulePings
  */
 exports.cancelSchedule = function() {
-  cancelTimeout(_scheduleTimer);
+  clearTimeout(_scheduleTimer);
 };
 
 /**

@@ -51,7 +51,7 @@ describe('Application', function() {
       }
     };
     return check;
-  }
+  };
 
   var app1, app2; // child_process
   var app1pid, app2pid;

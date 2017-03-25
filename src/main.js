@@ -55,7 +55,7 @@ function createTray() {
  * Handle invocations in --test mode
  * @param {string} option The requested test mode
  */
-var test = function(option) {
+var mainTest = function(option) {
   switch(option) {
     case "prompt":
       app.on('ready', prompts.openPrompt);
@@ -94,7 +94,7 @@ var main = function() {
   global.pings = new Pings(config.period(), config.user.get('seed'));
 
   if(program.test) {
-    test(program.test);
+    mainTest(program.test);
   } else {
     // The tray doesn't count as a window, so don't quit when the other windows
     // are closed

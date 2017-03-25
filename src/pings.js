@@ -46,7 +46,7 @@ module.exports = class Pings {
      * @returns {real} in [0,1]
      */
     this.rand = function() { return Random.real(0, 1)(engine); };
-  };
+  }
 
   /**
    * Re-initialise module state
@@ -65,7 +65,7 @@ module.exports = class Pings {
      * recompute them all if asked for an earlier one)
      */
     this.pings = undefined;
-  };
+  }
 
   /**
    * (side effect: updates the seed)
@@ -78,7 +78,7 @@ module.exports = class Pings {
     var gap = -1 * this.period * Math.log(this.rand());
     // Round gaps of <1s up to 1s, and only add a whole number of seconds
     return ping + Math.max(1000, 1000 * Math.round(gap / 1000));
-  };
+  }
 
   /**
    * @param {time} time
@@ -111,7 +111,7 @@ module.exports = class Pings {
 
     // the index of the ping before the first ping later than time
     return this.pings.findIndex(timeOrLater) - 1;
-  };
+  }
 
 
   /**
@@ -121,7 +121,7 @@ module.exports = class Pings {
   prev(time) {
     var idx = this.prevPingIndex(time);
     return this.pings[idx];
-  };
+  }
 
   /**
    * @param {time} time - reference point in time
@@ -135,5 +135,5 @@ module.exports = class Pings {
       idx += 1;
     }
     return this.pings[idx];
-  };
+  }
 };
