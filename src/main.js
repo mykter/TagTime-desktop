@@ -100,6 +100,10 @@ var main = function() {
     // are closed
     app.on('window-all-closed', () => {});
 
+    app.on('ready', function () {
+      winston.debug("App ready");
+    });
+
     if (!program.notray) {
       app.on('ready', createTray);
     }
