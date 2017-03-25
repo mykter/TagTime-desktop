@@ -5,7 +5,7 @@ Code is formatted using clang-format. e.g. in vimrc:
 
 Code is linted with eslint, and this is part of the default test suite.
 $ npm run lint
-or
+ or
 $ npm run lint test/main.js
 (linux only)
 
