@@ -55,19 +55,27 @@ describe('Application', function() {
     return check;
   };
 
+  /**
+   * @returns {app} a new instance of the app
+   */
+  var spawnApp = function() {
+    return child_process.spawn(electronPath, [ appPath, '--verbose' ]);
+  }
+
   var app1, app2; // child_process
   var app1pid, app2pid;
 
   it('should only allow one instance to run', function() {
     this.timeout(10000);
 
-    app1 = child_process.spawn(electronPath, [ appPath, "--verbose" ]);
+    app1 = spawnApp();
     app1pid = app1.pid;
 
     return new Promise(function(fulfill, reject) {
       var app1startup = function(buffer) {
+        console.log("app1 output: " + buffer);
         if (buffer.toString().includes("Creating tray")) {
-          app2 = child_process.spawn(electronPath, [ appPath, '--verbose' ]);
+          app2 = spawnApp()
           app2pid = app2.pid;
           app2.on('exit', function(code) { fulfill(true); });
 
@@ -78,6 +86,7 @@ describe('Application', function() {
       };
 
       var app2startup = function(buffer) {
+        console.log("app2 output: " + buffer);
         if (buffer.toString().includes("starting up")) {
           reject("Second instance is starting up");
         }
