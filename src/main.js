@@ -32,7 +32,7 @@ var singleInstance = function() {
     winston.warn("An instance of " + app.getName() +
                  " is already running, quitting...");
     app.quit();
-	return false;
+    return false;
   }
   return true;
 };
@@ -56,12 +56,12 @@ function createTray() {
  * @param {string} option The requested test mode
  */
 var mainTest = function(option) {
-  switch(option) {
-    case "prompt":
-      app.on('ready', prompts.openPrompt);
-      break;
-    default:
-      throw("Didn't recognise test option" + option);
+  switch (option) {
+  case "prompt":
+    app.on('ready', prompts.openPrompt);
+    break;
+  default:
+    throw("Didn't recognise test option" + option);
   }
 };
 
@@ -70,11 +70,10 @@ var mainTest = function(option) {
  */
 var main = function() {
   var program = require('commander');
-  program
-    .version(process.env.npm_package_version)
-    .option('--test [option]', "Development test mode")
-    .option('-v --verbose', "Debug logging")
-    .parse(process.argv);
+  program.version(process.env.npm_package_version)
+      .option('--test [option]', "Development test mode")
+      .option('-v --verbose', "Debug logging")
+      .parse(process.argv);
 
   if (program.verbose) {
     winston.level = 'debug';
@@ -93,7 +92,7 @@ var main = function() {
   global.pingFile = new pingfile(config.user.get('pingFilePath'));
   global.pings = new Pings(config.period(), config.user.get('seed'));
 
-  if(program.test) {
+  if (program.test) {
     mainTest(program.test);
   } else {
     // The tray doesn't count as a window, so don't quit when the other windows
