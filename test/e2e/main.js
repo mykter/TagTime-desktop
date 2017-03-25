@@ -22,6 +22,7 @@ describe('Application', function() {
    * @param {number} parentPid The root of the process tree to kill
    */
   var tree_kill = function(parentPid) {
+    console.log("tree killing " + parentPid);
     psTree(parentPid, function(err, children) {
       children.forEach(function(child) {
         try {
@@ -47,6 +48,7 @@ describe('Application', function() {
       if (isrunning(pid)) {
         setTimeout(check, 100);
       } else {
+        console.log(pid + " is dead");
         callback();
       }
     };
@@ -105,6 +107,7 @@ describe('Application', function() {
       // resolve() if/when app2pid doesn't exist
       var waitapp2 = function() {
         if (app2pid) {
+          console.log("Waiting on app2: " + app2pid);
           setTimeout(callWhenDead(app2pid, resolve), 100);
         } else {
           resolve();
@@ -113,6 +116,7 @@ describe('Application', function() {
 
       // Once app1pid is gone, wait for app2pid
       if (app1pid) {
+        console.log("Waiting on app1: " + app1pid);
         setTimeout(callWhenDead(app1pid, waitapp2), 100);
       } else {
         waitapp2();
