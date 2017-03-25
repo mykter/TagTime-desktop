@@ -3,15 +3,7 @@
  */
 'use strict';
 
-const path = require('path');
-exports.appPath = path.resolve(__dirname, '..', '..');
 
-var exe_suffix = "";
-if(process.platform === 'win32') {
-  exe_suffix = '.cmd';
-}
-exports.electronPath = path.resolve(__dirname, '..', '..', 'node_modules', '.bin',
-                                    'electron' + exe_suffix);
 
 // Don't pollute test output with normal logs
 // This will get called prior to the standard log config on app startup,

@@ -76,6 +76,9 @@ const transformer = instrumenter.instrumentSync.bind(instrumenter);
 const cov = global.__coverage__ = {};
 
 // Create a matcher for all source files
+// Note that we don't have coverage support for e2e testing, so
+// main.js and others will not have any coverge. Could try and exclude here,
+// but not too important.
 const matched = match(resolve(__dirname, '..'), 'src/*.js');
 hook.hookRequire(matched, transformer, {});
 

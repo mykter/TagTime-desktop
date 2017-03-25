@@ -69,7 +69,18 @@ var test = function(option) {
  * Application init
  */
 var main = function() {
-  winston.level = config.user.get('loglevel');
+  var program = require('commander');
+  program
+    .version(process.env.npm_package_version)
+    .option('--test [option]', "Development test mode")
+    .option('-v --verbose', "Debug logging")
+    .parse(process.argv);
+
+  if (program.verbose) {
+    winston.level = 'debug';
+  } else {
+    winston.level = 'warn';
+  }
   global.logger = winston; // expose the logger to renderer windows
 
   // Prevent second instance from running
@@ -78,12 +89,6 @@ var main = function() {
   }
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
-
-  var program = require('commander');
-  program
-    .version(process.env.npm_package_version)
-    .option('--test [option]', "Development test mode")
-    .parse(process.argv);
 
   global.pingFile = new pingfile(config.user.get('pingFilePath'));
   global.pings = new Pings(config.period(), config.user.get('seed'));
