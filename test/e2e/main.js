@@ -58,12 +58,12 @@ describe('Application', function() {
    */
   var spawnApp = function() {
     return child_process.spawn(electronPath, [ appPath, '--verbose' ]);
-  }
+  };
 
   var app1, app2; // child_process
   var app1pid, app2pid;
 
-  if (process.env['TRAVIS_OS_NAME'] === 'linux') {
+  if (process.env.TRAVIS_OS_NAME === 'linux') {
     // As best I can tell, makeSingleInstance doesn't work on travis Linux (or
     // at least this travis config)
     it('should only allow one instance to run');
@@ -77,7 +77,8 @@ describe('Application', function() {
       return new Promise(function(fulfill, reject) {
         var app1startup = function(buffer) {
           if (buffer.toString().includes("ready")) {
-            app2 = spawnApp() app2pid = app2.pid;
+            app2 = spawnApp();
+            app2pid = app2.pid;
             app2.on('exit', function(code) { fulfill(true); });
 
             // don't care which stream the notification will come on
