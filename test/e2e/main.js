@@ -30,12 +30,12 @@ describe('Application', function() {
           // ignore it
         }
       });
+      try {
+        process.kill(parentPid, 'SIGKILL');
+      } catch (e) {
+        // ignore it
+      }
     });
-    try {
-      process.kill(parentPid, 'SIGKILL');
-    } catch (e) {
-      // ignore it
-    }
   };
 
   /**
