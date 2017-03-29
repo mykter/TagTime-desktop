@@ -22,8 +22,6 @@ exports.defaultUserConf = {
    */
   seed : require('random-js')().integer(0, Math.pow(2,32) - 1),
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
-  promptWidth: 600,
-  promptHeight: 250,
   firstRun: true
 };
 

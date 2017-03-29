@@ -2,8 +2,8 @@
 
 const winston = require('winston');
 const {BrowserWindow} = require('electron');
+const windowStateKeeper = require('electron-window-state');
 
-const config = require('./config');
 const helper = require('./helper');
 
 // Global reference to prevent garbage collection
@@ -19,13 +19,20 @@ exports.openPrompt = function () {
     return;
   }
 
+  // Save & restore window position and dimensions
+  let promptWindowState = windowStateKeeper({
+    defaultWidth: 500,
+    defaultHeight: 200,
+    file: "promptWindowState.json"
+  });
+
   promptWindow = new BrowserWindow({
     frame : true,
     backgroundColor : "#202020",
-    width : config.user.get('promptWidth'),
-    height : config.user.get('promptHeight'),
-    resizable :
-        false, // user hostile? aim to ensure it resizes itself if needed
+    width : promptWindowState.width,
+    height : promptWindowState.height,
+    x : promptWindowState.x,
+    y : promptWindowState.y,
     maximizable : false,
     fullscreenable : false,
     // icon : path, // defaults to executable
@@ -33,11 +40,14 @@ exports.openPrompt = function () {
     show : false,            // let it render first
     acceptFirstMouse : true, // ensure you can click direct onto the tag entry
                              // on some platforms?
-    autoHideMenuBar :  true, // not an issue on ubuntu, could be a pain on win
-    webPreferences: {defaultEncoding: 'utf8'},
+    autoHideMenuBar : true,  // not an issue on ubuntu, could be a pain on win
+    webPreferences : {defaultEncoding : 'utf8', nodeIntegration : false},
   });
 
-  promptWindow.loadURL(helper.getFileUrl('windows/prompt.html'));
+  // Have window state keeper register resize listeners
+  promptWindowState.manage(promptWindow);
+
+  promptWindow.loadURL(helper.getFileUrl('prompt.html'));
   // don't show until rendering complete
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
