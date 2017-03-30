@@ -57,7 +57,7 @@ function createTray() {
 var mainTest = function(option) {
   switch (option) {
   case "prompt":
-    app.on('ready', prompts.openPrompt);
+    app.on('ready', ()=>{prompts.openPrompt(Date.now())});
     break;
   default:
     throw("Didn't recognise test option" + option);

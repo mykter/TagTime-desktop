@@ -5,6 +5,7 @@ const {BrowserWindow} = require('electron');
 const windowStateKeeper = require('electron-window-state');
 
 const helper = require('./helper');
+const config = require('./config');
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -12,7 +13,7 @@ let promptWindow;
 /**
  * Open a ping prompt window
  */
-exports.openPrompt = function () {
+exports.openPrompt = function (time) {
   winston.debug("Showing prompt");
   if(promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
@@ -29,6 +30,8 @@ exports.openPrompt = function () {
   promptWindow = new BrowserWindow({
     frame : true,
     backgroundColor : "#202020",
+    minWidth: 205,
+    minHeight: 185,
     width : promptWindowState.width,
     height : promptWindowState.height,
     x : promptWindowState.x,
@@ -37,17 +40,18 @@ exports.openPrompt = function () {
     fullscreenable : false,
     // icon : path, // defaults to executable
     title : "TagTime",
+    alwaysOnTop: config.user.get('alwaysOnTop'),
     show : false,            // let it render first
     acceptFirstMouse : true, // ensure you can click direct onto the tag entry
                              // on some platforms?
     autoHideMenuBar : true,  // not an issue on ubuntu, could be a pain on win
-    webPreferences : {defaultEncoding : 'utf8', nodeIntegration : false},
+    webPreferences : {defaultEncoding : 'utf8', nodeIntegration : true},
   });
 
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  promptWindow.loadURL(helper.getFileUrl('prompt.html'));
+  promptWindow.loadURL(helper.getFileUrl('prompt.html') + '?time=' + time);
   // don't show until rendering complete
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
@@ -76,7 +80,7 @@ exports.schedulePings = function() {
       winston.info(
           "Skipping prompt because current prompt hasn't been answered");
     } else {
-      exports.openPrompt();
+      exports.openPrompt(next);
     }
     exports.schedulePings();
   }, next - now);

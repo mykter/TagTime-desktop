@@ -17,6 +17,10 @@ form {
   width: 100%;
 }
 
+#time {
+  font-weight: bold;
+}
+
 /****************************
  * Typeahead dropdown menu
  * From https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples/

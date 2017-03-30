@@ -1,3 +1,11 @@
+/* Display time of ping */
+const querystring = require('querystring');
+const moment = require('moment');
+const time = querystring.parse(window.location.search).time;
+document.getElementById("time").innerHTML = moment(time).format('hh:mm:ss');
+
+/* Typeahead */
+
 const $ = window.$;
 const Bloodhound = window.Bloodhound;
 

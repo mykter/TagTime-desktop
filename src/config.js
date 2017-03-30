@@ -22,7 +22,8 @@ exports.defaultUserConf = {
    */
   seed : require('random-js')().integer(0, Math.pow(2,32) - 1),
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
-  firstRun: true
+  firstRun: true,
+  alwaysOnTop: true,
 };
 
 /** The per-user config object
