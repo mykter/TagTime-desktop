@@ -37,10 +37,10 @@
       </footer>
     </div>
     <!-- See https://github.com/electron/electron/issues/254 -->
-    <script>window.$ = window.jQuery = require('../lib/jquery.min.js');</script>
-    <script src="../lib/bootstrap.min.js"></script>
-    <script src="../lib/typeahead.bundle.js"></script>
-    <script src="../lib/bootstrap-tagsinput.js"></script>
-    <script src="prompt.js"></script>
+    <script>window.$ = window.jQuery = require('jquery');</script>
+    <script>require('bootstrap');</script>
+    <script src='../node_modules/typeahead.js/dist/typeahead.bundle.js'></script>
+    <script>require('bootstrap-tagsinput');</script>
+    <script>require('./prompt');</script>
   </body>
 </html>

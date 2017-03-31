@@ -1,6 +1,6 @@
-@import '../../lib/bootstrap.min.css';
-@import '../../lib/photon.css';
-@import '../../lib/bootstrap-tagsinput.css';
+@import '../../node_modules/bootstrap/dist/css/bootstrap.min.css';
+@import '../../node_modules/photonkit/dist/css/photon.css';
+@import '../../node_modules/bootstrap-tagsinput/dist/bootstrap-tagsinput.css';
 
 form {
   width: 100%;
