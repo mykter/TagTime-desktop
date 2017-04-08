@@ -5,19 +5,16 @@ Code is formatted using clang-format. e.g. in vimrc:
 
 Code is linted with eslint, and this is part of the default test suite.
 $ npm run lint
- or
-$ npm run lint test/main.js
-(linux only)
 
 Tests
 =====
 $ npm test
 
 Unit and integration tests use electron-mocha, and are themselves split into
-renderer and browser/app tests. Run with:
+renderer and main tests. Run with:
 $ npm run test:renderer
  and
-$ npm run test:app
+$ npm run test:main
 
 End to end tests use plain mocha and spectron.
 $ npm run test:e2e
@@ -31,4 +28,4 @@ To get the Chrome DevTools debugging interface add a 'debugger;' statement in
 your test of choice, then:
 $ npm run debugtest
  or
-$ npm run debugtestapp
+$ npm run debugtestmain

@@ -7,6 +7,22 @@ require('./helper');
 const prompts = require('../../src/prompts');
 
 describe('Prompts', function() {
+  it('should save a ping correctly', function() {
+    global.pingFile = {push : sinon.spy()};
+    var ping = {
+      time : 1234567890,
+      tags : [ 'tag1', 'tag2' ],
+      comment : 'comment'
+    };
+
+    // Note: doesn't test the ipc component, not obvious how to send a message
+    // from here to ipcMain. Maybe mock ipcMain?
+    prompts.savePing(null, ping);
+
+    global.pingFile.push.calledOnce.should.be.true();
+    global.pingFile.push.calledWith(ping).should.be.true();
+  });
+
   describe('should trigger a prompt at the right time', function() {
     // We don't test this end-to-end. Spectron just isn't well
     // suited to it. Instead we have unit tests to check the right
@@ -25,10 +41,7 @@ describe('Prompts', function() {
     /**
      * Clean up the spectron instance
      */
-    afterEach(function() {
-      sandbox.restore();
-    });
-
+    afterEach(function() { sandbox.restore(); });
 
     /**
      * Control when pings occur
@@ -40,7 +53,8 @@ describe('Prompts', function() {
       global.pings = {};
       global.pings.next = sinon.stub().callsFake(function(time) {
         if (time < start) {
-          throw("ping.next called with a time before start (" + start + "): " + time);
+          throw("ping.next called with a time before start (" + start +
+                "): " + time);
         } else if (time < start + 1000) {
           return start + 1000;
         } else if (time < start + 3000) {

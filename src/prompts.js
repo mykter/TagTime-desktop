@@ -1,7 +1,7 @@
 'use strict';
 
 const winston = require('winston');
-const {BrowserWindow} = require('electron');
+const {ipcMain, BrowserWindow} = require('electron');
 const windowStateKeeper = require('electron-window-state');
 
 const helper = require('./helper');
@@ -110,3 +110,15 @@ exports.editorIfMissed = function() {
     }
   }
 };
+
+/* Handle events sent from the prompt window
+ * Shouldn't be called directly - only exported so it can be tested :/ */
+exports.savePing = function(evt, ping) {
+  winston.debug("Saving ping @ " + ping.time + ": " + ping.tags + " [" +
+                ping.comment + "]");
+  global.pingFile.push(ping);
+  if (promptWindow) {
+    promptWindow.close();
+  }
+};
+ipcMain.on('save-ping', exports.savePing);

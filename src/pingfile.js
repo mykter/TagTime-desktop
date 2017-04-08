@@ -4,7 +4,6 @@ const fs = require('fs');
 const moment = require('moment');
 const winston = require('winston');
 
-const config = require('./config');
 const pings = require('./pings');
 
 /**
@@ -21,16 +20,16 @@ module.exports = class PingFile {
    * or push is called.
    * On first run of the application, this will create the file if it doesn't
    * exist.
-   * @param {path} path The file to use
+   * @param {string} path The file to use
    * @param {bool=} keep_invalid Whether to ignore invalid lines or return them
    *                             as nulls. Defaults to false (discard).
    */
-  constructor(path, keep_invalid = false) {
+  constructor(path, keep_invalid = false, first_run = false) {
     this.path = path;
     this.keep_invalid = keep_invalid;
 
     // On first run, create the ping file if it doesn't exist
-    if (config.firstRun()) {
+    if (first_run) {
       if (!fs.existsSync(this.path)) {
         try {
           var fd = fs.openSync(this.path, 'a');
@@ -50,15 +49,13 @@ module.exports = class PingFile {
    * @returns {bool} Whether this instance replaces invalid entries with nulls,
    * or ignores them
    */
-  get keep_invalid() {
-    return this._keep_invalid;
-  }
+  get keep_invalid() { return this._keep_invalid; }
   /**
    * @param {bool} value Whether this instance replaces invalid entries with
    * nulls, or ignores them
    */
   set keep_invalid(value) {
-    if(typeof(value) === "boolean") {
+    if (typeof(value) === "boolean") {
       this._keep_invalid = value;
     } else {
       throw("PingFile.keep_invalid must be a boolean");
@@ -76,7 +73,7 @@ module.exports = class PingFile {
   static encode(ping, annotate = true) {
     if (isNaN(ping.time) || ping.time < pings.epoch) {
       throw("Invalid ping time in ping to be encoded: " + ping.time +
-                  " must be integer after the epoch");
+            " must be integer after the epoch");
     }
 
     var time = Math.round(ping.time / 1000);
@@ -93,7 +90,7 @@ module.exports = class PingFile {
     if (annotate) {
       // ISO 8601, with local timezone
       // TODO support other formats? What does original tagtime do?
-      comment = moment(ping.time).format() + " ";
+      comment = moment(ping.time, 'x').format() + " ";
     }
     if (ping.comment) {
       comment += ping.comment;
@@ -122,7 +119,7 @@ module.exports = class PingFile {
 
     // Time must be an integer after the epoch
     var time = parseInt(m[1]);
-    if (isNaN(time) || (time*1000) < pings.epoch) {
+    if (isNaN(time) || (time * 1000) < pings.epoch) {
       winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
       return null;
     }
@@ -161,10 +158,14 @@ module.exports = class PingFile {
         // File couldn't be opened
         winston.error("Couldn't open ping file '" + this.path +
                       "', got error " + err);
+        var msg = "Can't open the ping file '" + this.path +
+                  "'. Please check the path in settings."
         const {dialog} = require('electron');
-        dialog.showErrorBox("TagTime - can't open ping file",
-                            "Can't open the ping file '" + this.path +
-                                "'. Please check the path in settings.");
+        if (dialog) {
+          dialog.showErrorBox("TagTime - can't open ping file", msg);
+        } else {
+          winston.error(msg);
+        }
         return [];
       } else {
         throw err;
