@@ -78,13 +78,10 @@ describe('Application', function() {
 
       return new Promise(function(fulfill, reject) {
         var app1startup = function(buffer) {
-          console.log(`app1 output: ${buffer}`)
           if (buffer.toString().includes("ready")) {
-            console.log("app1 started up")
             app2 = spawnApp();
             app2pid = app2.pid;
             app2.on('exit', function(_code) {
-              console.log("app2 exited as expected");
               fulfill(true); });
 
             // don't care which stream the notification will come on
@@ -95,7 +92,6 @@ describe('Application', function() {
 
         var app2startup = function(buffer) {
           if (buffer.toString().includes("starting up")) {
-            console.log("app2 started up! rejecting");
             reject("Second instance is starting up");
           }
         };
@@ -111,11 +107,9 @@ describe('Application', function() {
       // app[12].kill doesn't work - it kills the node process, but its
       // descendants live on.
       if (app1pid) {
-        console.log("aftereach treekill app1")
         tree_kill(app1pid);
       }
       if (app2pid) {
-        console.log("aftereach treekill app2")
         tree_kill(app2pid);
       }
 
@@ -134,10 +128,8 @@ describe('Application', function() {
 
         // Once app1pid is gone, wait for app2pid
         if (app1pid) {
-          console.log("aftereach waiting for app1 to die")
           setTimeout(callWhenDead(app1pid, waitapp2), 100);
         } else {
-          console.log("aftereach waiting for app2 to die")
           waitapp2();
         }
       });
