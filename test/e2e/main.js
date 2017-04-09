@@ -2,6 +2,7 @@ require('should');
 const child_process = require('child_process');
 const psTree = require('ps-tree');
 const isrunning = require('is-running');
+const tmp = require('tmp');
 
 const {appPath, electronPath} = require('./helper');
 
@@ -57,9 +58,10 @@ describe('Application', function() {
    * @returns {app} a new instance of the app
    */
   var spawnApp = function() {
-    return child_process.spawn(electronPath, [ appPath, '--verbose' ]);
+    return child_process.spawn(electronPath, [ appPath, '--verbose', "--pingfile", tmpFile.name]);
   };
 
+  var tmpFile = tmp.fileSync();
   var app1, app2; // child_process
   var app1pid, app2pid;
 
