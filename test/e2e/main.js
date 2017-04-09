@@ -76,7 +76,9 @@ describe('Application', function() {
 
       return new Promise(function(fulfill, reject) {
         var app1startup = function(buffer) {
+          console.log(`app1 output: ${buffer}`)
           if (buffer.toString().includes("ready")) {
+            console.log("app1 started up")
             app2 = spawnApp();
             app2pid = app2.pid;
             app2.on('exit', function(_code) {
