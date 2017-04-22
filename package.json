@@ -31,7 +31,7 @@
   "devDependencies": {
     "coveralls": "^2.13.0",
     "electron": "^1.6.5",
-    "electron-builder": "^16.6.1",
+    "electron-builder": "^17.0.0",
     "electron-mocha": "^3.3.0",
     "eslint": "^3.19.0",
     "is-electron-renderer": "^2.0.1",
