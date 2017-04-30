@@ -58,7 +58,7 @@
     "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./test/",
     "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./test/main",
     "precover": "run-s -n \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
-    "cover": "istanbul report --root ./coverage html lcov",
+    "cover": "istanbul report html lcov",
     "coveralls": "npm run cover && coveralls < ./coverage/lcov.info",
     "pack": "build --dir",
     "dist": "build",
