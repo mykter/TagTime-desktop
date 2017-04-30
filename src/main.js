@@ -6,7 +6,7 @@ const winston = require('winston');
 const config = require('./config');
 const prompts = require('./prompts');
 const Pings = require('./pings');
-const pingfile = require('./pingfile');
+const PingFile = require('./pingfile');
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -28,8 +28,7 @@ var singleInstance = function(cmdline) {
       app.quit();
     } else {
       notify(app.getName() + " is already running", {
-        body :
-            "You can't run multiple copies of TagTime, please quit first if you want to restart."
+        body : "You can't run multiple copies of TagTime, please quit first if you want to restart."
       });
     }
   });
@@ -40,8 +39,7 @@ var singleInstance = function(cmdline) {
     app.quit();
     return false;
   } else if (secondInstance) {
-    winston.warn("An instance of " + app.getName() +
-                 " is already running, quitting...");
+    winston.warn("An instance of " + app.getName() + " is already running, quitting...");
     app.quit();
     return false;
   }
@@ -82,16 +80,23 @@ var mainTest = function(option) {
 var main = function() {
   // Could split --test out into its own .command('test')
   var program = require('commander');
+
+  // commander assumes that the first two values in argv are 'node' and 'blah.js' and then followed
+  // by the args. This is not the case when running from a packaged Electron app. Here you have
+  // first value 'appname' and then args. https://github.com/tj/commander.js/issues/512
+  var argvWorkaround;
+  if (process.argv[0].includes('electron')) {
+    argvWorkaround = process.argv;
+  } else {
+    argvWorkaround = [ process.argv[0], '', ...process.argv.slice(1) ];
+  }
   program.version(process.env.npm_package_version)
       .option('--test <option>', "Development test mode")
-      .option('--pingfile <path>',
-              "Override the pingfile path specified in the user config")
-      .option('-v --verbose', "Debug logging")
-      .option(
-          '--quit',
-          "Tell another running instance to quit (useful for killing zombie " +
-              "--test instances that don't have a tray icon)")
-      .parse(process.argv);
+      .option('--pingfile <path>', "Override the pingfile path specified in the user config")
+      .option('-v, --verbose', "Debug logging")
+      .option('--quit', "Tell another running instance to quit (useful for killing zombie " +
+                            "--test instances that don't have a tray icon)")
+      .parse(argvWorkaround);
 
   if (program.verbose) {
     winston.level = 'debug';
@@ -113,7 +118,7 @@ var main = function() {
   } else {
     pingFilePath = config.user.get('pingFilePath');
   }
-  global.pingFile = new pingfile(pingFilePath, false, config.firstRun());
+  global.pingFile = new PingFile(pingFilePath, false, config.firstRun());
 
   global.pings = new Pings(config.period(), config.user.get('seed'));
 
