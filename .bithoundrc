@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "mute": [
+      "jquery",
+      "bootstrap-tagsinput"
+    ]
+  }
+}
