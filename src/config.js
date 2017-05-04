@@ -20,17 +20,17 @@ exports.defaultUserConf = {
    * The seed for the ping sequence.
    * Random initial value based on date/time of first run.
    */
-  seed : require('random-js')().integer(0, Math.pow(2,32) - 1),
+  seed : require('random-js')().integer(0, Math.pow(2, 32) - 1),
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
-  firstRun: true,
-  alwaysOnTop: true,
+  firstRun : true,
+  alwaysOnTop : true,
 };
 
 /** The per-user config object
  * We are not storing it under the configstore path, to make it
  * easier for users to find the config file.
  */
-exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigPath: true});
+exports.user = new Configstore(pkg.name, exports.defaultUserConf, {globalConfigPath : true});
 
 var _firstRun;
 /**
@@ -51,6 +51,4 @@ exports.firstRun = function() {
  * Use this helper to get it in a useful form.
  * @returns {time} period in milliseconds
  */
-exports.period = function() {
-  return exports.user.get('period') * 60 * 1000;
-};
+exports.period = function() { return exports.user.get('period') * 60 * 1000; };

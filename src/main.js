@@ -2,6 +2,7 @@
 
 const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
+const path = require('path');
 
 const config = require('./config');
 const prompts = require('./prompts');
@@ -51,7 +52,7 @@ var singleInstance = function(cmdline) {
  */
 function createTray() {
   winston.debug("Creating tray");
-  tray = new Tray('resources/tagtime.png');
+  tray = new Tray(path.resolve(__dirname, '..', 'resources', 'tagtime.png'));
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
     {label : 'Preferences', click : function() { return; }},
