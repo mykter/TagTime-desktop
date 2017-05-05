@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "coveralls": "^2.13.1",
-    "extract-zip": "=1.6.0",
     "electron": "^1.6.6",
     "electron-builder": "^17.1.2",
     "electron-mocha": "^3.3.0",
