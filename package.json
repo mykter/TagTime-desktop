@@ -11,9 +11,12 @@
     "type": "git",
     "url": "https://github.com/mykter/TagTime-desktop.git"
   },
-  "engines" : { "node" : ">=7.6.0" },
+  "engines": {
+    "node": ">=7.6.0"
+  },
   "main": "src/main.js",
   "dependencies": {
+    "auto-launch": "^5.0.1",
     "bootstrap": "^3.3.5",
     "bootstrap-tagsinput": "^0.7.1",
     "commander": "^2.9.0",

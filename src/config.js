@@ -24,6 +24,7 @@ exports.defaultUserConf = {
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
   firstRun : true,
   alwaysOnTop : true,
+  runOnStartup : true,
 };
 
 /** The per-user config object

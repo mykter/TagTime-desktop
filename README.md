@@ -17,7 +17,7 @@ Inspired by [alice0meta](https://github.com/alice0meta/TagTime).
 # Installation and Quick Start
 Download the latest installer from [Releases](https://github.com/mykter/TagTime-desktop/releases) and run it.
 
-The application auto-updates on Windows.
+The application will automatically launch in the background on system startup.
 
 # Contributing
 Please see the CONTRIBUTING file.

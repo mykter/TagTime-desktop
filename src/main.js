@@ -3,6 +3,7 @@
 const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
 const path = require('path');
+const AutoLaunch = require('auto-launch');
 
 const config = require('./config');
 const prompts = require('./prompts');
@@ -122,6 +123,14 @@ var main = function() {
   global.pingFile = new PingFile(pingFilePath, false, config.firstRun());
 
   global.pings = new Pings(config.period(), config.user.get('seed'));
+
+  if (config.firstRun()) {
+    var autoLauncher = new AutoLaunch({name : app.getName()});
+    if (config.user.get('runOnStartup')) {
+      autoLauncher.enable().catch(
+          (reason) => { winston.warning("Couldn't enable launch on system startup: " + reason); })
+    }
+  }
 
   if (program.test) {
     mainTest(program.test);
