@@ -71,7 +71,7 @@ var mainTest = function(option) {
     app.on('ready', () => {prompts.openPrompt(Date.now())});
     break;
   default:
-    throw("Didn't recognise test option" + option);
+    throw("Didn't recognise test option " + option);
   }
 };
 

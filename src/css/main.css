@@ -17,6 +17,11 @@ form {
   width: 100%;
 }
 
+.label {
+  font-weight: unset;
+  font-size: unset;
+}
+
 #time {
   font-weight: bold;
 }
