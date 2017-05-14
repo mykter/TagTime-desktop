@@ -4,14 +4,11 @@ const fs = require('fs');
 const moment = require('moment');
 const winston = require('winston');
 
-const pings = require('./pings');
+const PingTimes = require('./pingtimes');
+const Ping = require('./ping');
 
 /**
  * Parse a tagtime log into pings and append pings to it
- * Pings have:
- *  .time {time} javascript time - milliseconds since unix epoch
- *  .tags {Set of tags}
- *  .comment {string} - the contents in [] at the end of an entry
  * PingFile doesn't hold the file opened.
  */
 module.exports = class PingFile {
@@ -71,7 +68,7 @@ module.exports = class PingFile {
    * format
    */
   static encode(ping, annotate = true) {
-    if (isNaN(ping.time) || ping.time < pings.epoch) {
+    if (isNaN(ping.time) || ping.time < PingTimes.epoch) {
       throw("Invalid ping time in ping to be encoded: " + ping.time +
             " must be integer after the epoch");
     }
@@ -119,7 +116,7 @@ module.exports = class PingFile {
 
     // Time must be an integer after the epoch
     var time = parseInt(m[1]);
-    if (isNaN(time) || (time * 1000) < pings.epoch) {
+    if (isNaN(time) || (time * 1000) < PingTimes.epoch) {
       winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
       return null;
     }
@@ -137,7 +134,7 @@ module.exports = class PingFile {
       comment = m[3].slice(1, -1); // ditch the []
     }
 
-    return {time : time, tags : tags, comment : comment};
+    return new Ping(time, tags, comment);
   }
 
   /**
@@ -156,10 +153,8 @@ module.exports = class PingFile {
     } catch (err) {
       if (err.code === 'ENOENT') {
         // File couldn't be opened
-        winston.error("Couldn't open ping file '" + this.path +
-                      "', got error " + err);
-        var msg = "Can't open the ping file '" + this.path +
-                  "'. Please check the path in settings."
+        winston.error("Couldn't open ping file '" + this.path + "', got error " + err);
+        var msg = "Can't open the ping file '" + this.path + "'. Please check the path in settings."
         const {dialog} = require('electron');
         if (dialog) {
           dialog.showErrorBox("TagTime - can't open ping file", msg);
@@ -195,7 +190,6 @@ module.exports = class PingFile {
       fs.closeSync(fd);
     }
 
-    fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate) + '\n',
-                      'utf8');
+    fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate) + '\n', 'utf8');
   }
 };

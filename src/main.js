@@ -3,12 +3,12 @@
 const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
 const path = require('path');
-const AutoLaunch = require('auto-launch');
 
 const config = require('./config');
 const prompts = require('./prompts');
-const Pings = require('./pings');
+const PingTimes = require('./pingtimes');
 const PingFile = require('./pingfile');
+const edit = require('./edit');
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -56,8 +56,14 @@ function createTray() {
   tray = new Tray(path.resolve(__dirname, '..', 'resources', 'tagtime.png'));
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
-    {label : 'Preferences', click : function() { return; }},
-    {label : 'Edit Pings', click : function() { return; }},
+    {
+      label : 'Preferences',
+      click : function() {
+        winston.debug("prefs not implemented");
+        return;
+      }
+    },
+    {label : 'Edit Pings', click : edit.openEditor},
     {label : 'Quit', click : app.quit},
   ]));
 }
@@ -71,15 +77,17 @@ var mainTest = function(option) {
   case "prompt":
     app.on('ready', () => {prompts.openPrompt(Date.now())});
     break;
+  case "quit":
+    break;
   default:
     throw("Didn't recognise test option " + option);
   }
 };
 
 /**
- * Application init
+ * Process argv into an object
  */
-var main = function() {
+var parseCommandLine = function() {
   // Could split --test out into its own .command('test')
   var program = require('commander');
 
@@ -95,17 +103,66 @@ var main = function() {
   program.version(process.env.npm_package_version)
       .option('--test <option>', "Development test mode")
       .option('--pingfile <path>', "Override the pingfile path specified in the user config")
+      .option('--logfile <path>', "Send logging output to this file instead of stdout")
       .option('-v, --verbose', "Debug logging")
       .option('--quit', "Tell another running instance to quit (useful for killing zombie " +
                             "--test instances that don't have a tray icon)")
       .parse(argvWorkaround);
+  return program;
+};
 
-  if (program.verbose) {
+/**
+ * @returns {PingFile} the pingfile at pathArg or from the config if not specified
+ */
+var getPingFile = function(pathArg) {
+  var pingFilePath;
+  if (pathArg) {
+    pingFilePath = pathArg;
+  } else {
+    pingFilePath = config.user.get('pingFilePath');
+  }
+  return new PingFile(pingFilePath, false, config.firstRun());
+};
+
+/**
+ * Initial setup
+ */
+var firstRunTasks = function() {
+  winston.info("First run, setting up app to launch on startup");
+  config.setupAutoLaunch();
+
+  // Don't assume that pings prior to first install use the same seed, or came from the same
+  // algorithm.
+  winston.info(
+      "First run: any pings in the configured pingfile before now will be passed over when " +
+      "checking for missed pings etc. The ping period is assumed to be the same (" +
+      config.user.get('period') + " minutes).");
+  config.user.pingFileStart = Date.now();
+};
+
+/**
+ * Configure winston and expose to renderer windows via global.logger
+ */
+var setupLogging = function(verbose, logfile) {
+  if (verbose) {
     winston.level = 'debug';
   } else {
     winston.level = 'warn';
   }
-  global.logger = winston; // expose the logger to renderer windows
+  if (logfile) {
+    winston.add(winston.transports.File, {filename : logfile});
+    winston.remove(winston.transports.Console);
+  }
+  global.logger = winston;
+};
+
+/**
+ * Application init
+ */
+var main = function() {
+  var program = parseCommandLine();
+
+  setupLogging(program.verbose, program.logfile);
 
   // Prevent second instance from running
   if (!singleInstance(program)) {
@@ -114,23 +171,14 @@ var main = function() {
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
 
-  var pingFilePath;
-  if (program.pingfile) {
-    pingFilePath = program.pingfile;
-  } else {
-    pingFilePath = config.user.get('pingFilePath');
-  }
-  global.pingFile = new PingFile(pingFilePath, false, config.firstRun());
-
-  global.pings = new Pings(config.period(), config.user.get('seed'));
-
   if (config.firstRun()) {
-    var autoLauncher = new AutoLaunch({name : app.getName()});
-    if (config.user.get('runOnStartup')) {
-      autoLauncher.enable().catch(
-          (reason) => { winston.warning("Couldn't enable launch on system startup: " + reason); })
-    }
+    firstRunTasks();
   }
+
+  // Export the ping file and ping stream wrappers
+  global.pingFile = getPingFile(program.pingfile);
+  global.pings =
+      new PingTimes(config.period(), config.user.get('seed'), config.user.get('pingFileStart'));
 
   if (program.test) {
     mainTest(program.test);

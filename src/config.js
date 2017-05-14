@@ -6,6 +6,8 @@
 'use strict';
 const {app} = require('electron');
 const path = require('path');
+const AutoLaunch = require('auto-launch');
+const winston = require('winston');
 
 // User config
 //==================================
@@ -22,6 +24,7 @@ exports.defaultUserConf = {
    */
   seed : require('random-js')().integer(0, Math.pow(2, 32) - 1),
   pingFilePath : path.join(app.getPath('userData'), 'tagtime.log'),
+  pingFileStart : null,
   firstRun : true,
   alwaysOnTop : true,
   runOnStartup : true,
@@ -45,6 +48,14 @@ exports.firstRun = function() {
     }
   }
   return _firstRun;
+};
+
+exports.setupAutoLaunch = function() {
+  var autoLauncher = new AutoLaunch({name : app.getName()});
+  if (exports.user.get('runOnStartup')) {
+    autoLauncher.enable().catch(
+        (reason) => { winston.warning("Couldn't enable launch on system startup: " + reason); })
+  }
 };
 
 /**

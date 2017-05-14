@@ -1,19 +1,19 @@
 'use strict';
-require('should');
+const should = require('should');
 const sinon = require('sinon');
+const tmp = require('tmp');
 
 require('./helper');
 
 const prompts = require('../../src/prompts');
+const Ping = require('../../src/ping');
+const PingFile = require('../../src/pingfile');
+const PingTimes = require('../../src/pingtimes');
 
 describe('Prompts', function() {
   it('should save a ping correctly', function() {
     global.pingFile = {push : sinon.spy()};
-    var ping = {
-      time : 1234567890,
-      tags : [ 'tag1', 'tag2' ],
-      comment : 'comment'
-    };
+    var ping = new Ping(1234567890, [ 'tag1', 'tag2' ], 'comment');
 
     // Note: doesn't test the ipc component, not obvious how to send a message
     // from here to ipcMain. Maybe mock ipcMain?
@@ -21,6 +21,37 @@ describe('Prompts', function() {
 
     global.pingFile.push.calledOnce.should.be.true();
     global.pingFile.push.calledWith(ping).should.be.true();
+  });
+
+  describe('ping catchup', function() {
+    var f;
+    var pf;
+    const time = PingTimes.epoch + 30000000;
+    beforeEach(function() {
+      f = tmp.fileSync();
+      pf = new PingFile(f.name);
+      global.pingFile = pf;
+      global.pings = new PingTimes(45, 0, null);
+    });
+    afterEach(function() { f.removeCallback(); });
+
+    it('should not add pings if there is nothing to catch up on', function() {
+      pf.push(new Ping(time, null, null));
+      should(prompts.catchUp(time)).be.false();
+      pf.pings.length.should.equal(1);
+    });
+
+    it('should not add pings to an empty ping file', function() {
+      should(prompts.catchUp(time)).be.false();
+      pf.pings.length.should.equal(0);
+    });
+
+    it('should add pings if they are missing', function() {
+      pf.push(new Ping(time, null, null));
+      should(prompts.catchUp(global.pings.next(time))).be.true();
+      pf.pings.length.should.equal(2);
+      pf.pings[1].tags.should.deepEqual(new Set([ 'afk', 'RETRO' ]));
+    });
   });
 
   describe('should trigger a prompt at the right time', function() {
@@ -53,8 +84,7 @@ describe('Prompts', function() {
       global.pings = {};
       global.pings.next = sinon.stub().callsFake(function(time) {
         if (time < start) {
-          throw("ping.next called with a time before start (" + start +
-                "): " + time);
+          throw("ping.next called with a time before start (" + start + "): " + time);
         } else if (time < start + 1000) {
           return start + 1000;
         } else if (time < start + 3000) {

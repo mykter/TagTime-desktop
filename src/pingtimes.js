@@ -8,20 +8,26 @@
 
 var Random = require('random-js');
 
-module.exports = class Pings {
+module.exports = class PingTimes {
   /**
    * @return {time} The birth of tagtime
-   * The first ping in all sequences is on the epoch.
+   * The earliest possible ping in any sequence is on the epoch.
    */
-  static get epoch(){ return 1184083200 * 1000; }
+  static get epoch() { return 1184083200 * 1000; }
 
   /**
    * @param {integer} period The mean period in milliseconds
    * @param {integer} seed The seed for the random number generator
+   * @param {time} startOfPings The time after which pings in this sequence begin. A local epoch.
    */
-  constructor(period, seed) {
+  constructor(period, seed, startOfPings) {
     this.period = period;
     this.seed = seed;
+    if (startOfPings) {
+      this.startOfPings = startOfPings;
+    } else {
+      this.startOfPings = PingTimes.epoch;
+    }
   }
 
   /**
@@ -31,11 +37,8 @@ module.exports = class Pings {
   reseed() {
     /* NOTE: because we're using a different PRNG to original tagtime,
      * sequences generated from the same seed won't match up.
-     * This doesn't matter - we never validate a logfile against the
-     * expected ping sequence. Subsequent pings will continue to follow
-     * the same distribution.
-     * The only problem might arise if a user was very frequently swapping
-     * between implementations?
+     * To manage this, we never try and validate pings prior to startOfPings.
+     * Subsequent pings will continue to follow the same distribution.
      *
      * Seed with a 32bit integer
      */
@@ -88,7 +91,7 @@ module.exports = class Pings {
     if (!this.pings || time < this.pings[0]) {
       // we don't have a record of a ping this early
       this.reset();
-      var prev = Pings.epoch;
+      var prev = PingTimes.epoch;
       var nxt = prev;
       while (nxt < time) {
         prev = nxt;
@@ -112,14 +115,19 @@ module.exports = class Pings {
     return this.pings.findIndex(timeOrLater) - 1;
   }
 
-
   /**
    * @param {time} time - point in time after epoch
-   * @return {pingtime} The ping that preceded time
+   * @return {pingtime} The ping that preceded time or null if this ping would be before
+   * startOfPings
    */
   prev(time) {
     var idx = this.prevPingIndex(time);
-    return this.pings[idx];
+    var pingTime = this.pings[idx];
+    if (pingTime < this.startOfPings) {
+      return null;
+    } else {
+      return pingTime;
+    }
   }
 
   /**
@@ -127,6 +135,8 @@ module.exports = class Pings {
    * @returns {pingtime} the ping that follows time
    */
   next(time) {
+    time = Math.max(time, this.startOfPings); // skip to startOfPings
+
     var idx = this.prevPingIndex(time) + 1;
     // if time was a ping, then next(prev(ping)) === ping, which isn't what we
     // want

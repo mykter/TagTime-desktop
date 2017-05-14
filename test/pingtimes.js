@@ -3,13 +3,14 @@ const should = require('should');
 const _ = require('lodash');
 const stats = require("stats-lite");
 
-const Pings = require('../src/pings');
+const PingTimes = require('../src/pingtimes');
 
 describe('Pings', function() {
-  const time = Pings.epoch + 20000000; // close to the epoch speeds things up
+  const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
+  const notBefore = time - 10000000;
   var pings;
 
-  beforeEach(function() { pings = new Pings(45 * 60 * 1000, 1); });
+  beforeEach(function() { pings = new PingTimes(45 * 60 * 1000, 1, notBefore); });
 
   describe('next()', function() {
     it('should return a ping after the requested time',
@@ -25,11 +26,17 @@ describe('Pings', function() {
         should(next % 1000).equal(0);
       }
     });
+
+    it('should only return pings after startOfPings',
+       function() { pings.next(PingTimes.epoch).should.be.greaterThan(notBefore); });
   });
 
   describe('prev()', function() {
     it('should return a ping before the requested time',
        function() { pings.prev(time).should.be.lessThan(time); });
+
+    it('should not return pings before notBefore',
+       function() { should(pings.prev(notBefore)).be.null; });
   });
 
   describe('next() & prev()', function() {
@@ -76,7 +83,7 @@ describe('Pings', function() {
     this.timeout(10000); // When coverage instrumented, this is slooow
 
     // Fix the seed so we don't get spurious failures
-    pings.seed = 1;
+    pings.seed = 0;
     // a smaller period should lead to more collisions, so a better mode
     pings.period = 3 * 1000 * 60;
     pings.reset();
