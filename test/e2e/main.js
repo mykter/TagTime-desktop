@@ -7,8 +7,8 @@ const tmp = require('tmp');
 const {appPath, electronPath} = require('./helper');
 
 describe('Application', function() {
-  // Spectron doesn't work with apps that don't open a window,
-  // so we use child_process instead.
+  // Spectron doesn't work with apps that don't open a window so we use
+  // child_process instead.
   // See https://github.com/electron/spectron/issues/90
 
   // There doesn't seem to be tooling to easily test Tray functionality,
