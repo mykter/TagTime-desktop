@@ -12,6 +12,7 @@ const pingFile = require('../../src/pingfile');
 describe('Prompts', function() {
   winston.level = 'info';
   this.timeout(10000);
+  this.retries(3); // had an occasion where appveyor test transiently failed.
 
   var Application = require('spectron').Application;
   var app;
