@@ -47,7 +47,7 @@
     "should": "^11.2.0",
     "sinon": "^2.2.0",
     "spectron": "^3.7.1",
-    "stats-lite": "^2.0.3",
+    "stats-lite": "^2.1.0",
     "tmp": "0.0.31",
     "xvfb-maybe": "^0.2.1"
   },
