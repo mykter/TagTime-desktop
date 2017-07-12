@@ -40,7 +40,7 @@
     "is-electron-renderer": "^2.0.1",
     "is-running": "^2.1.0",
     "istanbul": "^0.4.5",
-    "jsdoc": "^3.4.3",
+    "jsdoc": "^3.5.2",
     "npm-run-all": "^4.0.2",
     "ps-tree": "^1.1.0",
     "rimraf": "^2.6.1",
