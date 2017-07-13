@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.13.1",
-    "electron": "^1.6.6",
+    "electron": "^1.6.10",
     "electron-builder": "^19.16.0",
     "electron-mocha": "^4.0.0",
     "eslint": "^4.1.0",
