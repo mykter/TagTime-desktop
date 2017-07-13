@@ -107,7 +107,7 @@ module.exports = class PingFile {
    * @returns {ping} A ping or null if the entry couldn't be parsed
    */
   static parse(entry) {
-    var m = entry.match(/^(\d+)\s*(\s[^\[]+)?(\[.*\])?\s*$/);
+    var m = entry.match(/^(\d+)\s*(\s[^[]+)?(\[.*\])?\s*$/);
     if (!m) {
       // TODO what is the comment syntax for ping files?
       winston.warn("Could not parse entry: '" + entry + "'");
