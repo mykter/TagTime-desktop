@@ -83,7 +83,7 @@ describe('PingFile', function() {
       PingFile.encode({time : 1487459622000, tags : new Set([ 1, 2, 'three' ]), comment : null})
           .should.match(/1487459622 1 2 three \[2017-02-18T23:13:42\+\d\d:\d\d\]/);
       PingFile.encode({time : 1487459622000, tags : new Set(), comment : "hi"})
-          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d\ hi]/);
+          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d hi]/);
     });
 
     it('should encode tags', function() {
@@ -156,7 +156,7 @@ describe('PingFile', function() {
     var f;
     var p = {time : 1487459622000, tags : new Set([ "one", "two" ]), comment : "c"};
     var pStr = "1487459622 one two [c]";
-    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d\ c]/;
+    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d c]/;
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name);
