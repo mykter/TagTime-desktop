@@ -15,7 +15,7 @@ let promptWindow;
 /**
  * Open a ping prompt window
  */
-exports.openPrompt = function(time) {
+exports.openPrompt = function(time, prevPing) {
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
@@ -50,7 +50,11 @@ exports.openPrompt = function(time) {
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  promptWindow.loadURL(helper.getFileUrl('prompt.html') + '?time=' + time);
+  var prevPingParams = '';
+  if (prevPing) {
+    prevPingParams = '&prevTime=' + prevPing.time + '&prevTags=' + prevPing.tags;
+  }
+  promptWindow.loadURL(helper.getFileUrl('prompt.html') + '?time=' + time + prevPingParams);
   // don't show until rendering complete
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
@@ -82,7 +86,7 @@ exports.schedulePings = function() {
     if (promptWindow) {
       winston.info("Skipping prompt because current prompt hasn't been answered");
     } else {
-      exports.openPrompt(next);
+      exports.openPrompt(next, global.pingFile.pings.slice(-1));
     }
     exports.schedulePings();
   }, next - now);

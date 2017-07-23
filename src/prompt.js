@@ -2,8 +2,13 @@
 const querystring = require('querystring');
 const moment = require('moment');
 
-const time = querystring.parse(window.location.search.slice(1)).time;
+const qs = querystring.parse(window.location.search.slice(1));
+
+const time = qs.time;
 document.getElementById("time").textContent = moment(time, 'x').format('HH:mm:ss');
+
+const prevTags = qs.prevTags.split(",");
+document.getElementById("prev").textContent = prevTags.join(", ");
 
 /* Typeahead */
 
@@ -48,6 +53,12 @@ document.getElementById('save').addEventListener('click', _ => {
     tags : $('#tags').tagsinput('items'),
     comment : document.getElementById('comment').textContent
   });
+});
+document.getElementById('repeat').addEventListener('click', _ => {
+  $("#tags").tagsinput('removeAll');
+  for(var tag of prevTags) {
+    $("#tags").tagsinput('add', tag);
+  }
 });
 
 /* bootstrap-tagsinput doesn't respect the autofocus attribute */
