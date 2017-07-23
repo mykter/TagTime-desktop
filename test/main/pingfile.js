@@ -191,19 +191,21 @@ describe('PingFile', function() {
     });
   });
 
-  it('get should return the pings pushed', function() {
-    var f = tmp.fileSync();
-    var pf = new PingFile(f.name);
+  it('get should return the pings pushed, with and without caching', function() {
     var p = {time : 1487459622000, tags : new Set([ "one", "two" ]), comment : "c"};
-    pf.push(p, false);
-    pf.push(p, false);
-    pf.pings.should.have.length(2);
-    pf.pings.forEach(function(ping) {
-      should(ping.time).equal(p.time);
-      _.isEqual(ping.tags, p.tags).should.be.true();
-      should(ping.comment).equal(p.comment);
-    });
+    for (var caching of [true, false]) {
+      var f = tmp.fileSync();
+      var pf = new PingFile(f.name, false, false, caching);
+      pf.push(p, false);
+      pf.push(p, false);
+      pf.pings.should.have.length(2);
+      pf.pings.forEach(function(ping) {
+        should(ping.time).equal(p.time);
+        _.isEqual(ping.tags, p.tags).should.be.true();
+        should(ping.comment).equal(p.comment);
+      });
+      f.removeCallback();
+    }
 
-    f.removeCallback();
   });
 });
