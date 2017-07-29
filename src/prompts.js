@@ -50,8 +50,23 @@ exports.openPrompt = function(time) {
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  promptWindow.loadURL(helper.getFileUrl('prompt.html') + '?time=' + time);
+  promptWindow.loadURL(helper.getFileUrl('prompt.html'));
+
+  // Send data.
+  // Everything gets converted to JSON, so Sets and Pings don't survive
+  promptWindow.webContents.on('did-finish-load', () => {
+    promptWindow.webContents.send('time', time);
+    if (global.pingFile.pings.length > 0) {
+      promptWindow.webContents.send('pings', Array.from(global.pingFile.allTags));
+      var prevTags = global.pingFile.pings.slice(-1)[0].tags;
+      if (prevTags) {
+        promptWindow.webContents.send('prevTags', Array.from(prevTags));
+      }
+    }
+  });
+
   // don't show until rendering complete
+  // could do this once received an ack via IPC?
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
 

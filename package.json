@@ -20,7 +20,7 @@
     "bootstrap": "^3.3.5",
     "bootstrap-tagsinput": "^0.7.1",
     "commander": "^2.11.0",
-    "configstore": "^3.0.0",
+    "configstore": "^3.1.1",
     "electron-main-notification": "^1.0.0",
     "electron-window-state": "^4.1.1",
     "jquery": "^2.2.4",
@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "coveralls": "^2.13.1",
-    "electron": "^1.6.10",
+    "electron": "^1.7.5",
     "electron-builder": "^19.17.0",
     "electron-mocha": "^4.0.0",
     "eslint": "^4.1.0",

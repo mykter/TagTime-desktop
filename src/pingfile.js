@@ -15,15 +15,19 @@ module.exports = class PingFile {
   /**
    * Create a PingFile. Note the file isn't opened until pings is read
    * or push is called.
-   * On first run of the application, this will create the file if it doesn't
-   * exist.
    * @param {string} path The file to use
    * @param {bool=} keep_invalid Whether to ignore invalid lines or return them
    *                             as nulls. Defaults to false (discard).
+   * @param {bool=} first_run If true, create the file if it doesn't exist.
+   * @param {bool=} caching Whether to cache pings (i.e. assume the file will only be modified via
+   *                        this instance)
    */
-  constructor(path, keep_invalid = false, first_run = false) {
+  constructor(path, keep_invalid = false, first_run = false, caching = true) {
     this.path = path;
     this.keep_invalid = keep_invalid;
+    this.caching = caching;
+    this._pings = null;
+    this._allTags = null;
 
     // On first run, create the ping file if it doesn't exist
     if (first_run) {
@@ -143,13 +147,17 @@ module.exports = class PingFile {
    * @throws fs exceptions if the file can't be read from
    */
   get pings() {
+    if (this.caching && this._pings) {
+      return this._pings;
+    }
+    var ps;
     try {
-      return fs.readFileSync(this.path, 'utf8')
-          .toString()
-          .trim() // trailing new line would give us a spurious null
-          .split("\n")
-          .map(PingFile.parse)
-          .filter((e, _i, _a) => { return this.keep_invalid || (e !== null); });
+      ps = fs.readFileSync(this.path, 'utf8')
+               .toString()
+               .trim() // trailing new line would give us a spurious null
+               .split("\n")
+               .map(PingFile.parse)
+               .filter((e, _i, _a) => { return this.keep_invalid || (e !== null); });
     } catch (err) {
       if (err.code === 'ENOENT') {
         // File couldn't be opened
@@ -166,10 +174,31 @@ module.exports = class PingFile {
         throw err;
       }
     }
+    if (this.caching) {
+      this._pings = ps;
+    }
+    return ps;
   }
 
   /**
-   * Saves a ping to the log file
+   * @returns {Set of tags} all unique tags in the pingfile
+   */
+  get allTags() {
+    if (this.caching && this._allTags) {
+      return this._allTags;
+    }
+
+    var tags = new Set();
+    this.pings.map((ping) => { ping.tags.forEach((tag) => { tags.add(tag); }); });
+
+    if (this.caching) {
+      this._allTags = tags;
+    }
+    return tags;
+  }
+
+  /**
+   * Saves a ping to the log file (and to the local cache)
    * @param {ping} ping
    * @param {bool=} annotate - see PingFile.encode
    * @throws fs exceptions if the file can't be written to
@@ -191,5 +220,14 @@ module.exports = class PingFile {
     }
 
     fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate) + '\n', 'utf8');
+    if (this.caching) {
+      if (this._pings) {
+        this._pings.push(ping);
+      }
+
+      if (this._allTags) {
+        ping.tags.forEach((t) => { this._allTags.add(t); });
+      }
+    }
   }
-};
+}

@@ -191,19 +191,46 @@ describe('PingFile', function() {
     });
   });
 
-  it('get should return the pings pushed', function() {
-    var f = tmp.fileSync();
-    var pf = new PingFile(f.name);
+  var testPush = function(caching) {
     var p = {time : 1487459622000, tags : new Set([ "one", "two" ]), comment : "c"};
-    pf.push(p, false);
-    pf.push(p, false);
-    pf.pings.should.have.length(2);
-    pf.pings.forEach(function(ping) {
-      should(ping.time).equal(p.time);
-      _.isEqual(ping.tags, p.tags).should.be.true();
-      should(ping.comment).equal(p.comment);
-    });
+    for (var caching of [true, false]) {
+      var f = tmp.fileSync();
+      var pf = new PingFile(f.name, false, false, caching);
+      pf.push(p, false);
+      pf.push(p, false);
+      pf.pings.should.have.length(2);
+      pf.pings.forEach(function(ping) {
+        should(ping.time).equal(p.time);
+        _.isEqual(ping.tags, p.tags).should.be.true();
+        should(ping.comment).equal(p.comment);
+      });
+      f.removeCallback();
+    }
+  };
+  it('get should return the pings pushed, without caching', function() { testPush(false); });
+  it('get should return the pings pushed, with caching', function() { testPush(true); });
+});
 
-    f.removeCallback();
+describe('allTags', function() {
+  var pf;
+  var f;
+  beforeEach(function() { f = tmp.fileSync(); });
+  afterEach(function() { f.removeCallback(); });
+
+  it('should return an empty set if there are no pings', function() {
+    pf = new PingFile(f.name);
+    _.isEqual(pf.allTags, new Set()).should.be.true();
   });
+
+  var testAllTags = function(caching) {
+    var pf = new PingFile(f.name, false, false, caching);
+    pf.push({time : 1487459622000, tags : new Set([ "one" ]), comment : null});
+    pf.push({time : 1487459623000, tags : new Set([ "one", "two" ]), comment : null});
+    pf.push({time : 1487459624000, tags : new Set([ "three" ]), comment : null});
+    return _.isEqual(pf.allTags, new Set([ "one", "two", "three" ])).should.be.true();
+  };
+  it('should return the set of recorded pings with caching',
+     function() { return testAllTags(true); });
+  it('should return the set of recorded pings without caching',
+     function() { return testAllTags(false); });
 });
