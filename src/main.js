@@ -75,8 +75,7 @@ function createTray() {
 var mainTest = function(option) {
   switch (option) {
   case "prompt":
-    app.on('ready',
-           () => {prompts.openPrompt(Date.now(), {tags : [ 'prev','tags' ], time : 123456789})});
+    app.on('ready', () => {prompts.openPrompt(Date.now())});
     break;
   case "quit":
     break;

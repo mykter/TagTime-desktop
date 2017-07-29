@@ -15,7 +15,7 @@ let promptWindow;
 /**
  * Open a ping prompt window
  */
-exports.openPrompt = function(time, prevPing) {
+exports.openPrompt = function(time) {
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
@@ -50,12 +50,23 @@ exports.openPrompt = function(time, prevPing) {
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  var prevPingParams = '';
-  if (prevPing) {
-    prevPingParams = '&prevTime=' + prevPing.time + '&prevTags=' + prevPing.tags;
-  }
-  promptWindow.loadURL(helper.getFileUrl('prompt.html') + '?time=' + time + prevPingParams);
+  promptWindow.loadURL(helper.getFileUrl('prompt.html'));
+
+  // Send data.
+  // Everything gets converted to JSON, so Sets and Pings don't survive
+  promptWindow.webContents.on('did-finish-load', () => {
+    promptWindow.webContents.send('time', time);
+    if (global.pingFile.pings.length > 0) {
+      promptWindow.webContents.send('pings', Array.from(global.pingFile.allTags));
+      var prevTags = global.pingFile.pings.slice(-1)[0].tags;
+      if (prevTags) {
+        promptWindow.webContents.send('prevTags', Array.from(prevTags));
+      }
+    }
+  });
+
   // don't show until rendering complete
+  // could do this once received an ack via IPC?
   promptWindow.once('ready-to-show', () => {
     promptWindow.show();
 
@@ -86,7 +97,7 @@ exports.schedulePings = function() {
     if (promptWindow) {
       winston.info("Skipping prompt because current prompt hasn't been answered");
     } else {
-      exports.openPrompt(next, global.pingFile.pings.slice(-1));
+      exports.openPrompt(next);
     }
     exports.schedulePings();
   }, next - now);

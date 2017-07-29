@@ -20,13 +20,14 @@ module.exports = class PingFile {
    *                             as nulls. Defaults to false (discard).
    * @param {bool=} first_run If true, create the file if it doesn't exist.
    * @param {bool=} caching Whether to cache pings (i.e. assume the file will only be modified via
-   *                        this instances)
+   *                        this instance)
    */
   constructor(path, keep_invalid = false, first_run = false, caching = true) {
     this.path = path;
     this.keep_invalid = keep_invalid;
     this.caching = caching;
     this._pings = null;
+    this._allTags = null;
 
     // On first run, create the ping file if it doesn't exist
     if (first_run) {
@@ -180,6 +181,23 @@ module.exports = class PingFile {
   }
 
   /**
+   * @returns {Set of tags} all unique tags in the pingfile
+   */
+  get allTags() {
+    if (this.caching && this._allTags) {
+      return this._allTags;
+    }
+
+    var tags = new Set();
+    this.pings.map((ping) => { ping.tags.forEach((tag) => { tags.add(tag); }); });
+
+    if (this.caching) {
+      this._allTags = tags;
+    }
+    return tags;
+  }
+
+  /**
    * Saves a ping to the log file (and to the local cache)
    * @param {ping} ping
    * @param {bool=} annotate - see PingFile.encode
@@ -205,9 +223,11 @@ module.exports = class PingFile {
     if (this.caching) {
       if (this._pings) {
         this._pings.push(ping);
-      } else {
-        this._pings = [ ping ];
+      }
+
+      if (this._allTags) {
+        ping.tags.forEach((t) => { this._allTags.add(t); });
       }
     }
   }
-};
+}
