@@ -8,6 +8,7 @@ const winston = require('winston');
 const helper = require('./helper');
 
 const pingFile = require('../../src/pingfile');
+const Ping = require('../../src/ping');
 
 describe('Prompts', function() {
   winston.level = 'warning';
@@ -17,11 +18,13 @@ describe('Prompts', function() {
   var Application = require('spectron').Application;
   var app;
   var tmpPingFileName;
+  var prevPing = new Ping(1234567890000, [ "previous", "tags" ], '');
+  var prevPingEncoded = pingFile.encode(prevPing);
 
   beforeEach(function() {
     tmpPingFileName = tmp.tmpNameSync();
+    fs.writeFileSync(tmpPingFileName, prevPingEncoded);
     var tmpLogFileName = tmp.tmpNameSync();
-    winston.debug("Logging to " + tmpLogFileName);
     // As the pingfile changes for each test, need to recreate the app each test
     app = new Application({
       path : helper.electronPath,
@@ -47,34 +50,59 @@ describe('Prompts', function() {
     return app.stop();
   });
 
+  var waitUntilSaved = async function() {
+    // As the app is gone, verify the pingfile separately.
+    // Note that writeSync doesn't do synchronous file i/o, so there's no
+    // guarantee the pingfile exists yet! See
+    // http://www.daveeddy.com/2013/03/26/synchronous-file-io-in-nodejs/
+
+    // fs.watchFile looks like a solution, but what if the app has finished writing before the
+    // watcher starts? So manually check to see if the file has more data in it than it started with
+    await new Promise(function(resolve, _reject) {
+      var check = function() {
+        if (fs.statSync(tmpPingFileName).size > prevPingEncoded.length + 10) {
+          resolve();
+        } else {
+          setTimeout(check, 200);
+        }
+      };
+      setTimeout(check, 200);
+    });
+  };
+
+  var saveInput = async function(input) {
+    // There are two input elements in the div
+    const inputSelector = '.bootstrap-tagsinput input.tt-input';
+    await app.client.waitUntil(function() { return app.client.hasFocus(inputSelector); });
+    await app.client.element(inputSelector).setValue(input);
+    await app.client.click('#save');
+  };
+
+  var tagsShouldEqual = function(tags) {
+    const pings = new pingFile(tmpPingFileName).pings;
+    pings.length.should.equal(2);
+    _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);
+  };
+
   it('should save a ping with tags separated by spaces and commas, closing the window when done',
      async function() {
-       // There are two input elements in the div
-       const inputSelector = '.bootstrap-tagsinput input.tt-input';
-       await app.client.waitUntil(function() { return app.client.hasFocus(inputSelector); });
-       await app.client.element(inputSelector).setValue('tag1 tag2, tag3');
-       await app.client.click('#save');
-
-       // As the app is gone, verify the pingfile separately.
-       // Note that writeSync doesn't do synchronous file i/o, so there's no
-       // guarantee the pingfile exists yet! See
-       // http://www.daveeddy.com/2013/03/26/synchronous-file-io-in-nodejs/
-
-       // So it's race central. fs.watchFile looks like a solution, but what if the app has finished
-       // writing before the watcher starts? So manually check to see if the file has any data in
-       // it.
-       await new Promise(function(resolve, _reject) {
-         var check = function() {
-           if (fs.statSync(tmpPingFileName).size > 0) {
-             resolve();
-           } else {
-             setTimeout(check, 200);
-           }
-         };
-         setTimeout(check, 200);
-       });
-       const pings = new pingFile(tmpPingFileName).pings;
-       pings.length.should.equal(1);
-       _.isEqual(pings[0].tags, new Set([ 'tag1', 'tag2', 'tag3' ])).should.equal(true);
+       await saveInput('tag1 tag2, tag3');
+       await waitUntilSaved();
+       tagsShouldEqual([ 'tag1', 'tag2', 'tag3' ]);
      });
+
+  it('should repeat pings when a " is entered', async function() {
+    await saveInput('"');
+    await waitUntilSaved();
+    tagsShouldEqual(prevPing.tags);
+  });
+
+  it('should repeat pings when the repeat button is pressed', async function() {
+    const inputSelector = '.bootstrap-tagsinput input.tt-input';
+    await app.client.waitUntil(function() { return app.client.hasFocus(inputSelector); });
+    await app.client.click('#repeat');
+
+    await waitUntilSaved();
+    tagsShouldEqual(prevPing.tags);
+  });
 });

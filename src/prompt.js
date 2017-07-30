@@ -30,10 +30,9 @@ var allTags = new Bloodhound({
 // document.getElementById doesn't work here, but tagsinput allows us to use
 // #tags with jQuery to get the new input element
 window.$("#tags").tagsinput({
-  confirmKeys : [ 13, 32, 44 ], // space, comma, and enter trigger tag entry
+  confirmKeys : [ 13, 32, 188 ], // space, comma, and enter trigger tag entry
   trimValue : true,
-  cancelConfirmKeysOnEmpty : true, // this should allow the form to be submitted on Enter if there
-                                   // isn't a pending tag, but it doesn't seem to work - issue #29
+  cancelConfirmKeysOnEmpty : true,
   typeaheadjs :
       {name : 'allTags', displayKey : 'tag', valueKey : 'tag', source : allTags.ttAdapter()}
 });
@@ -51,19 +50,36 @@ tagsElt[0].onblur = _ => {
 /* bootstrap-tagsinput doesn't respect the autofocus attribute */
 window.$("#tags").tagsinput('focus');
 
-/* Button events */
+/**
+ * Replace the contents of the input field with the previous tags
+ */
+var repeat = function() {
+  window.$("#tags").tagsinput('removeAll');
+  for (var tag of prevTags) {
+    window.$("#tags").tagsinput('add', tag);
+  }
+};
 
-document.getElementById('save').addEventListener('click', _ => {
+/* A single " is a repeat */
+tagsElt[0].oninput = _ => {
+  if (tagsElt.val() === '"') {
+    repeat();
+  }
+};
+
+// Send the ping to the main process. It will kill us when its finished.
+// TODO  issue #29: the save button is outside the form, so default submit action doesn't save
+var save = function() {
   ipcRenderer.send('save-ping', {
     time : time,
     tags : window.$('#tags').tagsinput('items'),
     comment : document.getElementById('comment').textContent
   });
-});
+};
 
+/* Button events */
+document.getElementById('save').addEventListener('click', _ => { save(); });
 document.getElementById('repeat').addEventListener('click', _ => {
-  window.$("#tags").tagsinput('removeAll');
-  for (var tag of prevTags) {
-    window.$("#tags").tagsinput('add', tag);
-  }
+  repeat();
+  save();
 });
