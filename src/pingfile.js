@@ -77,8 +77,6 @@ module.exports = class PingFile {
             " must be integer after the epoch");
     }
 
-    var time = Math.round(ping.time / 1000);
-
     var tags = "";
     if (ping.tags) { // cope with no tags
       if (typeof ping.tags === "string") {
@@ -91,7 +89,8 @@ module.exports = class PingFile {
     if (annotate) {
       // ISO 8601, with local timezone
       // TODO support other formats? What does original tagtime do?
-      comment = moment(ping.time, 'x').format() + " ";
+      var time = moment(ping.time, 'x');
+      comment = time.format() + " " + time.format('ddd') + " ";
     }
     if (ping.comment) {
       comment += ping.comment;
@@ -102,7 +101,8 @@ module.exports = class PingFile {
     }
 
     // trims to deal with empty tags or comment
-    return ((time + " " + tags).trim() + " " + comment).trim();
+    var unixtime = Math.round(ping.time / 1000);
+    return ((unixtime + " " + tags).trim() + " " + comment).trim();
   }
 
   /**

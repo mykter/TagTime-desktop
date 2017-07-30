@@ -79,11 +79,11 @@ describe('PingFile', function() {
     it('should annotate pings', function() {
       // we don't know what timezone this is running in, so ignore that
       PingFile.encode({time : 1487459622000, tags : new Set(), comment : null})
-          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d\]/);
+          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d \w{3}\]/);
       PingFile.encode({time : 1487459622000, tags : new Set([ 1, 2, 'three' ]), comment : null})
-          .should.match(/1487459622 1 2 three \[2017-02-18T23:13:42\+\d\d:\d\d\]/);
+          .should.match(/1487459622 1 2 three \[2017-02-18T23:13:42\+\d\d:\d\d \w{3}\]/);
       PingFile.encode({time : 1487459622000, tags : new Set(), comment : "hi"})
-          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d hi]/);
+          .should.match(/1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d \w{3} hi]/);
     });
 
     it('should encode tags', function() {
@@ -156,7 +156,7 @@ describe('PingFile', function() {
     var f;
     var p = {time : 1487459622000, tags : new Set([ "one", "two" ]), comment : "c"};
     var pStr = "1487459622 one two [c]";
-    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d c]/;
+    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d \w{3} c]/;
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name);
@@ -193,19 +193,17 @@ describe('PingFile', function() {
 
   var testPush = function(caching) {
     var p = {time : 1487459622000, tags : new Set([ "one", "two" ]), comment : "c"};
-    for (var caching of [true, false]) {
-      var f = tmp.fileSync();
-      var pf = new PingFile(f.name, false, false, caching);
-      pf.push(p, false);
-      pf.push(p, false);
-      pf.pings.should.have.length(2);
-      pf.pings.forEach(function(ping) {
-        should(ping.time).equal(p.time);
-        _.isEqual(ping.tags, p.tags).should.be.true();
-        should(ping.comment).equal(p.comment);
-      });
-      f.removeCallback();
-    }
+    var f = tmp.fileSync();
+    var pf = new PingFile(f.name, false, false, caching);
+    pf.push(p, false);
+    pf.push(p, false);
+    pf.pings.should.have.length(2);
+    pf.pings.forEach(function(ping) {
+      should(ping.time).equal(p.time);
+      _.isEqual(ping.tags, p.tags).should.be.true();
+      should(ping.comment).equal(p.comment);
+    });
+    f.removeCallback();
   };
   it('get should return the pings pushed, without caching', function() { testPush(false); });
   it('get should return the pings pushed, with caching', function() { testPush(true); });

@@ -32,7 +32,8 @@ var allTags = new Bloodhound({
 window.$("#tags").tagsinput({
   confirmKeys : [ 13, 32, 44 ], // space, comma, and enter trigger tag entry
   trimValue : true,
-  cancelConfirmKeysOnEmpty : true,
+  cancelConfirmKeysOnEmpty : true, // this should allow the form to be submitted on Enter if there
+                                   // isn't a pending tag, but it doesn't seem to work - issue #29
   typeaheadjs :
       {name : 'allTags', displayKey : 'tag', valueKey : 'tag', source : allTags.ttAdapter()}
 });
