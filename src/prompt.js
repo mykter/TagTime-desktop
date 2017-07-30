@@ -75,7 +75,7 @@ var save = function() {
   ipcRenderer.send('save-ping', {
     time : time,
     tags : window.$('#tags').tagsinput('items'),
-    comment : document.getElementById('comment').textContent
+    comment : document.getElementById('comment').value
   });
 };
 

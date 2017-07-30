@@ -25,6 +25,7 @@ describe('Prompts', function() {
     tmpPingFileName = tmp.tmpNameSync();
     fs.writeFileSync(tmpPingFileName, prevPingEncoded);
     var tmpLogFileName = tmp.tmpNameSync();
+    winston.debug("Logging to " + tmpLogFileName);
     // As the pingfile changes for each test, need to recreate the app each test
     app = new Application({
       path : helper.electronPath,
@@ -70,39 +71,56 @@ describe('Prompts', function() {
     });
   };
 
-  var saveInput = async function(input) {
+  var saveInput = async function(tags, comment = null, button = '#save') {
     // There are two input elements in the div
-    const inputSelector = '.bootstrap-tagsinput input.tt-input';
-    await app.client.waitUntil(function() { return app.client.hasFocus(inputSelector); });
-    await app.client.element(inputSelector).setValue(input);
-    await app.client.click('#save');
+    const tagsSelector = '.bootstrap-tagsinput input.tt-input';
+    await app.client.waitUntil(function() { return app.client.hasFocus(tagsSelector); });
+    await app.client.element(tagsSelector).setValue(tags);
+    if (comment) {
+      await app.client.element('#comment').setValue(comment);
+    }
+    if (button) {
+      await app.client.click(button);
+    }
   };
 
-  var tagsShouldEqual = function(tags) {
+  var lastPingShouldEqual = function(tags, comment = null) {
     const pings = new pingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);
+    if (comment) {
+      pings[1].comment.should.endWith(comment);
+    }
   };
 
-  it('should save a ping with tags separated by spaces and commas, closing the window when done',
-     async function() {
-       await saveInput('tag1 tag2, tag3');
-       await waitUntilSaved();
-       tagsShouldEqual([ 'tag1', 'tag2', 'tag3' ]);
-     });
+  it('should save a ping with tags separated by spaces and commas', async function() {
+    await saveInput('tag1 tag2, tag3');
+    await waitUntilSaved();
+    lastPingShouldEqual([ 'tag1', 'tag2', 'tag3' ]);
+  });
 
   it('should repeat pings when a " is entered', async function() {
     await saveInput('"');
     await waitUntilSaved();
-    tagsShouldEqual(prevPing.tags);
+    lastPingShouldEqual(prevPing.tags);
   });
 
   it('should repeat pings when the repeat button is pressed', async function() {
-    const inputSelector = '.bootstrap-tagsinput input.tt-input';
-    await app.client.waitUntil(function() { return app.client.hasFocus(inputSelector); });
-    await app.client.click('#repeat');
-
+    await saveInput('', null, '#repeat');
     await waitUntilSaved();
-    tagsShouldEqual(prevPing.tags);
+    lastPingShouldEqual(prevPing.tags);
+  });
+
+  it('should save a comment', async function() {
+    await saveInput('tag', 'Test comment', '#save');
+    await waitUntilSaved();
+    lastPingShouldEqual([ 'tag' ], 'Test comment');
+  });
+
+  it('should save on enter key', async function() {
+    await saveInput('tag', null, null);
+    app.client.addValue('#comment', "Enter");
+    await waitUntilSaved();
+    lastPingShouldEqual([ 'tag' ]);
   });
 });
