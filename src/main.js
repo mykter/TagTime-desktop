@@ -4,7 +4,7 @@ const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
 const path = require('path');
 
-const config = require('./config');
+const Config = require('./config');
 const prompts = require('./prompts');
 const PingTimes = require('./pingtimes');
 const PingFile = require('./pingfile');
@@ -104,6 +104,7 @@ var parseCommandLine = function() {
       .option('--test <option>', "Development test mode")
       .option('--pingfile <path>', "Override the pingfile path specified in the user config")
       .option('--logfile <path>', "Send logging output to this file instead of stdout")
+      .option('--configdir <path>', "Path which contains config file (test use only)")
       .option('-v, --verbose', "Debug logging")
       .option('--quit', "Tell another running instance to quit (useful for killing zombie " +
                             "--test instances that don't have a tray icon)")
@@ -119,9 +120,9 @@ var getPingFile = function(pathArg) {
   if (pathArg) {
     pingFilePath = pathArg;
   } else {
-    pingFilePath = config.user.get('pingFilePath');
+    pingFilePath = global.config.user.get('pingFilePath');
   }
-  return new PingFile(pingFilePath, false, config.firstRun());
+  return new PingFile(pingFilePath, false, global.config.firstRun);
 };
 
 /**
@@ -129,15 +130,15 @@ var getPingFile = function(pathArg) {
  */
 var firstRunTasks = function() {
   winston.info("First run, setting up app to launch on startup");
-  config.setupAutoLaunch();
+  global.config.setupAutoLaunch();
 
   // Don't assume that pings prior to first install use the same seed, or came from the same
   // algorithm.
   winston.info(
       "First run: any pings in the configured pingfile before now will be passed over when " +
       "checking for missed pings etc. The ping period is assumed to be the same (" +
-      config.user.get('period') + " minutes).");
-  config.user.pingFileStart = Date.now();
+      global.config.user.get('period') + " minutes).");
+  global.config.user.pingFileStart = Date.now();
 };
 
 /**
@@ -170,15 +171,16 @@ var main = function() {
   }
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
+  global.config = new Config(program.configdir);
 
-  if (config.firstRun()) {
+  if (global.config.firstRun) {
     firstRunTasks();
   }
 
   // Export the ping file and ping stream wrappers
   global.pingFile = getPingFile(program.pingfile);
-  global.pings =
-      new PingTimes(config.period(), config.user.get('seed'), config.user.get('pingFileStart'));
+  global.pings = new PingTimes(global.config.period, global.config.user.get('seed'),
+                               global.config.user.get('pingFileStart'));
 
   if (program.test) {
     mainTest(program.test);

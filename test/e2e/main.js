@@ -4,7 +4,7 @@ const psTree = require('ps-tree');
 const isrunning = require('is-running');
 const tmp = require('tmp');
 
-const {appPath, electronPath} = require('./helper');
+const helper = require('./helper');
 
 describe('Application', function() {
   // Spectron doesn't work with apps that don't open a window so we use
@@ -55,10 +55,13 @@ describe('Application', function() {
   };
 
   /**
-   * @returns {app} a new instance of the app
+   * @returns {app} a new instance of the app with its own fresh config file
    */
   var spawnApp = function() {
-    return child_process.spawn(electronPath, [ appPath, '--verbose', "--pingfile", tmpFile.name]);
+    return child_process.spawn(helper.electronPath, [
+      helper.appPath, '--verbose', "--pingfile", tmpFile.name, '--configdir',
+      helper.createConfig({firstRun : false}) // skip the launch on startup config bit
+    ]);
   };
 
   var tmpFile = tmp.fileSync();
@@ -81,8 +84,7 @@ describe('Application', function() {
           if (buffer.toString().includes("ready")) {
             app2 = spawnApp();
             app2pid = app2.pid;
-            app2.on('exit', function(_code) {
-              fulfill(true); });
+            app2.on('exit', function(_code) { fulfill(true); });
 
             // don't care which stream the notification will come on
             app2.stdout.on('data', app2startup);

@@ -5,7 +5,6 @@ const {ipcMain, BrowserWindow} = require('electron');
 const windowStateKeeper = require('electron-window-state');
 
 const helper = require('./helper');
-const config = require('./config');
 const Ping = require('./ping');
 const edit = require('./edit');
 
@@ -39,7 +38,7 @@ exports.openPrompt = function(time) {
     fullscreenable : false,
     // icon : path, // defaults to executable
     title : "TagTime",
-    alwaysOnTop : config.user.get('alwaysOnTop'),
+    alwaysOnTop : global.config.user.get('alwaysOnTop'),
     show : false,            // let it render first
     acceptFirstMouse : true, // ensure you can click direct onto the tag entry
                              // on some platforms?

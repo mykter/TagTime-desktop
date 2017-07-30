@@ -18,21 +18,22 @@ module.exports = class PingFile {
    * @param {string} path The file to use
    * @param {bool=} keep_invalid Whether to ignore invalid lines or return them
    *                             as nulls. Defaults to false (discard).
-   * @param {bool=} first_run If true, create the file if it doesn't exist.
+   * @param {bool=} create If true, create the file if it doesn't exist.
    * @param {bool=} caching Whether to cache pings (i.e. assume the file will only be modified via
    *                        this instance)
    */
-  constructor(path, keep_invalid = false, first_run = false, caching = true) {
+  constructor(path, keep_invalid = false, create = false, caching = true) {
     this.path = path;
     this.keep_invalid = keep_invalid;
     this.caching = caching;
     this._pings = null;
     this._allTags = null;
 
-    // On first run, create the ping file if it doesn't exist
-    if (first_run) {
+    // Create the ping file if it doesn't exist
+    if (create) {
       if (!fs.existsSync(this.path)) {
         try {
+          winston.debug("Creating pingfile at ", this.path);
           var fd = fs.openSync(this.path, 'a');
           fs.closeSync(fd);
         } catch (err) {

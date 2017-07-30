@@ -3,8 +3,6 @@
  */
 'use strict';
 
-
-
 // Don't pollute test output with normal logs
 // This will get called prior to the standard log config on app startup,
 // so just need to ensure that doesn't overwrite this config.

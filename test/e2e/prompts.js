@@ -10,7 +10,7 @@ const helper = require('./helper');
 const pingFile = require('../../src/pingfile');
 
 describe('Prompts', function() {
-  winston.level = 'info';
+  winston.level = 'warning';
   this.timeout(10000);
   this.retries(3); // had an occasion where appveyor test transiently failed.
 
@@ -27,7 +27,7 @@ describe('Prompts', function() {
       path : helper.electronPath,
       args : [
         helper.appPath, "--test", "prompt", "--pingfile", tmpPingFileName, "--logfile",
-        tmpLogFileName, "--verbose"
+        tmpLogFileName, "--verbose", "--configdir", helper.createConfig()
       ]
     });
 
@@ -59,12 +59,19 @@ describe('Prompts', function() {
        // Note that writeSync doesn't do synchronous file i/o, so there's no
        // guarantee the pingfile exists yet! See
        // http://www.daveeddy.com/2013/03/26/synchronous-file-io-in-nodejs/
+
+       // So it's race central. fs.watchFile looks like a solution, but what if the app has finished
+       // writing before the watcher starts? So manually check to see if the file has any data in
+       // it.
        await new Promise(function(resolve, _reject) {
-         fs.watchFile(tmpPingFileName, {interval : 200}, function(curr, _prev) {
-           if (curr.size > 0) {
+         var check = function() {
+           if (fs.statSync(tmpPingFileName).size > 0) {
              resolve();
+           } else {
+             setTimeout(check, 200);
            }
-         });
+         };
+         setTimeout(check, 200);
        });
        const pings = new pingFile(tmpPingFileName).pings;
        pings.length.should.equal(1);
