@@ -30,9 +30,11 @@ var allTags = new Bloodhound({
 // document.getElementById doesn't work here, but tagsinput allows us to use
 // #tags with jQuery to get the new input element
 window.$("#tags").tagsinput({
-  confirmKeys : [ 13, 32, 188 ], // space, comma, and enter trigger tag entry
+  // enter and space trigger tag entry. not including comma as it isn't deleted when entered,
+  // which messes up tag entry
+  confirmKeys : [ 13, 32 ],
   trimValue : true,
-  cancelConfirmKeysOnEmpty : true,
+  cancelConfirmKeysOnEmpty : true, // allow enter to submit form
   typeaheadjs :
       {name : 'allTags', displayKey : 'tag', valueKey : 'tag', source : allTags.ttAdapter()}
 });
