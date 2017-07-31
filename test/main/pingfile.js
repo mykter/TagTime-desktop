@@ -99,9 +99,10 @@ describe('PingFile', function() {
     });
 
     it('should pad tags to the specified width', function() {
-      PingFile.encode({time : 1487459622000, tags : new Set([ 1 ]), comment : null}, false, 40)
+      // include a comment otherwise the padding will be removed
+      PingFile.encode({time : 1487459622000, tags : new Set([ 1 ]), comment : "hi"}, false, 40)
           .should.equal("1487459622 1" +
-                        " ".repeat(39));
+                        " ".repeat(39) + " [hi]");
     });
   });
 

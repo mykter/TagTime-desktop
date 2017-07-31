@@ -108,7 +108,7 @@ module.exports = class PingFile {
 
     // trims to deal with empty tags or comment
     var unixtime = Math.round(ping.time / 1000);
-    return (unixtime + " " + tags + " " + comment).trim();
+    return (unixtime + " " + (tags.length > 0 ? tags + " " : "") + comment).trim();
   }
 
   /**
