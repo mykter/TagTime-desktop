@@ -141,7 +141,7 @@ exports.editorIfMissed = function() {
     if (promptWindow) {
       winston.info("Skipping editor because prompt hasn't been answered");
     } else {
-      edit.editPings();
+      edit.openEditor();
     }
 };
 
