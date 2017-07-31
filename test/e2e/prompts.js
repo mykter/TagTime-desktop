@@ -31,7 +31,7 @@ describe('Prompts', function() {
       path : helper.electronPath,
       args : [
         helper.appPath, "--test", "prompt", "--pingfile", tmpPingFileName, "--logfile",
-        tmpLogFileName, "--verbose", "--configdir", helper.createConfig()
+        tmpLogFileName, "--verbose", "--configdir", helper.createConfig({runOnStartup : false})
       ]
     });
 
