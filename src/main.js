@@ -122,7 +122,8 @@ var getPingFile = function(pathArg) {
   } else {
     pingFilePath = global.config.user.get('pingFilePath');
   }
-  return new PingFile(pingFilePath, false, global.config.firstRun);
+  return new PingFile(pingFilePath, false, global.config.firstRun, true,
+                      global.config.user.get("tagWidth"));
 };
 
 /**

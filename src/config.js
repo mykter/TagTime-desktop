@@ -75,6 +75,7 @@ module.exports = class Config {
       firstRun : true,
       alwaysOnTop : true,
       runOnStartup : true,
+      tagWidth : 80, // how much space the tags will be padded to
     };
   }
 }

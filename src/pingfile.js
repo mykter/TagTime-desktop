@@ -21,13 +21,15 @@ module.exports = class PingFile {
    * @param {bool=} create If true, create the file if it doesn't exist.
    * @param {bool=} caching Whether to cache pings (i.e. assume the file will only be modified via
    *                        this instance)
+   * @param {int=} width The width to pad encoded tags to
    */
-  constructor(path, keep_invalid = false, create = false, caching = true) {
+  constructor(path, keep_invalid = false, create = false, caching = true, width = 0) {
     this.path = path;
     this.keep_invalid = keep_invalid;
     this.caching = caching;
     this._pings = null;
     this._allTags = null;
+    this.width = width;
 
     // Create the ping file if it doesn't exist
     if (create) {
@@ -69,10 +71,11 @@ module.exports = class PingFile {
    * newline).
    * @param {ping} ping The ping to encode. Must have a time.
    * @param {bool=} annotate If true, prepend ping.comment with time in ISO
+   * @param {int=} width The width to right pad tags to with spaces
    * @throws if an ping is provided without a valid time property
    * format
    */
-  static encode(ping, annotate = true) {
+  static encode(ping, annotate = true, width = 0) {
     if (isNaN(ping.time) || ping.time < PingTimes.epoch) {
       throw("Invalid ping time in ping to be encoded: " + ping.time +
             " must be integer after the epoch");
@@ -84,6 +87,8 @@ module.exports = class PingFile {
         throw "Tags of ping to be encoded is a string";
       }
       tags = Array.from(ping.tags).join(" ");
+      // pad right with spaces
+      tags = tags + " ".repeat(Math.max(0, width - tags.length));
     }
 
     var comment = "";
@@ -103,7 +108,7 @@ module.exports = class PingFile {
 
     // trims to deal with empty tags or comment
     var unixtime = Math.round(ping.time / 1000);
-    return ((unixtime + " " + tags).trim() + " " + comment).trim();
+    return (unixtime + " " + tags + " " + comment).trim();
   }
 
   /**
@@ -220,7 +225,7 @@ module.exports = class PingFile {
       fs.closeSync(fd);
     }
 
-    fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate) + '\n', 'utf8');
+    fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate, this.width) + '\n', 'utf8');
     if (this.caching) {
       if (this._pings) {
         this._pings.push(ping);

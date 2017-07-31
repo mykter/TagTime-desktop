@@ -97,6 +97,12 @@ describe('PingFile', function() {
       PingFile.encode({time : 1487459622000, tags : [ 1, 2 ], comment : null}, false)
           .should.equal("1487459622 1 2");
     });
+
+    it('should pad tags to the specified width', function() {
+      PingFile.encode({time : 1487459622000, tags : new Set([ 1 ]), comment : null}, false, 40)
+          .should.equal("1487459622 1" +
+                        " ".repeat(39));
+    });
   });
 
   describe('get pings', function() {
