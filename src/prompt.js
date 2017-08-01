@@ -70,12 +70,19 @@ tagsElt[0].oninput = _ => {
 };
 
 // Send the ping to the main process. It will kill us when its finished.
-// TODO  issue #29: the save button is outside the form, so default submit action doesn't save
+// Also send coverage info back to the main process if available
 var save = function() {
+  var coverage = null;
+  if (typeof __coverage__ !== "undefined") {
+    coverage = __coverage__; // eslint-disable-line no-undef
+  }
   ipcRenderer.send('save-ping', {
-    time : time,
-    tags : window.$('#tags').tagsinput('items'),
-    comment : document.getElementById('comment').value
+    ping : {
+      time : time,
+      tags : window.$('#tags').tagsinput('items'),
+      comment : document.getElementById('comment').value,
+    },
+    coverage : coverage
   });
 };
 

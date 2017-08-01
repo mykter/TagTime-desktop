@@ -63,7 +63,7 @@
     "test:e2e": "xvfb-maybe mocha ./test/e2e",
     "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./test/",
     "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./test/main",
-    "cover:e2e": "gulp report:e2e",
+    "cover:e2e": "xvfb-maybe gulp report:e2e",
     "precover": "run-s -n  cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
     "cover": "istanbul report html lcov",
     "coveralls": "npm run cover && coveralls < ./coverage/lcov.info",

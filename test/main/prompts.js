@@ -16,8 +16,8 @@ describe('Prompts', function() {
     var ping = new Ping(1234567890, [ 'tag1', 'tag2' ], 'comment');
 
     // Note: doesn't test the ipc component, not obvious how to send a message
-    // from here to ipcMain. Maybe mock ipcMain?
-    prompts.savePing(null, ping);
+    // from here to ipcMain. Maybe mock ipcMain? Or just rely on e2e tests.
+    prompts.savePing(null, {ping : ping, message : null});
 
     global.pingFile.push.calledOnce.should.be.true();
     global.pingFile.push.calledWith(ping).should.be.true();

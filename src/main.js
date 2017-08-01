@@ -163,20 +163,26 @@ var setupLogging = function(verbose, logfile) {
  * Save istanbul coverage information on program exit
  */
 var register_coverage_hook = function() {
-  app.on('quit', function() {
-    if (process.env.TAGTIME_E2E_COVERAGE_DIR) {
+  if (process.env.TAGTIME_E2E_COVERAGE_DIR) {
+    // Coverage variables from the main and renderer processes accumulate here
+    global.coverage = []
+    app.on('quit', function() {
       if (typeof __coverage__ !== "undefined") {
+        global.coverage.push(__coverage__); // eslint-disable-line no-undef
+      }
+      if (global.coverage.length > 0) {
         const uniquefilename = require('uniquefilename');
         uniquefilename.get(
-            path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, "coverage.json"), {}, coverageFile => {
-              fs.writeFileSync(coverageFile,
-                               JSON.stringify(__coverage__)); // eslint-disable-line no-undef
+            path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, "coverage"), {}, coverageFile => {
+              global.coverage.forEach((e, i) => {
+                fs.writeFileSync(coverageFile + "-var" + i + ".json", JSON.stringify(e));
+              });
             });
       } else {
-        winston.error("TAGTIME_E2E_COVERAGE is set but no coverage information available.");
+        winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
       }
-    }
-  });
+    });
+  }
 };
 
 /**

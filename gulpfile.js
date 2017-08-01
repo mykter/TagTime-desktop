@@ -38,9 +38,9 @@ gulp.task('clean:build', function() { return del([ BUILD_DIR ]); });
 gulp.task('clean:coverage', function() { return del([ COVERAGE_DIR ]); });
 gulp.task('clean:report', function() { return del([ REPORT_DIR ]); });
 
-gulp.task('build_instrumented', [ 'node_modules', 'copy', 'instrument' ]);
+gulp.task('build:instrumented', [ 'node_modules', 'copy', 'instrument' ]);
 
-gulp.task('cover:e2e', [ 'build_instrumented', 'clean:coverage' ], function() {
+gulp.task('cover:e2e', [ 'build:instrumented', 'clean:coverage' ], function() {
   // The e2e tests will pick this up and launch our instrumented app
   process.env.TAGTIME_TARGET_APP_PATH = BUILD_DIR;
   process.env.TAGTIME_E2E_COVERAGE_DIR = COVERAGE_DIR;

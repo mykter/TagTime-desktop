@@ -147,11 +147,17 @@ exports.editorIfMissed = function() {
 
 /* Handle events sent from the prompt window
  * Shouldn't be called directly - only exported so it can be tested :/ */
-exports.savePing = function(evt, ping) {
+exports.savePing = function(evt, message) {
+  var ping = message.ping;
   winston.debug("Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]");
   global.pingFile.push(ping);
   if (promptWindow) {
     promptWindow.close();
+  }
+
+  // The prompt window might pass us coverage information to save
+  if (message.coverage && ('coverage' in global)) {
+    global.coverage.push(message.coverage);
   }
 };
 ipcMain.on('save-ping', exports.savePing);
