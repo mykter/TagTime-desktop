@@ -3,6 +3,7 @@
 const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
 
 const Config = require('./config');
 const prompts = require('./prompts');
@@ -159,6 +160,26 @@ var setupLogging = function(verbose, logfile) {
 };
 
 /**
+ * Save istanbul coverage information on program exit
+ */
+var register_coverage_hook = function() {
+  app.on('quit', function() {
+    if (process.env.TAGTIME_E2E_COVERAGE_DIR) {
+      if (typeof __coverage__ !== "undefined") {
+        const uniquefilename = require('uniquefilename');
+        uniquefilename.get(
+            path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, "coverage.json"), {}, coverageFile => {
+              fs.writeFileSync(coverageFile,
+                               JSON.stringify(__coverage__)); // eslint-disable-line no-undef
+            });
+      } else {
+        winston.error("TAGTIME_E2E_COVERAGE is set but no coverage information available.");
+      }
+    }
+  });
+};
+
+/**
  * Application init
  */
 var main = function() {
@@ -182,6 +203,8 @@ var main = function() {
   global.pingFile = getPingFile(program.pingfile);
   global.pings = new PingTimes(global.config.period, global.config.user.get('seed'),
                                global.config.user.get('pingFileStart'));
+
+  register_coverage_hook();
 
   if (program.test) {
     mainTest(program.test);

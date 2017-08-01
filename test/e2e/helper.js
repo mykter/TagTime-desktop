@@ -1,5 +1,9 @@
 const path = require('path');
-exports.appPath = path.resolve(__dirname, '..', '..');
+if (process.env.TAGTIME_TARGET_APP_PATH) {
+  exports.appPath = process.env.TAGTIME_TARGET_APP_PATH;
+} else {
+  exports.appPath = path.resolve(__dirname, '..', '..');
+}
 
 var electronPath;
 if (process.platform === 'win32') {
