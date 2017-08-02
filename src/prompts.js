@@ -156,9 +156,6 @@ exports.savePing = function(evt, message) {
   // If it does, make sure to push it before closing the window, lest app.quit is fired first
   if (message.coverage && ('coverage' in global)) {
     global.coverage.push(message.coverage);
-    winston.warn("coverage " + global.coverage.length);
-  } else {
-    winston.error("No coverage: " + message.coverage + " " + ('coverage' in global));
   }
 
   if (promptWindow) {

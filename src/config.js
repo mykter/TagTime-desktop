@@ -8,7 +8,6 @@ const path = require('path');
 //==================================
 
 const Configstore = require('electron-store');
-const pkg = require('../package.json');
 
 /**
  * Config for the main process - dependent on access to the user's config file
