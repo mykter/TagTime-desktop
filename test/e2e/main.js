@@ -59,8 +59,9 @@ describe('Application', function() {
    */
   var spawnApp = function() {
     return child_process.spawn(helper.electronPath, [
-      helper.appPath, '--verbose', "--pingfile", tmpFile.name, '--configdir',
-      helper.createConfig({firstRun : false}) // skip the launch on startup config bit
+      helper.appPath, '--verbose', '--configdir',
+      helper.createConfig(
+          {pingFilePath : tmpFile.name, firstRun : false}) // skip the launch on startup config bit
     ]);
   };
 

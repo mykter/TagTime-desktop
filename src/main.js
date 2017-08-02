@@ -103,7 +103,6 @@ var parseCommandLine = function() {
   }
   program.version(process.env.npm_package_version)
       .option('--test <option>', "Development test mode")
-      .option('--pingfile <path>', "Override the pingfile path specified in the user config")
       .option('--logfile <path>', "Send logging output to this file instead of stdout")
       .option('--configdir <path>', "Path which contains config file (test use only)")
       .option('-v, --verbose', "Debug logging")
@@ -111,20 +110,6 @@ var parseCommandLine = function() {
                             "--test instances that don't have a tray icon)")
       .parse(argvWorkaround);
   return program;
-};
-
-/**
- * @returns {PingFile} the pingfile at pathArg or from the config if not specified
- */
-var getPingFile = function(pathArg) {
-  var pingFilePath;
-  if (pathArg) {
-    pingFilePath = pathArg;
-  } else {
-    pingFilePath = global.config.user.get('pingFilePath');
-  }
-  return new PingFile(pingFilePath, false, global.config.firstRun, true,
-                      global.config.user.get("tagWidth"));
 };
 
 /**
@@ -222,7 +207,8 @@ var main = function() {
   }
 
   // Export the ping file and ping stream wrappers
-  global.pingFile = getPingFile(program.pingfile);
+  global.pingFile = new PingFile(global.config.user.get('pingFilePath'), false,
+                                 global.config.firstRun, true, global.config.user.get("tagWidth"));
   global.pings = new PingTimes(global.config.period, global.config.user.get('seed'),
                                global.config.user.get('pingFileStart'));
 

@@ -17,7 +17,6 @@ exports.electronPath = electronPath;
 const Config = require('../../src/config');
 const tmp = require('tmp');
 const fs = require('fs');
-const pkg = require('../../package.json');
 const _ = require('lodash');
 /**
  * Creates a new config file in a temporary directory based on the default config
@@ -30,6 +29,6 @@ exports.createConfig = function(options) {
   for (var key in options) {
     conf[key] = options[key];
   }
-  fs.writeFileSync(path.join(configDir.name, pkg.name + ".json"), JSON.stringify(conf));
+  fs.writeFileSync(path.join(configDir.name, "config.json"), JSON.stringify(conf));
   return configDir.name;
 }
