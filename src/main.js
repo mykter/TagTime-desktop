@@ -10,10 +10,12 @@ const prompts = require('./prompts');
 const PingTimes = require('./pingtimes');
 const PingFile = require('./pingfile');
 const edit = require('./edit');
+const openAboutWindow = require('about-window').default;
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
+const icon_path = path.resolve(__dirname, '..', 'resources', 'tagtime.png');
 
 /**
  * Ensures only one instance of the app is running at a time.
@@ -50,11 +52,18 @@ var singleInstance = function(cmdline) {
 };
 
 /**
+ * Launch an about window
+ */
+function about() {
+  openAboutWindow({icon_path : icon_path, package_json_dir : path.resolve(__dirname, '..')});
+}
+
+/**
  * Create a system tray icon with context menu
  */
 function createTray() {
   winston.debug("Creating tray");
-  tray = new Tray(path.resolve(__dirname, '..', 'resources', 'tagtime.png'));
+  tray = new Tray(icon_path);
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
     {
@@ -66,6 +75,7 @@ function createTray() {
     },
     {label : 'Edit Pings', click : edit.openEditor},
     {label : 'Quit', click : app.quit},
+    {label : 'About', click : about},
   ]));
 }
 
