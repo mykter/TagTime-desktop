@@ -27,7 +27,7 @@ cache:
     - node_modules
 
 after_success:
-  - npm run dist
   - if [[ $TRAVIS_OS_NAME = "linux" ]]; then
       npm run coveralls;
     fi
+  - npm run dist
