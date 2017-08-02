@@ -162,25 +162,37 @@ var setupLogging = function(verbose, logfile) {
 /**
  * Save istanbul coverage information on program exit
  */
-var register_coverage_hook = function() {
-  if (process.env.TAGTIME_E2E_COVERAGE_DIR) {
-    // Coverage variables from the main and renderer processes accumulate here
-    global.coverage = []
-    app.on('quit', function() {
-      if (typeof __coverage__ !== "undefined") {
-        global.coverage.push(__coverage__); // eslint-disable-line no-undef
-      }
-      if (global.coverage.length > 0) {
-        const uniquefilename = require('uniquefilename');
-        uniquefilename.get(
-            path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, "coverage"), {}, coverageFile => {
-              global.coverage.forEach((e, i) => {
-                fs.writeFileSync(coverageFile + "-var" + i + ".json", JSON.stringify(e));
-              });
-            });
+var save_coverage = function() {
+  if (!process.env.TAGTIME_E2E_COVERAGE_DIR) {
+    return;
+  }
+
+  if (typeof __coverage__ !== "undefined") {
+    global.coverage.push(__coverage__); // eslint-disable-line no-undef
+    winston.warn("main coverage");
+  }
+  if (global.coverage.length === 0) {
+    winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
+  } else {
+    // Find a unique file name
+    var i = -1;
+    var coverageBase;
+    do {
+      i += 1;
+      coverageBase = `coverage${i}.json`;
+    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, coverageBase)))
+
+    global.coverage.forEach((e, i) => {
+      var name;
+      if (i === 0) {
+        // The first file we write is the unique name
+        name = coverageBase;
       } else {
-        winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
+        // subsequent ones are prefixed, to allow identifying which run a
+        // file came from
+        name = "var" + i + "-" + coverageBase;
       }
+      fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, name), JSON.stringify(e));
     });
   }
 };
@@ -189,12 +201,16 @@ var register_coverage_hook = function() {
  * Application init
  */
 var main = function() {
-  var program = parseCommandLine();
+  // Coverage variables from the main and renderer processes accumulate here
+  global.coverage = []
+
+      var program = parseCommandLine();
 
   setupLogging(program.verbose, program.logfile);
 
   // Prevent second instance from running
   if (!singleInstance(program)) {
+    save_coverage();
     return;
   }
 
@@ -210,7 +226,8 @@ var main = function() {
   global.pings = new PingTimes(global.config.period, global.config.user.get('seed'),
                                global.config.user.get('pingFileStart'));
 
-  register_coverage_hook();
+  // Save coverage on exit
+  app.on('quit', function() { save_coverage(); });
 
   if (program.test) {
     mainTest(program.test);

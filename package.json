@@ -52,7 +52,6 @@
     "spectron": "^3.7.2",
     "stats-lite": "^2.1.0",
     "tmp": "0.0.31",
-    "uniquefilename": "^1.1.2",
     "xvfb-maybe": "^0.2.1"
   },
   "scripts": {
