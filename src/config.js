@@ -19,7 +19,7 @@ module.exports = class Config {
    * @param {string} dir Specify a non-default config location. Should only be used for testing.
    */
   constructor(dir = null) {
-    var options = {name : pkg.name, defaults : Config.defaultUserConf()};
+    var options = {defaults : Config.defaultUserConf()};
     if (dir) {
       options['cwd'] = dir;
     }
