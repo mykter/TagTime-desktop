@@ -3,10 +3,6 @@ const {app} = require('electron');
 const AutoLaunch = require('auto-launch');
 const winston = require('winston');
 const path = require('path');
-
-// User config
-//==================================
-
 const Configstore = require('electron-store');
 
 /**

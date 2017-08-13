@@ -3,19 +3,22 @@
 const {app, Menu, Tray} = require('electron');
 const winston = require('winston');
 const path = require('path');
-const fs = require('fs');
+const openAboutWindow = require('about-window').default;
 
 const Config = require('./config');
-const prompts = require('./prompts');
-const PingTimes = require('./pingtimes');
 const PingFile = require('./pingfile');
-const edit = require('./edit');
-const openAboutWindow = require('about-window').default;
+const prompts = require('./prompts');
+const {openPreferences} = require('./openPrefs');
+const {openEditor} = require('./edit');
+const {saveCoverage} = require('./coverageSupport');
+
+const PingTimes = require('../pingtimes');
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
-const icon_path = path.resolve(__dirname, '..', 'resources', 'tagtime.png');
+const appRoot = path.join(__dirname, '..', '..');
+const icon_path = path.resolve(appRoot, 'resources', 'tagtime.png');
 
 /**
  * Ensures only one instance of the app is running at a time.
@@ -23,7 +26,7 @@ const icon_path = path.resolve(__dirname, '..', 'resources', 'tagtime.png');
  * notifies the user.
  * @return {bool} true if this is the only instance, false otherwise
  */
-var singleInstance = function(cmdline) {
+let singleInstance = function(cmdline) {
   const secondInstance = app.makeSingleInstance((argv, _cwd) => {
     // Runs in the existing app when another instance is launched
     const notify = require('electron-main-notification');
@@ -54,9 +57,7 @@ var singleInstance = function(cmdline) {
 /**
  * Launch an about window
  */
-function about() {
-  openAboutWindow({icon_path : icon_path, package_json_dir : path.resolve(__dirname, '..')});
-}
+function about() { openAboutWindow({icon_path : icon_path, package_json_dir : appRoot}); }
 
 /**
  * Create a system tray icon with context menu
@@ -66,16 +67,10 @@ function createTray() {
   tray = new Tray(icon_path);
   tray.setToolTip(app.getName());
   tray.setContextMenu(Menu.buildFromTemplate([
-    {
-      label : 'Preferences',
-      click : function() {
-        winston.debug("prefs not implemented");
-        return;
-      }
-    },
-    {label : 'Edit Pings', click : edit.openEditor},
-    {label : 'Quit', click : app.quit},
+    {label : 'Preferences', click : openPreferences},
+    {label : 'Edit Pings', click : openEditor},
     {label : 'About', click : about},
+    {label : 'Quit', click : app.quit},
   ]));
 }
 
@@ -83,7 +78,7 @@ function createTray() {
  * Handle invocations in --test mode
  * @param {string} option The requested test mode
  */
-var mainTest = function(option) {
+let mainTest = function(option) {
   switch (option) {
   case "prompt":
     app.on('ready', () => {prompts.openPrompt(Date.now())});
@@ -98,14 +93,14 @@ var mainTest = function(option) {
 /**
  * Process argv into an object
  */
-var parseCommandLine = function() {
+let parseCommandLine = function() {
   // Could split --test out into its own .command('test')
-  var program = require('commander');
+  let program = require('commander');
 
   // commander assumes that the first two values in argv are 'node' and 'blah.js' and then followed
   // by the args. This is not the case when running from a packaged Electron app. Here you have
   // first value 'appname' and then args. https://github.com/tj/commander.js/issues/512
-  var argvWorkaround;
+  let argvWorkaround;
   if (process.argv[0].includes('electron')) {
     argvWorkaround = process.argv;
   } else {
@@ -125,7 +120,7 @@ var parseCommandLine = function() {
 /**
  * Initial setup
  */
-var firstRunTasks = function() {
+let firstRunTasks = function() {
   winston.info("First run, setting up app to launch on startup");
   global.config.setupAutoLaunch();
 
@@ -141,7 +136,7 @@ var firstRunTasks = function() {
 /**
  * Configure winston and expose to renderer windows via global.logger
  */
-var setupLogging = function(verbose, logfile) {
+let setupLogging = function(verbose, logfile) {
   if (verbose) {
     winston.level = 'debug';
   } else {
@@ -155,57 +150,19 @@ var setupLogging = function(verbose, logfile) {
 };
 
 /**
- * Save istanbul coverage information on program exit
- */
-var save_coverage = function() {
-  if (!process.env.TAGTIME_E2E_COVERAGE_DIR) {
-    return;
-  }
-
-  if (typeof __coverage__ !== "undefined") {
-    global.coverage.push(__coverage__); // eslint-disable-line no-undef
-    winston.warn("main coverage");
-  }
-  if (global.coverage.length === 0) {
-    winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
-  } else {
-    // Find a unique file name
-    var i = -1;
-    var coverageBase;
-    do {
-      i += 1;
-      coverageBase = `coverage${i}.json`;
-    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, coverageBase)))
-
-    global.coverage.forEach((e, i) => {
-      var name;
-      if (i === 0) {
-        // The first file we write is the unique name
-        name = coverageBase;
-      } else {
-        // subsequent ones are prefixed, to allow identifying which run a
-        // file came from
-        name = "var" + i + "-" + coverageBase;
-      }
-      fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, name), JSON.stringify(e));
-    });
-  }
-};
-
-/**
  * Application init
  */
-var main = function() {
+let main = function() {
   // Coverage variables from the main and renderer processes accumulate here
-  global.coverage = []
+  global.coverage = [];
 
-      var program = parseCommandLine();
+  let program = parseCommandLine();
 
   setupLogging(program.verbose, program.logfile);
 
   // Prevent second instance from running
   if (!singleInstance(program)) {
-    save_coverage();
+    saveCoverage();
     return;
   }
 
@@ -223,7 +180,7 @@ var main = function() {
                                global.config.user.get('pingFileStart'));
 
   // Save coverage on exit
-  app.on('quit', function() { save_coverage(); });
+  app.on('quit', function() { saveCoverage(); });
 
   if (program.test) {
     mainTest(program.test);

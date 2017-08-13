@@ -4,7 +4,7 @@ const tmp = require('tmp');
 const fs = require('fs');
 
 require('./helper');
-const PingFile = require('../../src/pingfile');
+const PingFile = require('../../src/main-process/pingfile');
 const Ping = require('../../src/ping');
 
 describe('PingFile', function() {

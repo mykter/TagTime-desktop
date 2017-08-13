@@ -5,8 +5,8 @@ const {ipcMain, BrowserWindow} = require('electron');
 const windowStateKeeper = require('electron-window-state');
 
 const helper = require('./helper');
-const Ping = require('./ping');
 const edit = require('./edit');
+const Ping = require('../ping');
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -27,7 +27,6 @@ exports.openPrompt = function(time) {
 
   promptWindow = new BrowserWindow({
     frame : true,
-    backgroundColor : "#202020",
     minWidth : 205,
     minHeight : 185,
     width : promptWindowState.width,
@@ -49,7 +48,7 @@ exports.openPrompt = function(time) {
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  promptWindow.loadURL(helper.getFileUrl('prompt.html'));
+  promptWindow.loadURL(helper.getFileUrl('../prompt.html'));
 
   // Send data.
   // Everything gets converted to JSON, so Sets and Pings don't survive

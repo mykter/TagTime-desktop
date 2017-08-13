@@ -7,7 +7,9 @@
     "name": "Michael Macnair",
     "email": "tagtime@mykter.com"
   },
-  "bugs": {"url":"https://github.com/mykter/TagTime-desktop/issues"},
+  "bugs": {
+    "url": "https://github.com/mykter/TagTime-desktop/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mykter/TagTime-desktop.git"
@@ -15,7 +17,7 @@
   "engines": {
     "node": ">=7.6.0"
   },
-  "main": "src/main.js",
+  "main": "src/main-process/electron-compile.js",
   "dependencies": {
     "about-window": "^1.7.0",
     "auto-launch": "^5.0.1",
