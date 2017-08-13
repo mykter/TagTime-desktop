@@ -6,10 +6,17 @@
         "es6": true
     },
     "parserOptions": {
-        "ecmaVersion": 2017
+        "ecmaVersion": 2017,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "jsx": true
+        }
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
     "rules": {
       "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
-    }
+    },
+  "plugins": [
+    "react"
+  ]
 }
