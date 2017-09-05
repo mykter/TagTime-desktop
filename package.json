@@ -64,7 +64,7 @@
     "ps-tree": "^1.1.0",
     "react-test-renderer": "^15.6.1",
     "rimraf": "^2.6.1",
-    "should": "^11.2.0",
+    "should": "^13.0.0",
     "sinon": "^3.0.0",
     "snap-shot": "^2.17.0",
     "spectron": "^3.7.2",
