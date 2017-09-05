@@ -3,6 +3,7 @@ const child_process = require("child_process");
 const psTree = require("ps-tree");
 const isrunning = require("is-running");
 const tmp = require("tmp");
+const winston = require("winston");
 
 const helper = require("./helper");
 
