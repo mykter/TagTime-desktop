@@ -1,25 +1,29 @@
-'use strict';
-const should = require('should');
-const _ = require('lodash');
+"use strict";
+const should = require("should");
+const _ = require("lodash");
 const stats = require("stats-lite");
 
-const PingTimes = require('../src/pingtimes');
+const PingTimes = require("../src/pingtimes");
 
-describe('Pings', function() {
+describe("Pings", function() {
   const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
   const notBefore = time - 10000000;
   var pings;
 
-  beforeEach(function() { pings = new PingTimes(45 * 60 * 1000, 1, notBefore); });
+  beforeEach(function() {
+    pings = new PingTimes(45 * 60 * 1000, 1, notBefore);
+  });
 
-  describe('next()', function() {
-    it('should return a ping after the requested time',
-       function() { pings.next(time).should.be.greaterThan(time); });
+  describe("next()", function() {
+    it("should return a ping after the requested time", function() {
+      pings.next(time).should.be.greaterThan(time);
+    });
 
-    it('should return a ping after the requested ping',
-       function() { pings.next(pings.next(time)).should.be.greaterThan(pings.next(time)); });
+    it("should return a ping after the requested ping", function() {
+      pings.next(pings.next(time)).should.be.greaterThan(pings.next(time));
+    });
 
-    it('should only generate pings on the second', function() {
+    it("should only generate pings on the second", function() {
       var next = time;
       for (var x = 1; x <= 50; x++) {
         next = pings.next(next);
@@ -27,33 +31,36 @@ describe('Pings', function() {
       }
     });
 
-    it('should only return pings after startOfPings',
-       function() { pings.next(PingTimes.epoch).should.be.greaterThan(notBefore); });
+    it("should only return pings after startOfPings", function() {
+      pings.next(PingTimes.epoch).should.be.greaterThan(notBefore);
+    });
   });
 
-  describe('prev()', function() {
-    it('should return a ping before the requested time',
-       function() { pings.prev(time).should.be.lessThan(time); });
+  describe("prev()", function() {
+    it("should return a ping before the requested time", function() {
+      pings.prev(time).should.be.lessThan(time);
+    });
 
-    it('should not return pings before notBefore',
-       function() { should(pings.prev(notBefore)).be.null; });
+    it("should not return pings before notBefore", function() {
+      should(pings.prev(notBefore)).be.null;
+    });
   });
 
-  describe('next() & prev()', function() {
-    it('should be idempotent', function() {
+  describe("next() & prev()", function() {
+    it("should be idempotent", function() {
       var ping = pings.next(time);
       pings.prev(pings.next(ping)).should.equal(ping);
     });
   });
 
-  it('should return consistent answers when requesting an earlier time', function() {
+  it("should return consistent answers when requesting an earlier time", function() {
     var a = pings.next(time);
     var b = pings.prev(a);
     pings.prev(b - 100000000);
     pings.next(time).should.equal(a);
   });
 
-  it('should give different results for different seeds', function() {
+  it("should give different results for different seeds", function() {
     pings.seed = 1;
     pings.reset();
     var a = pings.next(time);
@@ -63,7 +70,7 @@ describe('Pings', function() {
     pings.next(time).should.not.equal(a);
   });
 
-  it('should give the same results for the same seeds', function() {
+  it("should give the same results for the same seeds", function() {
     pings.seed = 3;
     pings.reset();
     var a = pings.next(time);
@@ -77,7 +84,7 @@ describe('Pings', function() {
     pings.next(time).should.equal(a);
   });
 
-  it('should have ping gaps with the mean and mode close to the period', function() {
+  it("should have ping gaps with the mean and mode close to the period", function() {
     // https://en.wikipedia.org/wiki/Poisson_distribution#Mean
 
     this.timeout(10000); // When coverage instrumented, this is slooow

@@ -2,64 +2,105 @@
  * build: Build an istanbul coverage instrumented version of the app
  * cover:e2e: Run the e2e tests on it, outputting istanbul raw coverage data to COVERAGE_DIR
  */
-const path = require('path');
-const del = require('del');
-const child_process = require('child_process');
-var gulp = require('gulp');
-var istanbul = require('gulp-istanbul');
-// We'll use mocha in this example, but any test framework will work
-var mocha = require('gulp-mocha');
-var fs = require('fs');
+/* eslint-disable no-console */
 
-const BASE_DIR = path.resolve(path.join('coverage', 'e2e'));
-const COVERAGE_DIR = path.join(BASE_DIR, 'coverage');
-const BUILD_DIR = path.join(BASE_DIR, 'app');
-const REPORT_DIR = path.join(BASE_DIR, 'report');
+const gulp = require("gulp");
+const mocha = require("gulp-mocha");
+const sourcemaps = require("gulp-sourcemaps");
+const babel = require("gulp-babel");
 
-// Instrument the source files
-gulp.task('instrument', [ 'clean:build' ], function() {
-  return gulp.src([ 'src/*.js' ], {base : './'})
-      .pipe(istanbul({coverageVariable : '__coverage__'}))
-      .pipe(gulp.dest(BUILD_DIR));
+const path = require("path");
+const del = require("del");
+const child_process = require("child_process");
+const mkdirp = require("mkdirp");
+const fs = require("fs");
+
+const BASE_DIR = path.resolve(".");
+const BUILD_DIR = path.join(BASE_DIR, "app");
+const COVERAGE_ROOT_DIR = path.join(BASE_DIR, "coverage");
+const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
+const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
+const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
+const paths = {
+  sources: "./src/**/*.js",
+  tests: "./test/**/*.js",
+  static: ["./package.json", "./src/css/*.css", "./src/*.html", "./resources/*"]
+};
+
+gulp.task("compile", function() {
+  return gulp
+    .src(["src/**/*.js"], { base: "./" })
+    .pipe(sourcemaps.init())
+    .pipe(babel())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(BUILD_DIR));
+});
+
+gulp.task("compile:tests", function() {
+  return gulp.src(["test/**/*.js"], { base: "./" }).pipe(babel()).pipe(gulp.dest(BUILD_DIR));
 });
 
 // Get any non-js components of the app
-gulp.task('copy', [ 'clean:build' ], function() {
-  return gulp.src([ 'package.json', 'src/css/*.css', 'src/*.html', 'resources/*' ], {base : '.'})
-      .pipe(gulp.dest(BUILD_DIR));
+gulp.task("copy", function() {
+  return gulp.src(paths.static, { base: "." }).pipe(gulp.dest(BUILD_DIR));
 });
 
-// some things refer to node_modules, so symlink it in
-gulp.task('node_modules', [ 'copy' ], function() { // dependency just to ensure BUILD_DIR exists
-  fs.symlinkSync(path.resolve('./node_modules'), path.join(BUILD_DIR, 'node_modules'));
-})
+gulp.task("clean:build", function() {
+  return del([BUILD_DIR]);
+});
+gulp.task("clean:coverage", function() {
+  return del([COVERAGE_DIR]);
+});
+gulp.task("clean:report", function() {
+  return del([REPORT_DIR]);
+});
 
-gulp.task('clean:build', function() { return del([ BUILD_DIR ]); });
-gulp.task('clean:coverage', function() { return del([ COVERAGE_DIR ]); });
-gulp.task('clean:report', function() { return del([ REPORT_DIR ]); });
+// Note we aren't running clean:build before this, because it was a pain in combo with watch.
+gulp.task("build", ["compile", "copy"]);
+gulp.task("build:tests", ["compile:tests", "build"]);
 
-gulp.task('build:instrumented', [ 'node_modules', 'copy', 'instrument' ]);
-
-gulp.task('cover:e2e', [ 'build:instrumented', 'clean:coverage' ], function() {
+gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
   // The e2e tests will pick this up and launch our instrumented app
-  process.env.TAGTIME_TARGET_APP_PATH = BUILD_DIR;
   process.env.TAGTIME_E2E_COVERAGE_DIR = COVERAGE_DIR;
-  fs.mkdirSync(COVERAGE_DIR);
-  return gulp.src([ 'test/e2e/*.js' ]).pipe(mocha());
+  process.env.NODE_ENV = "coverage";
+  mkdirp.sync(COVERAGE_ROOT_DIR);
+  mkdirp.sync(COVERAGE_DIR);
+  return gulp.src(["app/test/e2e/*.js"]).pipe(mocha());
 });
 
-gulp.task('report:e2e', [ 'cover:e2e', 'clean:report' ], function() {
-  fs.mkdirSync(REPORT_DIR);
+gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
+  mkdirp.sync(REPORT_DIR);
   // tried reporting with writeReports, and it didn't seem to support specifying where the coverage
   // root dir was - it seems to be designed to be used in the inline / unit test case, not the
   // browser case
-  var text_report =
-      child_process.execSync('./node_modules/.bin/istanbul report json text-summary ' +
-                             `--root='${COVERAGE_DIR}' --dir='${REPORT_DIR}'`);
+  var text_report = child_process.execSync(
+    "./node_modules/.bin/istanbul report json text-summary " +
+      `--root='${COVERAGE_DIR}' --dir='${REPORT_DIR}'`
+  );
   process.stdout.write(text_report);
+  fs.renameSync(path.join(REPORT_DIR, "coverage-final.json"), path.join(NYC_DIR, "e2e.json"));
 
   // Remove the coverage dir else istanbul will fail when trying to build the overall combined
   // report. Don't use a clean:cover dependency because it will already have run once so gulp won't
   // run it again.
-  return del([ COVERAGE_DIR ]);
+  return del([REPORT_DIR, COVERAGE_DIR]);
 });
+
+gulp.task("watch", () => {
+  gulp.watch(paths.sources, function(event) {
+    console.log("File " + event.path + " was " + event.type + ", rebuilding...");
+    gulp.start("build");
+  });
+  gulp.watch(paths.tests, function(event) {
+    console.log("File " + event.path + " was " + event.type + ", rebuilding...");
+    gulp.start("build:tests");
+  });
+  gulp.watch(paths.static, function(event) {
+    // gulp.watch <v4 is broken but not documented as such. https://github.com/gulpjs/gulp/issues/651
+    // expect to see this watch picking up changes under ./app !
+    console.log("File " + event.path + " was " + event.type + ", copying...");
+    gulp.start("copy");
+  });
+});
+
+gulp.task("default", ["watch", "build:tests"]);

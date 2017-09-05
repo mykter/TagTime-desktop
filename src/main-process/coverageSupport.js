@@ -1,6 +1,6 @@
-const winston = require('winston');
-const fs = require('fs');
-const path = require('path');
+const winston = require("winston");
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Save istanbul coverage information (on program exit)
@@ -23,7 +23,7 @@ exports.saveCoverage = function() {
     do {
       i += 1;
       coverageBase = `coverage${i}.json`;
-    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, coverageBase)))
+    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, coverageBase)));
 
     global.coverage.forEach((e, i) => {
       let name;

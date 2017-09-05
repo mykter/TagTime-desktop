@@ -1,0 +1,16 @@
+@import './main.css';
+
+input[name=seed] {
+  width: 130px;
+}
+
+.file-input {
+  width: calc(100% - 50px); // Space for the button
+}
+.file-btn {
+  display: inline-block;
+}
+
+.form-control {
+  display: block;
+}

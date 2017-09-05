@@ -1,0 +1,8 @@
+{
+  "presets": ["electron", "react"],
+  "env": {
+    "coverage": {
+      "plugins": ["istanbul"]
+    }
+  }
+}

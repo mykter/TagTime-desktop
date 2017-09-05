@@ -1,22 +1,21 @@
 {
-    "env": {
-        "browser": true,
-        "node": true,
-        "mocha": true,
-        "es6": true
-    },
-    "parserOptions": {
-        "ecmaVersion": 2017,
-        "sourceType": "module",
-        "ecmaFeatures": {
-          "jsx": true
-        }
-    },
-    "extends": ["eslint:recommended", "plugin:react/recommended"],
-    "rules": {
-      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
-    },
-  "plugins": [
-    "react"
-  ]
+  "env": {
+    "browser": true,
+    "node": true,
+    "mocha": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
+  "rules": {
+    "no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+    "react/prop-types": 0
+  },
+  "plugins": ["react"]
 }

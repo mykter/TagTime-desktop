@@ -1,0 +1,119 @@
+exports['should render a number field that matches the snapshot 1'] = {
+  "type": "div",
+  "props": {
+    "className": "form-group"
+  },
+  "children": [
+    {
+      "type": "label",
+      "props": {},
+      "children": [
+        "Configurable number field"
+      ]
+    },
+    {
+      "type": "input",
+      "props": {
+        "readOnly": false,
+        "name": "num",
+        "type": "number",
+        "className": "form-control"
+      },
+      "children": null
+    }
+  ]
+}
+
+exports['should render a date field that matches the snapshot 1'] = {
+  "type": "div",
+  "props": {
+    "className": "form-group"
+  },
+  "children": [
+    {
+      "type": "label",
+      "props": {},
+      "children": [
+        "Configurable datetime field"
+      ]
+    },
+    {
+      "type": "input",
+      "props": {
+        "readOnly": false,
+        "name": "n",
+        "type": "datetime-local",
+        "className": "form-control"
+      },
+      "children": null
+    }
+  ]
+}
+
+exports['should render a checkbox that matches the snapshot 1'] = {
+  "type": "div",
+  "props": {
+    "className": "form-group"
+  },
+  "children": [
+    {
+      "type": "label",
+      "props": {},
+      "children": [
+        {
+          "type": "input",
+          "props": {
+            "readOnly": false,
+            "name": "n",
+            "type": "checkbox"
+          },
+          "children": null
+        },
+        "Configurable checkbox field"
+      ]
+    }
+  ]
+}
+
+exports['should render a file field that matches the snapshot 1'] = {
+  "type": "div",
+  "props": {
+    "className": "form-group"
+  },
+  "children": [
+    {
+      "type": "label",
+      "props": {},
+      "children": [
+        "Static file field"
+      ]
+    },
+    {
+      "type": "div",
+      "props": {},
+      "children": [
+        {
+          "type": "input",
+          "props": {
+            "readOnly": false,
+            "name": "myfile",
+            "type": "input",
+            "className": "file-input"
+          },
+          "children": null
+        },
+        {
+          "type": "button",
+          "props": {
+            "type": "button",
+            "className": "file-btn btn btn-large btn-default pull-right"
+          },
+          "children": [
+            "..."
+          ]
+        }
+      ]
+    }
+  ]
+}
+

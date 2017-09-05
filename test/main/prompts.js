@@ -1,29 +1,29 @@
-'use strict';
-const should = require('should');
-const sinon = require('sinon');
-const tmp = require('tmp');
+"use strict";
+const should = require("should");
+const sinon = require("sinon");
+const tmp = require("tmp");
 
-require('./helper');
+require("./helper");
 
-const prompts = require('../../src/main-process/prompts');
-const Ping = require('../../src/ping');
-const PingFile = require('../../src/main-process/pingfile');
-const PingTimes = require('../../src/pingtimes');
+const prompts = require("../../src/main-process/prompts");
+const Ping = require("../../src/ping");
+const PingFile = require("../../src/main-process/pingfile");
+const PingTimes = require("../../src/pingtimes");
 
-describe('Prompts', function() {
-  it('should save a ping correctly', function() {
-    global.pingFile = {push : sinon.spy()};
-    var ping = new Ping(1234567890, [ 'tag1', 'tag2' ], 'comment');
+describe("Prompts", function() {
+  it("should save a ping correctly", function() {
+    global.pingFile = { push: sinon.spy() };
+    var ping = new Ping(1234567890, ["tag1", "tag2"], "comment");
 
     // Note: doesn't test the ipc component, not obvious how to send a message
     // from here to ipcMain. Maybe mock ipcMain? Or just rely on e2e tests.
-    prompts.savePing(null, {ping : ping, message : null});
+    prompts.savePing(null, { ping: ping, message: null });
 
     global.pingFile.push.calledOnce.should.be.true();
     global.pingFile.push.calledWith(ping).should.be.true();
   });
 
-  describe('ping catchup', function() {
+  describe("ping catchup", function() {
     var f;
     var pf;
     const time = PingTimes.epoch + 30000000;
@@ -33,28 +33,30 @@ describe('Prompts', function() {
       global.pingFile = pf;
       global.pings = new PingTimes(45, 0, null);
     });
-    afterEach(function() { f.removeCallback(); });
+    afterEach(function() {
+      f.removeCallback();
+    });
 
-    it('should not add pings if there is nothing to catch up on', function() {
+    it("should not add pings if there is nothing to catch up on", function() {
       pf.push(new Ping(time, null, null));
       should(prompts.catchUp(time)).be.false();
       pf.pings.length.should.equal(1);
     });
 
-    it('should not add pings to an empty ping file', function() {
+    it("should not add pings to an empty ping file", function() {
       should(prompts.catchUp(time)).be.false();
       pf.pings.length.should.equal(0);
     });
 
-    it('should add pings if they are missing', function() {
+    it("should add pings if they are missing", function() {
       pf.push(new Ping(time, null, null));
       should(prompts.catchUp(global.pings.next(time))).be.true();
       pf.pings.length.should.equal(2);
-      pf.pings[1].tags.should.deepEqual(new Set([ 'afk', 'RETRO' ]));
+      pf.pings[1].tags.should.deepEqual(new Set(["afk", "RETRO"]));
     });
   });
 
-  describe('should trigger a prompt at the right time', function() {
+  describe("should trigger a prompt at the right time", function() {
     // We don't test this end-to-end. Spectron just isn't well
     // suited to it. Instead we have unit tests to check the right
     // looking calls are made at the right time.
@@ -72,7 +74,9 @@ describe('Prompts', function() {
     /**
      * Clean up the spectron instance
      */
-    afterEach(function() { sandbox.restore(); });
+    afterEach(function() {
+      sandbox.restore();
+    });
 
     /**
      * Control when pings occur
@@ -84,7 +88,7 @@ describe('Prompts', function() {
       global.pings = {};
       global.pings.next = sinon.stub().callsFake(function(time) {
         if (time < start) {
-          throw("ping.next called with a time before start (" + start + "): " + time);
+          throw "ping.next called with a time before start (" + start + "): " + time;
         } else if (time < start + 1000) {
           return start + 1000;
         } else if (time < start + 3000) {
@@ -92,14 +96,14 @@ describe('Prompts', function() {
         } else if (time < start + 4000) {
           return start + 4000;
         } else {
-          throw("ping.next called with a time after start+4000:" + time);
+          throw "ping.next called with a time after start+4000:" + time;
         }
       });
     });
 
-    it('should not prompt before the first ping', function() {
+    it("should not prompt before the first ping", function() {
       var promptsMock = sandbox.mock(prompts);
-      var expectation = promptsMock.expects('openPrompt');
+      var expectation = promptsMock.expects("openPrompt");
       expectation.never();
 
       prompts.schedulePings();
@@ -108,9 +112,9 @@ describe('Prompts', function() {
       promptsMock.verify();
     });
 
-    it('should prompt on the first ping', function() {
+    it("should prompt on the first ping", function() {
       var promptsMock = sandbox.mock(prompts);
-      var expectation = promptsMock.expects('openPrompt');
+      var expectation = promptsMock.expects("openPrompt");
       expectation.once();
 
       prompts.schedulePings();
@@ -119,8 +123,8 @@ describe('Prompts', function() {
       promptsMock.verify();
     });
 
-    it('should prompt on each ping in the series', function() {
-      var openPromptsStub = sandbox.stub(prompts, 'openPrompt');
+    it("should prompt on each ping in the series", function() {
+      var openPromptsStub = sandbox.stub(prompts, "openPrompt");
 
       prompts.schedulePings();
       sandbox.clock.tick(1000);

@@ -1,12 +1,12 @@
-'use strict';
+"use strict";
 
-const winston = require('winston');
-const {ipcMain, BrowserWindow} = require('electron');
-const windowStateKeeper = require('electron-window-state');
+const winston = require("winston");
+const { ipcMain, BrowserWindow } = require("electron");
+const windowStateKeeper = require("electron-window-state");
 
-const helper = require('./helper');
-const edit = require('./edit');
-const Ping = require('../ping');
+const helper = require("./helper");
+const edit = require("./edit");
+const Ping = require("../ping");
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -22,50 +22,59 @@ exports.openPrompt = function(time) {
   }
 
   // Save & restore window position and dimensions
-  let promptWindowState =
-      windowStateKeeper({defaultWidth : 500, defaultHeight : 200, file : "promptWindowState.json"});
+  let promptWindowState = windowStateKeeper({
+    defaultWidth: 500,
+    defaultHeight: 200,
+    file: "promptWindowState.json"
+  });
 
   promptWindow = new BrowserWindow({
-    frame : true,
-    minWidth : 205,
-    minHeight : 185,
-    width : promptWindowState.width,
-    height : promptWindowState.height,
-    x : promptWindowState.x,
-    y : promptWindowState.y,
-    maximizable : false,
-    fullscreenable : false,
+    frame: true,
+    minWidth: 205,
+    minHeight: 185,
+    width: promptWindowState.width,
+    height: promptWindowState.height,
+    x: promptWindowState.x,
+    y: promptWindowState.y,
+    maximizable: false,
+    fullscreenable: false,
     // icon : path, // defaults to executable
-    title : "TagTime",
-    alwaysOnTop : global.config.user.get('alwaysOnTop'),
-    show : false,            // let it render first
-    acceptFirstMouse : true, // ensure you can click direct onto the tag entry
-                             // on some platforms?
-    autoHideMenuBar : true,  // not an issue on ubuntu, could be a pain on win
-    webPreferences : {defaultEncoding : 'utf8', nodeIntegration : true},
+    title: "TagTime",
+    alwaysOnTop: global.config.user.get("alwaysOnTop"),
+    show: false, // let it render first
+    acceptFirstMouse: true, // ensure you can click direct onto the tag entry
+    // on some platforms?
+    autoHideMenuBar: true, // not an issue on ubuntu, could be a pain on win
+    webPreferences: { defaultEncoding: "utf8", nodeIntegration: true }
   });
 
   // Have window state keeper register resize listeners
   promptWindowState.manage(promptWindow);
 
-  promptWindow.loadURL(helper.getFileUrl('../prompt.html'));
+  promptWindow.loadURL(helper.getFileUrl("../prompt.html"));
 
   // Send data.
   // Everything gets converted to JSON, so Sets and Pings don't survive
-  promptWindow.webContents.on('did-finish-load', () => {
-    promptWindow.webContents.send('time', time);
+  promptWindow.webContents.on("did-finish-load", () => {
+    let pings, prevTags;
     if (global.pingFile.pings.length > 0) {
-      promptWindow.webContents.send('pings', Array.from(global.pingFile.allTags));
-      var prevTags = global.pingFile.pings.slice(-1)[0].tags;
+      pings = Array.from(global.pingFile.allTags);
+      prevTags = global.pingFile.pings.slice(-1)[0].tags;
       if (prevTags) {
-        promptWindow.webContents.send('prevTags', Array.from(prevTags));
+        prevTags = Array.from(prevTags);
       }
     }
+    promptWindow.webContents.send("data", {
+      time: time,
+      pings: pings,
+      prevTags: prevTags,
+      cancelTags: ["afk", "RETRO"] // TODO make configurable
+    });
   });
 
   // don't show until rendering complete
   // could do this once received an ack via IPC?
-  promptWindow.once('ready-to-show', () => {
+  promptWindow.once("ready-to-show", () => {
     promptWindow.show();
 
     promptWindow.flashFrame(true); // TODO this only works the first time?
@@ -75,7 +84,9 @@ exports.openPrompt = function(time) {
       }
     }, 2500);
 
-    promptWindow.on('closed', () => { promptWindow = null; });
+    promptWindow.on("closed", () => {
+      promptWindow = null;
+    });
   });
 };
 
@@ -104,7 +115,9 @@ exports.schedulePings = function() {
 /**
  * Cancel future pings set up by schedulePings
  */
-exports.cancelSchedule = function() { clearTimeout(_scheduleTimer); };
+exports.cancelSchedule = function() {
+  clearTimeout(_scheduleTimer);
+};
 
 /**
  * Add missing pings to the ping file.
@@ -121,7 +134,7 @@ exports.catchUp = function(till) {
   while (till >= global.pings.next(lastPingTime)) {
     // Replace every missing ping with an afk RETRO ping
     missedPings = true;
-    p = new Ping(global.pings.next(lastPingTime), [ 'afk', 'RETRO' ], '');
+    p = new Ping(global.pings.next(lastPingTime), ["afk", "RETRO"], "");
     global.pingFile.push(p);
     lastPingTime = p.time;
   }
@@ -153,13 +166,8 @@ exports.savePing = function(evt, message) {
 
   // The prompt window might pass us coverage information to save
   // If it does, make sure to push it before closing the window, lest app.quit is fired first
-  if (message.coverage && ('coverage' in global)) {
+  if (message.coverage && "coverage" in global) {
     global.coverage.push(message.coverage);
   }
-
-  if (promptWindow) {
-    promptWindow.close();
-  }
-
 };
-ipcMain.on('save-ping', exports.savePing);
+ipcMain.on("save-ping", exports.savePing);

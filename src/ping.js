@@ -11,7 +11,9 @@ module.exports = class Ping {
     this.comment = comment;
   }
 
-  get tags() { return this._tags; }
+  get tags() {
+    return this._tags;
+  }
   set tags(value) {
     if (value instanceof Set) {
       this._tags = value;
@@ -20,7 +22,9 @@ module.exports = class Ping {
     }
   }
 
-  get comment() { return this._comment; }
+  get comment() {
+    return this._comment;
+  }
   set comment(value) {
     if (value) {
       this._comment = value;
@@ -28,4 +32,4 @@ module.exports = class Ping {
       this._comment = "";
     }
   }
-}
+};

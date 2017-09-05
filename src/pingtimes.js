@@ -4,16 +4,19 @@
  * Times are all javascript milliseconds
  */
 
-'use strict';
+"use strict";
 
-var Random = require('random-js');
+const Random = require("random-js");
+const moment = require("moment");
 
 module.exports = class PingTimes {
   /**
    * @return {time} The birth of tagtime
    * The earliest possible ping in any sequence is on the epoch.
    */
-  static get epoch() { return 1184083200 * 1000; }
+  static get epoch() {
+    return 1184083200 * 1000;
+  }
 
   /**
    * @param {integer} period The mean period in milliseconds
@@ -24,7 +27,7 @@ module.exports = class PingTimes {
     this.period = period;
     this.seed = seed;
     if (startOfPings) {
-      this.startOfPings = startOfPings;
+      this.startOfPings = moment(startOfPings).valueOf(); // convert to js Time Value
     } else {
       this.startOfPings = PingTimes.epoch;
     }
@@ -47,7 +50,9 @@ module.exports = class PingTimes {
      * random number generator using the engine's seed
      * @returns {real} in [0,1]
      */
-    this.rand = function() { return Random.real(0, 1)(engine); };
+    this.rand = function() {
+      return Random.real(0, 1)(engine);
+    };
   }
 
   /**
@@ -97,7 +102,7 @@ module.exports = class PingTimes {
         prev = nxt;
         nxt = this.nextPing(prev);
       }
-      this.pings = [ prev, nxt ];
+      this.pings = [prev, nxt];
     }
 
     // grow this.pings as needed until we have a ping after time
@@ -109,7 +114,9 @@ module.exports = class PingTimes {
      *  @returns {bool} true if e is not before time
      *  @param {time} e
      */
-    var timeOrLater = function(e) { return e >= time; };
+    var timeOrLater = function(e) {
+      return e >= time;
+    };
 
     // the index of the ping before the first ping later than time
     return this.pings.findIndex(timeOrLater) - 1;
