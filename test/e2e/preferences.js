@@ -11,7 +11,7 @@ describe("Preferences", function() {
   let app, tmpLogFileName, tmpConfig, tmpConfigFile;
 
   before(function() {
-    winston.level = "debug";
+    winston.level = "warning";
   });
 
   beforeEach(function() {

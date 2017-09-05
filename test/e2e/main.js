@@ -70,6 +70,7 @@ describe("Application", function() {
   let app1pid, app2pid;
 
   before(function() {
+    winston.level = "debug";
     tmpFile = tmp.fileSync();
   });
 

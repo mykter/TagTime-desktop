@@ -19,7 +19,7 @@ describe("Prompts", function() {
   let prevPingEncoded;
 
   before(function() {
-    winston.level = "debug";
+    winston.level = "warning";
     prevPing = new Ping(1234567890000, ["previous", "tags"], "");
     prevPingEncoded = pingFile.encode(prevPing);
   });
