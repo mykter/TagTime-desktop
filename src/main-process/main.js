@@ -18,7 +18,7 @@ const PingTimes = require("../pingtimes");
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
-const appRoot = path.join(__dirname, "..", "..");
+const appRoot = path.join(__dirname, "..", "..", "..");
 const icon_path = path.resolve(appRoot, "resources", "tagtime.png");
 
 /**

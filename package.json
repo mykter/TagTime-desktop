@@ -17,14 +17,13 @@
   "engines": {
     "node": ">=7.6.0"
   },
-  "main": "src/main-process/main.js",
+  "main": "app/src/main-process/main.js",
   "dependencies": {
     "about-window": "^1.7.0",
     "auto-launch": "^5.0.1",
     "bootstrap": "^3.3.5",
     "bootstrap-tagsinput": "^0.7.1",
     "commander": "^2.11.0",
-    "electron": "^1.7.5",
     "electron-main-notification": "^1.0.0",
     "electron-store": "^1.2.0",
     "electron-window-state": "^4.1.1",
@@ -74,8 +73,7 @@
   },
   "scripts": {
     "build": "gulp clean:build && gulp build:tests",
-    "build:instrumented": "gulp clean:build && gulp build:instrumented",
-    "start": "electron ./app/",
+    "start": "electron .",
     "test": "run-s -n test:renderer test:main test:e2e lint",
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
     "test:main": "xvfb-maybe electron-mocha ./app/test/main",
@@ -105,11 +103,7 @@
     },
     "linux": {
       "category": "Utility",
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ]
+      "target": ["AppImage", "deb", "rpm"]
     }
   }
 }

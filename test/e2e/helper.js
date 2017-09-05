@@ -1,9 +1,9 @@
 const winston = require("winston");
 const path = require("path");
 
-exports.appPath = path.resolve(__dirname, "..", "..", "..", "app");
+exports.appPath = path.resolve(__dirname, "..", "..", "..");
 
-var nodeModulesPath = (electronPath = path.resolve(__dirname, "..", "..", "..", "node_modules"));
+var nodeModulesPath = path.resolve(exports.appPath, "node_modules");
 var electronPath;
 if (process.platform === "win32") {
   electronPath = path.resolve(nodeModulesPath, "electron", "dist", "electron.exe");

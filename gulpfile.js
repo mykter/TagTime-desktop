@@ -24,7 +24,7 @@ const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
   sources: "./src/**/*.js",
   tests: "./test/**/*.js",
-  static: ["./package.json", "./src/css/*.css", "./src/*.html", "./resources/*"]
+  static: ["./src/css/*.css", "./src/*.html"]
 };
 
 gulp.task("compile", function() {
