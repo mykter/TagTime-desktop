@@ -21,7 +21,7 @@ describe("Application", function() {
    *  process.
    * @param {number} parentPid The root of the process tree to kill
    */
-  var tree_kill = function(parentPid) {
+  let tree_kill = function(parentPid) {
     psTree(parentPid, function(err, children) {
       children.forEach(function(child) {
         try {
@@ -42,8 +42,8 @@ describe("Application", function() {
    * @returns {function} which calls callback if pid isn't running,
    *          otherwise schedules itself to run again after a short pause
    */
-  var callWhenDead = function(pid, callback) {
-    var check = function() {
+  let callWhenDead = function(pid, callback) {
+    let check = function() {
       if (isrunning(pid)) {
         setTimeout(check, 100);
       } else {
@@ -56,7 +56,7 @@ describe("Application", function() {
   /**
    * @returns {app} a new instance of the app with its own fresh config file
    */
-  var spawnApp = function() {
+  let spawnApp = function() {
     return child_process.spawn(helper.electronPath, [
       helper.appPath,
       "--verbose",
@@ -65,21 +65,24 @@ describe("Application", function() {
     ]);
   };
 
-  var tmpFile = tmp.fileSync();
-  var app1, app2; // child_process
-  var app1pid, app2pid;
+  let tmpFile;
+  let app1, app2; // child_process
+  let app1pid, app2pid;
 
-  it("should only allow one instance to run - but it's broken (issue #76), skipping");
-  // eslint-disable-next-line no-constant-condition
-  if (false) {
-    it("should only allow one instance to run", function() {
+  before(function() {
+    tmpFile = tmp.fileSync();
+  });
+
+  it.skip(
+    "should only allow one instance to run - but it's broken (issue #76), skipping",
+    function() {
       this.timeout(15000);
 
       app1 = spawnApp();
       app1pid = app1.pid;
 
       return new Promise(function(fulfill, reject) {
-        var app1startup = function(buffer) {
+        let app1startup = function(buffer) {
           if (buffer.toString().includes("ready")) {
             app2 = spawnApp();
             app2pid = app2.pid;
@@ -93,7 +96,7 @@ describe("Application", function() {
           }
         };
 
-        var app2startup = function(buffer) {
+        let app2startup = function(buffer) {
           if (buffer.toString().includes("starting up")) {
             reject("Second instance is starting up");
           }
@@ -103,39 +106,39 @@ describe("Application", function() {
         app1.stdout.on("data", app1startup);
         app1.stderr.on("data", app1startup);
       });
-    });
+    }
+  );
 
-    afterEach(function() {
-      // Kill any processes spawned, and all their descendents.
-      // app[12].kill doesn't work - it kills the node process, but its
-      // descendants live on.
-      if (app1pid) {
-        tree_kill(app1pid);
-      }
-      if (app2pid) {
-        tree_kill(app2pid);
-      }
+  afterEach(function() {
+    // Kill any processes spawned, and all their descendents.
+    // app[12].kill doesn't work - it kills the node process, but its
+    // descendants live on.
+    if (app1pid) {
+      tree_kill(app1pid);
+    }
+    if (app2pid) {
+      tree_kill(app2pid);
+    }
 
-      // Only move on from this test when all the processes spawned are dead.
-      // No longer sure if this is necessary, but keeping in case it is helping
-      // with hard-to-debug errors in CI.
-      return new Promise(function(resolve, _reject) {
-        // resolve() if/when app2pid doesn't exist
-        var waitapp2 = function() {
-          if (app2pid) {
-            setTimeout(callWhenDead(app2pid, resolve), 100);
-          } else {
-            resolve();
-          }
-        };
-
-        // Once app1pid is gone, wait for app2pid
-        if (app1pid) {
-          setTimeout(callWhenDead(app1pid, waitapp2), 100);
+    // Only move on from this test when all the processes spawned are dead.
+    // No longer sure if this is necessary, but keeping in case it is helping
+    // with hard-to-debug errors in CI.
+    return new Promise(function(resolve, _reject) {
+      // resolve() if/when app2pid doesn't exist
+      let waitapp2 = function() {
+        if (app2pid) {
+          setTimeout(callWhenDead(app2pid, resolve), 100);
         } else {
-          waitapp2();
+          resolve();
         }
-      });
+      };
+
+      // Once app1pid is gone, wait for app2pid
+      if (app1pid) {
+        setTimeout(callWhenDead(app1pid, waitapp2), 100);
+      } else {
+        waitapp2();
+      }
     });
-  }
+  });
 });

@@ -10,20 +10,25 @@ const pingFile = require("../../src/main-process/pingfile");
 const Ping = require("../../src/ping");
 
 describe("Prompts", function() {
-  winston.level = "warning";
   this.timeout(10000);
   this.retries(2); // had an occasion where appveyor test transiently failed.
 
-  var app;
-  var tmpPingFileName;
-  var prevPing = new Ping(1234567890000, ["previous", "tags"], "");
-  var prevPingEncoded = pingFile.encode(prevPing);
+  let app, tmpLogFileName;
+  let tmpPingFileName;
+  let prevPing;
+  let prevPingEncoded;
+
+  before(function() {
+    winston.level = "debug";
+    prevPing = new Ping(1234567890000, ["previous", "tags"], "");
+    prevPingEncoded = pingFile.encode(prevPing);
+  });
 
   beforeEach(function() {
     tmpPingFileName = tmp.tmpNameSync();
     fs.writeFileSync(tmpPingFileName, prevPingEncoded);
     // As the pingfile changes for each test, need to recreate the app each test
-    ({ app } = helper.launchApp("prompt", tmpPingFileName));
+    ({ app, tmpLogFileName } = helper.launchApp("prompt", tmpPingFileName));
     winston.debug("Launching app with " + app.path + " " + app.args);
     return app.start();
   });
@@ -33,6 +38,9 @@ describe("Prompts", function() {
     // https://github.com/electron/spectron/issues/101
     // So we have the app quit when all the windows close in test mode, rather
     // than trying to stop it here.
+
+    winston.debug("Application logs follow:");
+    winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });
 
   it("should open a window", function() {
@@ -40,7 +48,7 @@ describe("Prompts", function() {
     return app.stop();
   });
 
-  var untilSaved = function() {
+  let untilSaved = function() {
     // As the app is gone, verify the pingfile separately.
     // Note that writeSync doesn't do synchronous file i/o, so there's no
     // guarantee the pingfile exists yet! See
@@ -66,7 +74,7 @@ describe("Prompts", function() {
     }
   };
 
-  var lastPingShouldEqual = function(tags, comment = null) {
+  let lastPingShouldEqual = function(tags, comment = null) {
     const pings = new pingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);

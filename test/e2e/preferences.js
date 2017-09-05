@@ -5,16 +5,24 @@ const fs = require("fs");
 const helper = require("./helper");
 
 describe("Preferences", function() {
-  winston.level = "warning";
   this.timeout(10000);
   this.retries(2);
 
-  var app, tmpConfig, tmpConfigFile;
+  let app, tmpLogFileName, tmpConfig, tmpConfigFile;
+
+  before(function() {
+    winston.level = "debug";
+  });
 
   beforeEach(function() {
-    ({ app, tmpConfig, tmpConfigFile } = helper.launchApp("prefs", "/dev/null"));
+    ({ app, tmpConfig, tmpConfigFile, tmpLogFileName } = helper.launchApp("prefs", "/dev/null"));
     winston.debug("Launching app with " + app.path + " " + app.args);
     return app.start();
+  });
+
+  afterEach(function() {
+    winston.debug("Application logs follow:");
+    winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });
 
   it("should open a window", function() {
