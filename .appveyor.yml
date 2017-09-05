@@ -1,5 +1,3 @@
-build: off
-
 os: unstable
 
 branches:
@@ -23,6 +21,11 @@ cache:
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install
+
+# We don't want to run 'msbuild' but do need to build prior to testing
+build: off
+before_test:
+  - npm run build
 
 test_script:
   - node --version
