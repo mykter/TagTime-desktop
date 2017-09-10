@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
+  }
+}

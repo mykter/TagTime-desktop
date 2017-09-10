@@ -8,6 +8,7 @@ const gulp = require("gulp");
 const mocha = require("gulp-mocha");
 const sourcemaps = require("gulp-sourcemaps");
 const babel = require("gulp-babel");
+var ts = require("gulp-typescript");
 
 const path = require("path");
 const del = require("del");
@@ -28,16 +29,25 @@ const paths = {
 };
 
 gulp.task("compile", function() {
+  var tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src(["src/**/*.js"], { base: "./" })
+    .src(["src/**/*.[jt]s?(x)"], { base: "./" })
     .pipe(sourcemaps.init())
+    .pipe(tsProject())
+    .js // discard the type outputs (.dts)
     .pipe(babel())
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task("compile:tests", function() {
-  return gulp.src(["test/**/*.js"], { base: "./" }).pipe(babel()).pipe(gulp.dest(BUILD_DIR));
+  var tsProject = ts.createProject("tsconfig.json");
+  return gulp
+    .src(["test/**/*.[jt]s"], { base: "./" })
+    .pipe(tsProject())
+    .js // discard the type outputs (.dts)
+    .pipe(babel())
+    .pipe(gulp.dest(BUILD_DIR));
 });
 
 // Get any non-js components of the app
