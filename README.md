@@ -20,7 +20,7 @@ Download the latest installer from [Releases](https://github.com/mykter/TagTime-
 The application will automatically launch in the background on system startup.
 
 # Contributing
-Please see the CONTRIBUTING file.
+Please see the CONTRIBUTING.md file for design and development info.
 
 # macOS
 This app has not been tested on macOS by a human, only travis-ci. Bug reports and pull requests welcome.
