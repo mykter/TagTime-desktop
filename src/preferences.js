@@ -153,14 +153,14 @@ class Prefs extends React.Component {
       <div className="window">
         <div className="window-content">
           <form>
-            {this.props.prefs.map((pref, index) =>
+            {this.props.prefs.map((pref, index) => (
               <PrefGroup
                 pref={pref}
                 value={this.state[pref.name]}
                 key={"prefGroup-" + index}
                 setValue={this.handleInputChange}
               />
-            )}
+            ))}
           </form>
         </div>
         <footer className="toolbar toolbar-footer">

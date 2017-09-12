@@ -4,6 +4,7 @@
     "moduleResolution": "node",
     "allowJs": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "strict": true
   }
 }

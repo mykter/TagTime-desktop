@@ -23,15 +23,15 @@ const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
 const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
-  sources: "./src/**/*.js",
-  tests: "./test/**/*.js",
+  sources: "src/**/*.[tj]s?(x)",
+  tests: "test/**/*.[jt]s",
   static: ["./src/css/*.css", "./src/*.html"]
 };
 
 gulp.task("compile", function() {
   var tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src(["src/**/*.[jt]s?(x)"], { base: "./" })
+    .src([paths.sources], { base: "./" })
     .pipe(sourcemaps.init())
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
@@ -43,7 +43,7 @@ gulp.task("compile", function() {
 gulp.task("compile:tests", function() {
   var tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src(["test/**/*.[jt]s"], { base: "./" })
+    .src([paths.tests], { base: "./" })
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
     .pipe(babel())
@@ -75,7 +75,7 @@ gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
   process.env.NODE_ENV = "coverage";
   mkdirp.sync(COVERAGE_ROOT_DIR);
   mkdirp.sync(COVERAGE_DIR);
-  return gulp.src(["app/test/e2e/*.js"]).pipe(mocha());
+  return gulp.src(["app/test/e2e/*.[tj]s"]).pipe(mocha());
 });
 
 gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {

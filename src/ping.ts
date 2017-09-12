@@ -5,7 +5,10 @@
  *  .comment {string} - the contents in [] at the end of an entry
  */
 module.exports = class Ping {
-  constructor(time, tags, comment) {
+  private _tags: Set<string>;
+  private _comment: string;
+
+  constructor(public time: number, tags: Set<string>, comment: string) {
     this.time = time;
     this.tags = tags;
     this.comment = comment;
@@ -14,7 +17,7 @@ module.exports = class Ping {
   get tags() {
     return this._tags;
   }
-  set tags(value) {
+  set tags(value: Set<string> | string) {
     if (value instanceof Set) {
       this._tags = value;
     } else {
@@ -25,7 +28,7 @@ module.exports = class Ping {
   get comment() {
     return this._comment;
   }
-  set comment(value) {
+  set comment(value: string | null) {
     if (value) {
       this._comment = value;
     } else {
