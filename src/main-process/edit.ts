@@ -1,5 +1,5 @@
-const { shell } = require("electron");
-const winston = require("winston");
+import { shell } from "electron";
+import * as winston from "winston";
 
 exports.openEditor = function() {
   var path = global.config.user.get("pingFilePath");

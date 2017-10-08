@@ -39,7 +39,12 @@
     "winston": "^2.3.1"
   },
   "devDependencies": {
+    "@types/auto-launch": "^5.0.0",
+    "@types/electron-store": "^1.2.0",
+    "@types/react": "^16.0.10",
+    "@types/react-dom": "^16.0.1",
     "@types/webdriverio": "^4.8.4",
+    "@types/winston": "^2.3.5",
     "babel-core": "^6.26.0",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-preset-electron": "^1.4.15",
@@ -66,7 +71,7 @@
     "ps-tree": "^1.1.0",
     "react-test-renderer": "^15.6.1",
     "rimraf": "^2.6.1",
-    "should": "^13.0.0",
+    "should": "^13.1.1",
     "sinon": "^3.0.0",
     "snap-shot": "^2.17.0",
     "spectron": "^3.7.2",

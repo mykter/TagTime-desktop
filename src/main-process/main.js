@@ -6,7 +6,7 @@ const path = require("path");
 const openAboutWindow = require("about-window").default;
 const moment = require("moment");
 
-const Config = require("./config");
+const { Config } = require("./config");
 const PingFile = require("./pingfile");
 const prompts = require("./prompts");
 const { openPreferences } = require("./openPrefs");

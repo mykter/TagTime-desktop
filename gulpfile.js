@@ -24,7 +24,7 @@ const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
   sources: "src/**/*.[tj]s?(x)",
-  tests: "test/**/*.[jt]s",
+  tests: "test/**/*.[jt]s", // TODO missing global.d.ts?
   static: ["./src/css/*.css", "./src/*.html"]
 };
 
@@ -52,7 +52,7 @@ gulp.task("compile:tests", function() {
 
 // Get any non-js components of the app
 gulp.task("copy", function() {
-  return gulp.src(paths.static, { base: "." }).pipe(gulp.dest(BUILD_DIR));
+  return gulp.src(paths.static, { base: "./" }).pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task("clean:build", function() {

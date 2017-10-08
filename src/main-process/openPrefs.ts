@@ -1,10 +1,10 @@
-const { BrowserWindow, ipcMain } = require("electron");
-const winston = require("winston");
+import { BrowserWindow, ipcMain } from "electron";
+import * as winston from "winston";
 
-const helper = require("./helper");
-const Config = require("./config");
+import * as helper from "./helper";
+import { Config } from "./config";
 
-let prefsWindow;
+let prefsWindow: Electron.BrowserWindow | null;
 exports.openPreferences = function() {
   winston.debug("Showing preferences");
   if (prefsWindow) {
@@ -29,17 +29,23 @@ exports.openPreferences = function() {
 
   prefsWindow.loadURL(helper.getFileUrl("../preferences.html"));
   prefsWindow.once("ready-to-show", () => {
-    prefsWindow.show();
+    // prefsWindow could conceivable be closed in this gap?
+    if (prefsWindow) {
+      prefsWindow.show();
+    }
   });
 
   prefsWindow.webContents.on("did-finish-load", () => {
-    prefsWindow.webContents.send("config", {
-      info: Config.fieldInfo,
-      conf: global.config.userDict
-    });
+    // prefsWindow could conceivable be closed in this gap?
+    if (prefsWindow) {
+      prefsWindow.webContents.send("config", {
+        info: Config.fieldInfo,
+        conf: global.config.userDict
+      });
+    }
   });
 
-  ipcMain.on("save-config", (evt, message) => {
+  ipcMain.on("save-config", (_evt: any, message: any) => {
     winston.debug("Saving config");
     for (let key in message) {
       winston.debug("   " + key + ": " + JSON.stringify(message[key]));

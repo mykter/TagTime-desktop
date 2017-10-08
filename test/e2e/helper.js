@@ -12,16 +12,16 @@ if (process.platform === "win32") {
 }
 exports.electronPath = electronPath;
 
-const Config = require("../../src/main-process/config");
+const { Config } = require("../../src/main-process/config");
 const fs = require("fs");
 const _ = require("lodash");
 /**
  * Creates a new config file in a temporary directory based on the default config
- * @param options {dict} Any options to change from Config.defaultUserConfig
+ * @param options {dict} Any options to change from their defaults
  * @returns {string} directory containing the config file
  */
 let createConfig = function(options) {
-  var conf = _.clone(Config.defaultConfig());
+  var conf = _.clone(Config.defaultDict());
   for (var key in options) {
     conf[key] = options[key];
   }
