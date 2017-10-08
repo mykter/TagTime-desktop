@@ -3,12 +3,12 @@ const should = require("should");
 const _ = require("lodash");
 const stats = require("stats-lite");
 
-const PingTimes = require("../src/pingtimes");
+import { PingTimes } from "../src/pingtimes";
 
 describe("Pings", function() {
   const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
   const notBefore = time - 10000000;
-  var pings;
+  let pings: PingTimes;
 
   beforeEach(function() {
     pings = new PingTimes(45 * 60 * 1000, 1, notBefore);
@@ -24,8 +24,8 @@ describe("Pings", function() {
     });
 
     it("should only generate pings on the second", function() {
-      var next = time;
-      for (var x = 1; x <= 50; x++) {
+      let next = time;
+      for (let x = 1; x <= 50; x++) {
         next = pings.next(next);
         should(next % 1000).equal(0);
       }
@@ -38,7 +38,7 @@ describe("Pings", function() {
 
   describe("prev()", function() {
     it("should return a ping before the requested time", function() {
-      pings.prev(time).should.be.lessThan(time);
+      pings.prev(time)!.should.be.lessThan(time);
     });
 
     it("should not return pings before notBefore", function() {
@@ -48,14 +48,14 @@ describe("Pings", function() {
 
   describe("next() & prev()", function() {
     it("should be idempotent", function() {
-      var ping = pings.next(time);
-      pings.prev(pings.next(ping)).should.equal(ping);
+      let ping = pings.next(time);
+      pings.prev(pings.next(ping))!.should.equal(ping);
     });
   });
 
   it("should return consistent answers when requesting an earlier time", function() {
-    var a = pings.next(time);
-    var b = pings.prev(a);
+    let a = pings.next(time);
+    let b = pings.prev(a)!;
     pings.prev(b - 100000000);
     pings.next(time).should.equal(a);
   });
@@ -63,7 +63,7 @@ describe("Pings", function() {
   it("should give different results for different seeds", function() {
     pings.seed = 1;
     pings.reset();
-    var a = pings.next(time);
+    let a = pings.next(time);
 
     pings.seed = 2;
     pings.reset();
@@ -73,7 +73,7 @@ describe("Pings", function() {
   it("should give the same results for the same seeds", function() {
     pings.seed = 3;
     pings.reset();
-    var a = pings.next(time);
+    let a = pings.next(time);
 
     pings.seed = 4;
     pings.reset();
@@ -96,10 +96,10 @@ describe("Pings", function() {
     pings.reset();
 
     // generate a bunch of pings, and record the gap between them
-    var gaps = [];
-    var prev = time;
-    var next;
-    for (var x = 1; x <= 2000; x++) {
+    let gaps = [];
+    let prev = time;
+    let next;
+    for (let x = 1; x <= 2000; x++) {
       next = pings.next(prev);
       gaps.push(next - prev);
       prev = next;
@@ -109,9 +109,9 @@ describe("Pings", function() {
 
     Math.round(_.mean(gaps)).should.be.approximately(pings.period, 0.1 * pings.period);
 
-    var mode = stats.mode(gaps);
+    let mode = stats.mode(gaps);
 
-    var mode_matcher = function(mode) {
+    let mode_matcher = function(mode: number) {
       (pings.period - mode).should.be.approximately(pings.period, 0.2 * pings.period);
     };
     if (typeof mode !== "number") {

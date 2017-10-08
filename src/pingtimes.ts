@@ -4,26 +4,39 @@
  * Times are all javascript milliseconds
  */
 
-"use strict";
+import * as Random from "random-js";
+import * as moment from "moment";
 
-const Random = require("random-js");
-const moment = require("moment");
+type UnixTime = number;
+export class PingTimes {
+  period: number;
+  seed: number;
+  startOfPings: UnixTime;
 
-module.exports = class PingTimes {
   /**
-   * @return {time} The birth of tagtime
+     * The list of pings since the earliest asked for.
+     *
+     * With a 45 minute period there have been roughly 100k pings since the tagtime
+     * epoch. So we could store a list of all of them, but it's easy enough to only
+     * store from the earliest we've been asked for (at the cost of having to
+     * recompute them all if asked for an earlier one)
+     */
+  pings: UnixTime[];
+
+  private engine: Random.Engine;
+
+  /**
+   * The birth of tagtime.
    * The earliest possible ping in any sequence is on the epoch.
    */
-  static get epoch() {
-    return 1184083200 * 1000;
-  }
+  static epoch: UnixTime = 1184083200 * 1000;
 
   /**
    * @param {integer} period The mean period in milliseconds
    * @param {integer} seed The seed for the random number generator
    * @param {time} startOfPings The time after which pings in this sequence begin. A local epoch.
    */
-  constructor(period, seed, startOfPings) {
+  constructor(period: number, seed: number, startOfPings: UnixTime) {
     this.period = period;
     this.seed = seed;
     if (startOfPings) {
@@ -35,7 +48,6 @@ module.exports = class PingTimes {
 
   /**
    * Re-initialise rand with the root seed
-   * Sets up this.rand as the random number engine using this.seed
    */
   reseed() {
     /* NOTE: because we're using a different PRNG to original tagtime,
@@ -45,14 +57,15 @@ module.exports = class PingTimes {
      *
      * Seed with a 32bit integer
      */
-    var engine = Random.engines.mt19937().seed(this.seed);
-    /**
-     * random number generator using the engine's seed
-     * @returns {real} in [0,1]
-     */
-    this.rand = function() {
-      return Random.real(0, 1)(engine);
-    };
+    this.engine = Random.engines.mt19937().seed(this.seed);
+  }
+
+  /**
+   * random number generator using the engine's seed
+   * @returns {real} in [0,1]
+   */
+  rand(): number {
+    return Random.real(0, 1)(this.engine);
   }
 
   /**
@@ -60,18 +73,7 @@ module.exports = class PingTimes {
    */
   reset() {
     this.reseed();
-
-    /**
-     * The list of pings since the earliest asked for.
-     *
-     * With a 45 minute period there have been roughly 100k pings since the
-     * tagtime
-     * epoch. So we could store a list of all of them, but it's easy enough to
-     * only
-     * store from the earliest we've been asked for (at the cost of having to
-     * recompute them all if asked for an earlier one)
-     */
-    this.pings = undefined;
+    this.pings = [];
   }
 
   /**
@@ -79,7 +81,7 @@ module.exports = class PingTimes {
    * @param {pingtime} ping Previous ping
    * @returns {pingtime} The next ping time
    */
-  nextPing(ping) {
+  nextPing(ping: UnixTime): UnixTime {
     // Add a random number drawn from an exponential distribution with mean
     // period
     var gap = -1 * this.period * Math.log(this.rand());
@@ -92,8 +94,8 @@ module.exports = class PingTimes {
    * @returns {int} the index into this.pings of the ping preceding time
    * Side effect: the next ping is present at the next index in this.pings
    */
-  prevPingIndex(time) {
-    if (!this.pings || time < this.pings[0]) {
+  prevPingIndex(time: UnixTime): number {
+    if (!this.pings || this.pings.length == 0 || time < this.pings[0]) {
       // we don't have a record of a ping this early
       this.reset();
       var prev = PingTimes.epoch;
@@ -112,9 +114,8 @@ module.exports = class PingTimes {
 
     /**
      *  @returns {bool} true if e is not before time
-     *  @param {time} e
      */
-    var timeOrLater = function(e) {
+    var timeOrLater = function(e: UnixTime): boolean {
       return e >= time;
     };
 
@@ -127,7 +128,7 @@ module.exports = class PingTimes {
    * @return {pingtime} The ping that preceded time or null if this ping would be before
    * startOfPings
    */
-  prev(time) {
+  prev(time: UnixTime): UnixTime | null {
     var idx = this.prevPingIndex(time);
     var pingTime = this.pings[idx];
     if (pingTime < this.startOfPings) {
@@ -141,7 +142,7 @@ module.exports = class PingTimes {
    * @param {time} time - reference point in time
    * @returns {pingtime} the ping that follows time
    */
-  next(time) {
+  next(time: UnixTime): UnixTime {
     time = Math.max(time, this.startOfPings); // skip to startOfPings
 
     var idx = this.prevPingIndex(time) + 1;
@@ -152,4 +153,4 @@ module.exports = class PingTimes {
     }
     return this.pings[idx];
   }
-};
+}

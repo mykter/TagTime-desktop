@@ -4,7 +4,7 @@ const fs = require("fs");
 const moment = require("moment");
 const winston = require("winston");
 
-const PingTimes = require("../pingtimes");
+const { PingTimes } = require("../pingtimes");
 const Ping = require("../ping");
 
 /**

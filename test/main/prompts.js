@@ -8,7 +8,7 @@ require("./helper");
 const prompts = require("../../src/main-process/prompts");
 const Ping = require("../../src/ping");
 const PingFile = require("../../src/main-process/pingfile");
-const PingTimes = require("../../src/pingtimes");
+const { PingTimes } = require("../../src/pingtimes");
 
 describe("Prompts", function() {
   it("should save a ping correctly", function() {

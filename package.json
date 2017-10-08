@@ -41,6 +41,8 @@
   "devDependencies": {
     "@types/auto-launch": "^5.0.0",
     "@types/electron-store": "^1.2.0",
+    "@types/mocha": "^2.2.43",
+    "@types/random-js": "^1.0.30",
     "@types/react": "^16.0.10",
     "@types/react-dom": "^16.0.1",
     "@types/webdriverio": "^4.8.4",
@@ -91,8 +93,7 @@
     "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover":
-      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
     "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
@@ -113,7 +114,11 @@
     },
     "linux": {
       "category": "Utility",
-      "target": ["AppImage", "deb", "rpm"]
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ]
     }
   }
 }

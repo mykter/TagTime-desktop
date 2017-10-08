@@ -12,8 +12,7 @@ const prompts = require("./prompts");
 const { openPreferences } = require("./openPrefs");
 const { openEditor } = require("./edit");
 const { saveCoverage } = require("./coverageSupport");
-
-const PingTimes = require("../pingtimes");
+const { PingTimes } = require("../pingtimes");
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
