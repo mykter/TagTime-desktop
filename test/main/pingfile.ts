@@ -1,16 +1,16 @@
-const should = require("should");
-const _ = require("lodash");
-const tmp = require("tmp");
-const fs = require("fs");
+import * as should from "should";
+import * as _ from "lodash";
+import * as tmp from "tmp";
+import * as fs from "fs";
 
-require("./helper");
-const PingFile = require("../../src/main-process/pingfile");
-const Ping = require("../../src/ping");
+import "./helper";
+import { PingFile } from "../../src/main-process/pingfile";
+import { Ping } from "../../src/ping";
 
 describe("PingFile", function() {
   describe("parse()", function() {
     it("should parse time-only entries", function() {
-      var ping = new Ping(1487459622000, null, null);
+      let ping = new Ping(1487459622000, new Set(), "");
       // use _.isEqual as it copes with Sets, whereas should.eql doesn't
       ["1487459622", "1487459622 ", "1487459622  "].forEach(function(entry) {
         _.isEqual(PingFile.parse(entry), ping).should.be.true();
@@ -38,8 +38,10 @@ describe("PingFile", function() {
         "1487459622      atag            "
       ];
       entries.forEach(function(entry) {
-        PingFile.parse(entry).tags.size.should.equal(1);
-        PingFile.parse(entry).tags.has("atag").should.be.true();
+        let ping = PingFile.parse(entry);
+        should.exist(ping);
+        ping!.tags.size.should.equal(1);
+        ping!.tags.has("atag").should.be.true();
       });
     });
 
@@ -52,8 +54,10 @@ describe("PingFile", function() {
         "1487459622 \t \tt'w'o\tth-ree\tone:  four, fi;ve        "
       ];
       entries.forEach(function(entry) {
-        PingFile.parse(entry).tags.size.should.equal(5);
-        _.isEqual(PingFile.parse(entry).tags, tags).should.be.true();
+        let ping = PingFile.parse(entry);
+        should.exist(ping);
+        ping!.tags.size.should.equal(5);
+        _.isEqual(ping!.tags, tags).should.be.true();
       });
     });
 
@@ -62,7 +66,9 @@ describe("PingFile", function() {
         prefix
       ) {
         [" hello'\"\t\t", "", "1"].forEach(function(comment) {
-          PingFile.parse(prefix + comment + "]").comment.should.equal(comment);
+          let parsed = PingFile.parse(prefix + comment + "]");
+          should(parsed).not.be.null();
+          parsed!.comment.should.equal(comment);
         });
       });
     });
@@ -78,26 +84,26 @@ describe("PingFile", function() {
         { time: 1487459622000, tags: "atag", comment: null }
       ].forEach(function(ping) {
         should(function() {
-          PingFile.encode(ping);
+          PingFile.encode(ping as Ping); // these types don't match, deliberately
         }).throw();
       });
     });
 
     it("should encode a time only ping", function() {
-      PingFile.encode({ time: 1487459622000, tags: new Set(), comment: null }, false)
+      PingFile.encode({ time: 1487459622000, tags: new Set(), comment: "" }, false)
         .trim() // don't care
         .should.equal("1487459622");
     });
 
     it("should annotate pings", function() {
       // we don't know what timezone this is running in, so ignore that
-      PingFile.encode({ time: 1487459622000, tags: new Set(), comment: null }).should.match(
+      PingFile.encode({ time: 1487459622000, tags: new Set(), comment: "" }).should.match(
         /1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d \w{3}\]/
       );
       PingFile.encode({
         time: 1487459622000,
-        tags: new Set([1, 2, "three"]),
-        comment: null
+        tags: new Set(["1", "2", "three"]),
+        comment: ""
       }).should.match(/1487459622 1 2 three \[2017-02-18T23:13:42\+\d\d:\d\d \w{3}\]/);
       PingFile.encode({ time: 1487459622000, tags: new Set(), comment: "hi" }).should.match(
         /1487459622 \[2017-02-18T23:13:42\+\d\d:\d\d \w{3} hi]/
@@ -106,26 +112,23 @@ describe("PingFile", function() {
 
     it("should encode tags", function() {
       PingFile.encode(
-        { time: 1487459622000, tags: new Set([1]), comment: null },
+        { time: 1487459622000, tags: new Set(["1"]), comment: "" },
         false
       ).should.equal("1487459622 1");
       PingFile.encode(
-        { time: 1487459622000, tags: new Set([1, 2, "three"]), comment: null },
+        { time: 1487459622000, tags: new Set(["1", "2", "three"]), comment: "" },
         false
       ).should.equal("1487459622 1 2 three");
       PingFile.encode(
-        { time: 1487459622000, tags: new Set([3, 2, 1]), comment: null },
+        { time: 1487459622000, tags: new Set(["3", "2", "1"]), comment: "" },
         false
       ).should.equal("1487459622 3 2 1");
-      PingFile.encode({ time: 1487459622000, tags: [1, 2], comment: null }, false).should.equal(
-        "1487459622 1 2"
-      );
     });
 
     it("should pad tags to the specified width", function() {
       // include a comment otherwise the padding will be removed
       PingFile.encode(
-        { time: 1487459622000, tags: new Set([1]), comment: "hi" },
+        { time: 1487459622000, tags: new Set(["1"]), comment: "hi" },
         false,
         40
       ).should.equal("1487459622 1" + " ".repeat(39) + " [hi]");
@@ -133,8 +136,8 @@ describe("PingFile", function() {
   });
 
   describe("get pings", function() {
-    var f;
-    var pf;
+    let f: tmp.SynchrounousResult;
+    let pf: PingFile;
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name, true);
@@ -143,7 +146,7 @@ describe("PingFile", function() {
       f.removeCallback();
     });
 
-    var get = function(contents) {
+    let get = function(contents: string) {
       fs.writeSync(f.fd, contents);
       return pf.pings;
     };
@@ -154,9 +157,11 @@ describe("PingFile", function() {
 
     it("should parse a single entry", function() {
       var res = get("1487459622 1 2 three [2017-02-18T23:13:42+00:00 hi]");
-      should(res[0].time).equal(1487459622000);
-      should(res[0].comment).equal("2017-02-18T23:13:42+00:00 hi");
-      _.isEqual(res[0].tags, new Set(["1", "2", "three"])).should.be.true();
+      should.exist(res);
+      res!.length.should.equal(1);
+      should(res[0]!.time).equal(1487459622000);
+      should(res[0]!.comment).equal("2017-02-18T23:13:42+00:00 hi");
+      _.isEqual(res[0]!.tags, new Set(["1", "2", "three"])).should.be.true();
     });
 
     it("should parse a multiline file with invalid entries", function() {
@@ -167,13 +172,15 @@ describe("PingFile", function() {
           "123invalid tags\n" +
           "1487459623 1 2 three [2017-02-18T23:13:42+00:00 hi]\n"
       );
-      should(res[0]).equal(null);
-      should(res[1]).equal(null);
-      should(res[2].time).equal(1487459622000);
-      should(res[2].comment).equal("2017-02-18T23:13:42+00:00 hi");
-      _.isEqual(res[2].tags, new Set(["1", "2", "three"])).should.be.true();
-      should(res[3]).equal(null);
-      should(res[4].time).equal(1487459623000);
+      should.exist(res);
+      res!.length.should.equal(5);
+      should(res[0]!).equal(null);
+      should(res[1]!).equal(null);
+      should(res[2]!.time).equal(1487459622000);
+      should(res[2]!.comment).equal("2017-02-18T23:13:42+00:00 hi");
+      _.isEqual(res[2]!.tags, new Set(["1", "2", "three"])).should.be.true();
+      should(res[3]!).equal(null);
+      should(res[4]!.time).equal(1487459623000);
     });
 
     it("should ignore invalid entries when configured to do so", function() {
@@ -185,19 +192,19 @@ describe("PingFile", function() {
           "123invalid tags\n" +
           "1487459623 1 2 three [2017-02-18T23:13:42+00:00 hi]\n"
       );
-      should(res[0].time).equal(1487459622000);
-      should(res[0].comment).equal("2017-02-18T23:13:42+00:00 hi");
-      _.isEqual(res[0].tags, new Set(["1", "2", "three"])).should.be.true();
-      should(res[1].time).equal(1487459623000);
+      should(res[0]!.time).equal(1487459622000);
+      should(res[0]!.comment).equal("2017-02-18T23:13:42+00:00 hi");
+      _.isEqual(res[0]!.tags, new Set(["1", "2", "three"])).should.be.true();
+      should(res[1]!.time).equal(1487459623000);
     });
   });
 
   describe("push", function() {
-    var pf;
-    var f;
-    var p = { time: 1487459622000, tags: new Set(["one", "two"]), comment: "c" };
-    var pStr = "1487459622 one two [c]";
-    var pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d \w{3} c]/;
+    let pf: PingFile;
+    let f: tmp.SynchrounousResult;
+    let p = { time: 1487459622000, tags: new Set(["one", "two"]), comment: "c" };
+    let pStr = "1487459622 one two [c]";
+    let pAnnoStr = /1487459622 one two \[2017-02-18T23:13:42\+\d\d:\d\d \w{3} c]/;
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name);
@@ -208,7 +215,7 @@ describe("PingFile", function() {
 
     it("should throw on an invalid ping", function() {
       should(function() {
-        pf.push({});
+        pf.push({} as Ping);
       }).throw();
     });
 
@@ -237,7 +244,7 @@ describe("PingFile", function() {
     });
   });
 
-  var testPush = function(caching) {
+  var testPush = function(caching: boolean) {
     var p = { time: 1487459622000, tags: new Set(["one", "two"]), comment: "c" };
     var f = tmp.fileSync();
     var pf = new PingFile(f.name, false, false, caching);
@@ -245,9 +252,10 @@ describe("PingFile", function() {
     pf.push(p, false);
     pf.pings.should.have.length(2);
     pf.pings.forEach(function(ping) {
-      should(ping.time).equal(p.time);
-      _.isEqual(ping.tags, p.tags).should.be.true();
-      should(ping.comment).equal(p.comment);
+      should.exist(ping);
+      should(ping!.time).equal(p.time);
+      _.isEqual(ping!.tags, p.tags).should.be.true();
+      should(ping!.comment).equal(p.comment);
     });
     f.removeCallback();
   };
@@ -259,8 +267,8 @@ describe("PingFile", function() {
   });
 
   describe("allTags", function() {
-    var pf;
-    var f;
+    let pf: PingFile;
+    let f: tmp.SynchrounousResult;
     beforeEach(function() {
       f = tmp.fileSync();
     });
@@ -273,11 +281,11 @@ describe("PingFile", function() {
       _.isEqual(pf.allTags, new Set()).should.be.true();
     });
 
-    var testAllTags = function(caching) {
+    var testAllTags = function(caching: boolean) {
       var pf = new PingFile(f.name, false, false, caching);
-      pf.push({ time: 1487459622000, tags: new Set(["one"]), comment: null });
-      pf.push({ time: 1487459623000, tags: new Set(["one", "two"]), comment: null });
-      pf.push({ time: 1487459624000, tags: new Set(["three"]), comment: null });
+      pf.push({ time: 1487459622000, tags: new Set(["one"]), comment: "" });
+      pf.push({ time: 1487459623000, tags: new Set(["one", "two"]), comment: "" });
+      pf.push({ time: 1487459624000, tags: new Set(["three"]), comment: "" });
       return _.isEqual(pf.allTags, new Set(["one", "two", "three"])).should.be.true();
     };
     it("should return the set of recorded pings with caching", function() {

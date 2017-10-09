@@ -6,8 +6,8 @@ const winston = require("winston");
 
 const helper = require("./helper");
 
-const pingFile = require("../../src/main-process/pingfile");
-const Ping = require("../../src/ping");
+const { PingFile } = require("../../src/main-process/pingfile");
+const { Ping } = require("../../src/ping");
 
 describe("Prompts", function() {
   this.timeout(10000);
@@ -21,7 +21,7 @@ describe("Prompts", function() {
   before(function() {
     winston.level = "warning";
     prevPing = new Ping(1234567890000, ["previous", "tags"], "");
-    prevPingEncoded = pingFile.encode(prevPing);
+    prevPingEncoded = PingFile.encode(prevPing);
   });
 
   beforeEach(function() {
@@ -44,7 +44,10 @@ describe("Prompts", function() {
   });
 
   it("should open a window", function() {
-    app.client.waitUntilWindowLoaded().getWindowCount().should.eventually.equal(1);
+    app.client
+      .waitUntilWindowLoaded()
+      .getWindowCount()
+      .should.eventually.equal(1);
     return app.stop();
   });
 
@@ -75,7 +78,7 @@ describe("Prompts", function() {
   };
 
   let lastPingShouldEqual = function(tags, comment = null) {
-    const pings = new pingFile(tmpPingFileName).pings;
+    const pings = new PingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);
     if (comment) {

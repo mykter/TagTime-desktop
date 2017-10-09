@@ -6,7 +6,7 @@ const windowStateKeeper = require("electron-window-state");
 
 const helper = require("./helper");
 const edit = require("./edit");
-const Ping = require("../ping");
+const { Ping } = require("../ping");
 
 // Global reference to prevent garbage collection
 let promptWindow;
@@ -134,7 +134,7 @@ exports.catchUp = function(till) {
   while (till >= global.pings.next(lastPingTime)) {
     // Replace every missing ping with an afk RETRO ping
     missedPings = true;
-    p = new Ping(global.pings.next(lastPingTime), ["afk", "RETRO"], "");
+    p = new Ping(global.pings.next(lastPingTime), new Set(["afk", "RETRO"]), "");
     global.pingFile.push(p);
     lastPingTime = p.time;
   }
