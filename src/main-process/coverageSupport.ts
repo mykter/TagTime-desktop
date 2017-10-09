@@ -1,11 +1,11 @@
-const winston = require("winston");
-const fs = require("fs");
-const path = require("path");
+import * as winston from "winston";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Save istanbul coverage information (on program exit)
  */
-exports.saveCoverage = function() {
+export function saveCoverage() {
   if (!process.env.TAGTIME_E2E_COVERAGE_DIR) {
     return;
   }
@@ -19,7 +19,7 @@ exports.saveCoverage = function() {
   } else {
     // Find a unique file name
     let i = -1;
-    let coverageBase;
+    let coverageBase: string;
     do {
       i += 1;
       coverageBase = `coverage${i}.json`;
@@ -38,4 +38,4 @@ exports.saveCoverage = function() {
       fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, name), JSON.stringify(e));
     });
   }
-};
+}

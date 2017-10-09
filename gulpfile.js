@@ -23,15 +23,15 @@ const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
 const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
-  sources: "src/**/*.[tj]s?(x)",
-  tests: "test/**/*.[jt]s", // TODO missing global.d.ts?
+  sources: ["src/**/*.[tj]s?(x)"],
+  tests: ["test/**/*.[jt]s", "src/global.d.ts"],
   static: ["./src/css/*.css", "./src/*.html"]
 };
 
 gulp.task("compile", function() {
   var tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src([paths.sources], { base: "./" })
+    .src(paths.sources, { base: "./" })
     .pipe(sourcemaps.init())
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
@@ -43,7 +43,7 @@ gulp.task("compile", function() {
 gulp.task("compile:tests", function() {
   var tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src([paths.tests], { base: "./" })
+    .src(paths.tests, { base: "./" })
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
     .pipe(babel())

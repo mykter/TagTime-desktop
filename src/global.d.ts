@@ -6,6 +6,8 @@ declare global {
   namespace NodeJS {
     interface Global {
       config: Config;
+      coverage: any[];
     }
   }
+  export var __coverage__: any;
 }
