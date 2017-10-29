@@ -235,7 +235,7 @@ let main = function() {
       app.on("window-all-closed", () => {});
 
       createTray();
-      prompts.schedulePings();
+      prompts.schedulePings(prompts.openPrompt);
       prompts.editorIfMissed();
     }
   });

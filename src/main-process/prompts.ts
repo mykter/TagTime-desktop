@@ -1,20 +1,19 @@
-"use strict";
+import * as winston from "winston";
+import { ipcMain, BrowserWindow } from "electron";
+import windowStateKeeper = require("electron-window-state");
 
-const winston = require("winston");
-const { ipcMain, BrowserWindow } = require("electron");
-const windowStateKeeper = require("electron-window-state");
-
-const helper = require("./helper");
-const edit = require("./edit");
-const { Ping } = require("../ping");
+import * as helper from "./helper";
+import * as edit from "./edit";
+import { Ping } from "../ping";
 
 // Global reference to prevent garbage collection
-let promptWindow;
+let promptWindow: Electron.BrowserWindow | null;
 
 /**
  * Open a ping prompt window
  */
-exports.openPrompt = function(time) {
+export function openPrompt(time: number) {
+  console.log("hi!");
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
@@ -56,118 +55,127 @@ exports.openPrompt = function(time) {
   // Send data.
   // Everything gets converted to JSON, so Sets and Pings don't survive
   promptWindow.webContents.on("did-finish-load", () => {
-    let pings, prevTags;
+    let allTags: string[] = [];
+    let prevTags: string[] = [];
+
     if (global.pingFile.pings.length > 0) {
-      pings = Array.from(global.pingFile.allTags);
-      prevTags = global.pingFile.pings.slice(-1)[0].tags;
-      if (prevTags) {
-        prevTags = Array.from(prevTags);
-      }
+      allTags = Array.from(global.pingFile.allTags);
+      prevTags = Array.from(global.pingFile.pings.slice(-1)[0]!.tags);
     }
-    promptWindow.webContents.send("data", {
-      time: time,
-      pings: pings,
-      prevTags: prevTags,
-      cancelTags: ["afk", "RETRO"] // TODO make configurable
-    });
+    if (promptWindow) {
+      promptWindow.webContents.send("data", {
+        time: time,
+        pings: allTags,
+        prevTags: prevTags,
+        cancelTags: ["afk", "RETRO"] // TODO make configurable
+      });
+    }
   });
 
   // don't show until rendering complete
   // could do this once received an ack via IPC?
   promptWindow.once("ready-to-show", () => {
-    promptWindow.show();
+    if (promptWindow) {
+      promptWindow.show();
 
-    promptWindow.flashFrame(true); // TODO this only works the first time?
-    setTimeout(() => {
-      if (promptWindow) {
-        promptWindow.flashFrame(false);
-      }
-    }, 2500);
+      promptWindow.flashFrame(true); // TODO this only works the first time?
+      setTimeout(() => {
+        if (promptWindow) {
+          promptWindow.flashFrame(false);
+        }
+      }, 2500);
 
-    promptWindow.on("closed", () => {
-      promptWindow = null;
-    });
+      promptWindow.on("closed", () => {
+        promptWindow = null;
+      });
+    }
   });
-};
+}
 
-var _scheduleTimer;
+let _scheduleTimer: NodeJS.Timer;
 
 /**
- * Schedules the creation of prompt windows at ping times in the future.
+ * Schedules onPing to be executed at ping times in the future.
+ * (onPing is exected to just be `openPrompt`, but is a parameter to support testing)
  * Won't launch a new prompt window if one is already open.
  * Doesn't handle missed past pings.
  * If a ping is due this second, it won't be scheduled.
  */
-exports.schedulePings = function() {
-  var now = Date.now();
-  var next = global.pings.next(now);
+export function schedulePings(onPing: (time: number) => void) {
+  let now = Date.now();
+  let next = global.pings.next(now);
 
   _scheduleTimer = setTimeout(() => {
     if (promptWindow) {
       winston.info("Skipping prompt because current prompt hasn't been answered");
     } else {
-      exports.openPrompt(next);
+      onPing(next);
     }
-    exports.schedulePings();
+    schedulePings(onPing);
   }, next - now);
-};
+}
 
 /**
  * Cancel future pings set up by schedulePings
  */
-exports.cancelSchedule = function() {
+export function cancelSchedule() {
   clearTimeout(_scheduleTimer);
-};
+}
 
 /**
  * Add missing pings to the ping file.
  * Only exported to support testing.
- * @returns {bool} whether there were any missing pings that were added.
+ * @returns Whether there were any missing pings that were added.
  */
-exports.catchUp = function(till) {
+export function catchUp(till: number): boolean {
   if (global.pingFile.pings.length === 0) {
     return false;
   }
-  var lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1].time;
-  var missedPings = false;
-  var p;
-  while (till >= global.pings.next(lastPingTime)) {
-    // Replace every missing ping with an afk RETRO ping
-    missedPings = true;
-    p = new Ping(global.pings.next(lastPingTime), new Set(["afk", "RETRO"]), "");
-    global.pingFile.push(p);
-    lastPingTime = p.time;
+  let missedPings = false;
+  if (global.pingFile.pings.length > 0) {
+    let lastPing = global.pingFile.pings[global.pingFile.pings.length - 1];
+    if (lastPing) {
+      let p: Ping;
+      while (till >= global.pings.next(lastPing.time)) {
+        // Replace every missing ping with an afk RETRO ping
+        missedPings = true;
+        p = new Ping(global.pings.next(lastPing.time), new Set(["afk", "RETRO"]), "");
+        global.pingFile.push(p);
+        lastPing = p;
+      }
+    }
   }
   return missedPings;
-};
+}
 
 /**
  * Show an editor if the time is after the next ping in the pingfile
  */
-exports.editorIfMissed = function() {
+export function editorIfMissed() {
   if (global.pingFile.pings.length === 0) {
     return;
   }
 
-  if (exports.catchUp(Date.now()))
+  if (catchUp(Date.now()))
     if (promptWindow) {
       winston.info("Skipping editor because prompt hasn't been answered");
     } else {
       edit.openEditor();
     }
-};
+}
 
 /* Handle events sent from the prompt window
  * Shouldn't be called directly - only exported so it can be tested :/ */
-exports.savePing = function(evt, message) {
-  var ping = message.ping;
+export function savePing(evt: Electron.Event, message: { ping: Ping; coverage?: any }) {
+  let ping = message.ping;
   winston.debug("Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]");
   global.pingFile.push(ping);
 
   // The prompt window might pass us coverage information to save
   // If it does, make sure to push it before closing the window, lest app.quit is fired first
   if (message.coverage && "coverage" in global) {
+    global.coverage = global.coverage || [];
     global.coverage.push(message.coverage);
   }
-};
-ipcMain.on("save-ping", exports.savePing);
+}
+ipcMain.on("save-ping", savePing);

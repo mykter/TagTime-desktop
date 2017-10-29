@@ -11,10 +11,11 @@ export function saveCoverage() {
   }
 
   if (typeof __coverage__ !== "undefined") {
+    global.coverage = global.coverage || [];
     global.coverage.push(__coverage__); // eslint-disable-line no-undef
     winston.warn("main coverage");
   }
-  if (global.coverage.length === 0) {
+  if (!global.coverage || global.coverage.length === 0) {
     winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
   } else {
     // Find a unique file name
