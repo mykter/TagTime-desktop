@@ -79,7 +79,7 @@
     "react-test-renderer": "^15.6.1",
     "rimraf": "^2.6.1",
     "should": "^13.1.1",
-    "sinon": "^4.0.1",
+    "sinon": "^4.1.1",
     "snap-shot": "^2.17.0",
     "spectron": "^3.7.2",
     "stats-lite": "^2.1.0",
