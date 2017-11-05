@@ -1,18 +1,17 @@
-"use strict";
-
-const { app, Menu, Tray } = require("electron");
-const winston = require("winston");
-const path = require("path");
+import { app, Menu, Tray } from "electron";
+const winston = require("winston"); // type errors with winston.level= if using "import"
+import * as path from "path";
 const openAboutWindow = require("about-window").default;
-const moment = require("moment");
+import * as moment from "moment";
+import * as commander from "commander";
 
-const { Config } = require("./config");
-const { PingFile } = require("./pingfile");
-const prompts = require("./prompts");
-const { openPreferences } = require("./openPrefs");
-const { openEditor } = require("./edit");
-const { saveCoverage } = require("./coverageSupport");
-const { PingTimes } = require("../pingtimes");
+import * as prompts from "./prompts";
+import { Config } from "./config";
+import { PingFile } from "./pingfile";
+import { openPreferences } from "./openPrefs";
+import { openEditor } from "./edit";
+import { saveCoverage } from "./coverageSupport";
+import { PingTimes } from "../pingtimes";
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -24,9 +23,10 @@ const icon_path = path.resolve(appRoot, "resources", "tagtime.png");
  * Ensures only one instance of the app is running at a time.
  * On launch of second instance, it quits and the first instance
  * notifies the user.
- * @return {bool} true if this is the only instance, false otherwise
+ * @param {bool} alwaysQuit Notify any existing instance then quit regardless
+ * @return true if this is the only instance, false otherwise
  */
-let singleInstance = function(cmdline) {
+function singleInstance(alwaysQuit: boolean) {
   const secondInstance = app.makeSingleInstance((argv, _cwd) => {
     // Runs in the existing app when another instance is launched
     winston.debug("A second instance was started");
@@ -42,7 +42,7 @@ let singleInstance = function(cmdline) {
       });
     }
   });
-  if (cmdline.quit) {
+  if (alwaysQuit) {
     // Quit regardless.
     // Can't offer any useful info to the user - secondInstance might return
     // false even if there was a second instance, because it has now quit.
@@ -55,12 +55,12 @@ let singleInstance = function(cmdline) {
     return false;
   }
   return true;
-};
+}
 
 /**
  * Download and install developer extensions
  */
-const installExtensions = async () => {
+async function installExtensions() {
   const installer = require("electron-devtools-installer");
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ["REACT_DEVELOPER_TOOLS"];
@@ -68,7 +68,7 @@ const installExtensions = async () => {
   return Promise.all(
     extensions.map(name => installer.default(installer[name], forceDownload))
   ).catch(winston.error);
-};
+}
 
 /**
  * Launch an about window
@@ -98,7 +98,7 @@ function createTray() {
  * Handle invocations in --test mode
  * @param {string} option The requested test mode
  */
-let mainTest = function(option) {
+function mainTest(option: string) {
   switch (option) {
     case "prompt":
       prompts.openPrompt(Date.now());
@@ -111,15 +111,13 @@ let mainTest = function(option) {
     default:
       throw "Didn't recognise test option " + option;
   }
-};
+}
 
 /**
  * Process argv into an object
  */
-let parseCommandLine = function() {
+function parseCommandLine() {
   // Could split --test out into its own .command('test')
-  let program = require("commander");
-
   // commander assumes that the first two values in argv are 'node' and 'blah.js' and then followed
   // by the args. This is not the case when running from a packaged Electron app. Here you have
   // first value 'appname' and then args. https://github.com/tj/commander.js/issues/512
@@ -129,7 +127,7 @@ let parseCommandLine = function() {
   } else {
     argvWorkaround = [process.argv[0], "", ...process.argv.slice(1)];
   }
-  program
+  commander
     .version(process.env.npm_package_version)
     .option("--test <option>", "Development test mode")
     .option("--logfile <path>", "Send logging output to this file instead of stdout")
@@ -141,13 +139,13 @@ let parseCommandLine = function() {
         "--test instances that don't have a tray icon)"
     )
     .parse(argvWorkaround);
-  return program;
-};
+  return commander;
+}
 
 /**
  * Initial setup
  */
-let firstRunTasks = function() {
+function firstRunTasks() {
   winston.info("First run");
   global.config.setupAutoLaunch();
 
@@ -159,29 +157,30 @@ let firstRunTasks = function() {
       global.config.user.get("period") +
       " minutes)."
   );
-  global.config.user.pingFileStart = moment().format(global.config.pingFileStartFormat);
-};
+  global.config.user.set("pingFileStart", moment().format(global.config.pingFileStartFormat));
+}
 
 /**
  * Configure winston and expose to renderer windows via global.logger
  */
-let setupLogging = function(verbose, logfile) {
+function setupLogging(verbose: boolean, logfile: string) {
   if (verbose) {
     winston.level = "debug";
   } else {
     winston.level = "warn";
   }
+
   if (logfile) {
     winston.add(winston.transports.File, { filename: logfile });
     winston.remove(winston.transports.Console);
   }
   global.logger = winston;
-};
+}
 
 /**
  * Application init
  */
-let main = function() {
+function main() {
   // Coverage variables from the main and renderer processes accumulate here
   global.coverage = [];
 
@@ -190,7 +189,7 @@ let main = function() {
   setupLogging(program.verbose, program.logfile);
 
   // Prevent second instance from running
-  if (!singleInstance(program)) {
+  if (!singleInstance(program.quit)) {
     saveCoverage();
     return;
   }
@@ -198,15 +197,17 @@ let main = function() {
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
   global.config = new Config(program.configdir);
 
+  let createPingFile = false;
   if (global.config.firstRun) {
     firstRunTasks();
+    createPingFile = true;
   }
 
   // Export the ping file and ping stream wrappers
   global.pingFile = new PingFile(
     global.config.user.get("pingFilePath"),
     false,
-    global.config.firstRun,
+    createPingFile,
     true,
     global.config.user.get("tagWidth")
   );
@@ -239,6 +240,6 @@ let main = function() {
       prompts.editorIfMissed();
     }
   });
-};
+}
 
 main();

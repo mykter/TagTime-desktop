@@ -5,7 +5,7 @@ import * as helper from "./helper";
 import { Config } from "./config";
 
 let prefsWindow: Electron.BrowserWindow | null;
-exports.openPreferences = function() {
+export function openPreferences() {
   winston.debug("Showing preferences");
   if (prefsWindow) {
     winston.warn("Tried to open preferences window but it seems it already exists. Aborting.");
@@ -56,4 +56,4 @@ exports.openPreferences = function() {
   prefsWindow.on("closed", () => {
     prefsWindow = null;
   });
-};
+}

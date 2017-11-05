@@ -26,7 +26,10 @@ describe("Preferences", function() {
   });
 
   it("should open a window", function() {
-    app.client.waitUntilWindowLoaded().getWindowCount().should.eventually.equal(1);
+    app.client
+      .waitUntilWindowLoaded()
+      .getWindowCount()
+      .should.eventually.equal(1);
 
     return app.stop();
   });

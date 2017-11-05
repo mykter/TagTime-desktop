@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@types/auto-launch": "^5.0.0",
+    "@types/commander": "^2.11.0",
     "@types/electron-store": "^1.2.0",
     "@types/electron-window-state": "^2.0.30",
     "@types/lodash": "^4.14.77",
