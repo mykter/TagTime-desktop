@@ -57,7 +57,7 @@
     "babel-preset-electron": "^1.4.15",
     "babel-preset-react": "^6.24.1",
     "coveralls": "^3.0.0",
-    "cross-env": "^5.0.5",
+    "cross-env": "^5.1.1",
     "electron": "^1.7.5",
     "electron-builder": "^19.8.0",
     "electron-mocha": "^4.0.0",
