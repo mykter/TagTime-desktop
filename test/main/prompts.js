@@ -1,4 +1,6 @@
 "use strict";
+// Conversion to TypeScript is tricky - lots of incomplete mocks
+
 const should = require("should");
 const sinon = require("sinon");
 const tmp = require("tmp");
@@ -6,14 +8,14 @@ const tmp = require("tmp");
 require("./helper");
 
 const prompts = require("../../src/main-process/prompts");
-const Ping = require("../../src/ping");
-const PingFile = require("../../src/main-process/pingfile");
-const PingTimes = require("../../src/pingtimes");
+const { Ping } = require("../../src/ping");
+const { PingFile } = require("../../src/main-process/pingfile");
+const { PingTimes } = require("../../src/pingtimes");
 
 describe("Prompts", function() {
   it("should save a ping correctly", function() {
     global.pingFile = { push: sinon.spy() };
-    var ping = new Ping(1234567890, ["tag1", "tag2"], "comment");
+    let ping = new Ping(1234567890, ["tag1", "tag2"], "comment");
 
     // Note: doesn't test the ipc component, not obvious how to send a message
     // from here to ipcMain. Maybe mock ipcMain? Or just rely on e2e tests.
@@ -24,8 +26,8 @@ describe("Prompts", function() {
   });
 
   describe("ping catchup", function() {
-    var f;
-    var pf;
+    let f;
+    let pf;
     const time = PingTimes.epoch + 30000000;
     beforeEach(function() {
       f = tmp.fileSync();
@@ -49,7 +51,7 @@ describe("Prompts", function() {
     });
 
     it("should add pings if they are missing", function() {
-      pf.push(new Ping(time, null, null));
+      pf.push(new Ping(time, "", ""));
       should(prompts.catchUp(global.pings.next(time))).be.true();
       pf.pings.length.should.equal(2);
       pf.pings[1].tags.should.deepEqual(new Set(["afk", "RETRO"]));
@@ -61,7 +63,7 @@ describe("Prompts", function() {
     // suited to it. Instead we have unit tests to check the right
     // looking calls are made at the right time.
 
-    var start, sandbox;
+    let start, sandbox;
 
     /**
      * Create the spectron instance
@@ -102,8 +104,8 @@ describe("Prompts", function() {
     });
 
     it("should not prompt before the first ping", function() {
-      var promptsMock = sandbox.mock(prompts);
-      var expectation = promptsMock.expects("openPrompt");
+      let promptsMock = sandbox.mock(prompts);
+      let expectation = promptsMock.expects("openPrompt");
       expectation.never();
 
       prompts.schedulePings();
@@ -113,20 +115,18 @@ describe("Prompts", function() {
     });
 
     it("should prompt on the first ping", function() {
-      var promptsMock = sandbox.mock(prompts);
-      var expectation = promptsMock.expects("openPrompt");
-      expectation.once();
+      let onPing = sandbox.stub();
 
-      prompts.schedulePings();
+      prompts.schedulePings(onPing);
       sandbox.clock.tick(1000);
 
-      promptsMock.verify();
+      should(onPing.calledOnce).be.true();
     });
 
     it("should prompt on each ping in the series", function() {
-      var openPromptsStub = sandbox.stub(prompts, "openPrompt");
+      let openPromptsStub = sandbox.stub();
 
-      prompts.schedulePings();
+      prompts.schedulePings(openPromptsStub);
       sandbox.clock.tick(1000);
       openPromptsStub.callCount.should.equal(1);
       sandbox.clock.tick(1000);

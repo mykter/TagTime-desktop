@@ -1,11 +1,23 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 import { ipcRenderer, remote } from "electron";
+import { ConfigDict, ConfigPref, ConfigName } from "./main-process/config";
 
-const PrefGroup = props => {
+interface PrefGroupProps {
+  setValue: (name: string, value: any) => void;
+  pref: ConfigPref;
+  value: any;
+}
+
+enum ValueKey {
+  value = "value",
+  checked = "checked"
+}
+
+export const PrefGroup = (props: PrefGroupProps) => {
   // Return an input element for pref, with value= or checked= as specified in valKey
-  const inputElement = (valKey, isFormControl, readOnly = false) => {
-    let inProps = {};
+  const inputElement = (valKey: ValueKey, isFormControl: boolean, readOnly = false) => {
+    let inProps: { [index: string]: any; className?: string; value?: any; checked?: boolean } = {};
     inProps[valKey] = props.value;
     if (isFormControl) {
       inProps["className"] = "form-control";
@@ -40,15 +52,15 @@ const PrefGroup = props => {
     }
   };
 
-  const onChange = event => {
-    sendValue(event.target.value);
+  const onChange = (event: React.ChangeEvent<any>) => {
+    sendValue(event.target.value, event.target.checked);
   };
 
   // convert the value to its appropriate type and trigger the setValue callback
-  const sendValue = value => {
+  const sendValue = (value: any, checked?: boolean) => {
     switch (props.pref.type) {
-      case "checkbox":
-        value = Boolean(value);
+      case "checkbox": // on / off
+        value = checked;
         break;
       case "number":
         if (value === "") {
@@ -77,12 +89,12 @@ const PrefGroup = props => {
   let afterLabel, inLabel;
   switch (props.pref.type) {
     case "checkbox":
-      inLabel = inputElement("checked", false);
+      inLabel = inputElement(ValueKey.checked, false);
       break;
     case "file":
       afterLabel = (
         <div>
-          {inputElement("value", false)}
+          {inputElement(ValueKey.value, false)}
           <button
             type="button" // don't submit on click
             className="file-btn btn btn-large btn-default pull-right"
@@ -94,7 +106,7 @@ const PrefGroup = props => {
       );
       break;
     default:
-      afterLabel = inputElement("value", true);
+      afterLabel = inputElement(ValueKey.value, true);
   }
 
   return (
@@ -108,12 +120,17 @@ const PrefGroup = props => {
   );
 };
 
-class Prefs extends React.Component {
-  constructor(props) {
+interface PrefsProps {
+  values: ConfigDict;
+  prefs: ConfigPref[];
+}
+
+export class Prefs extends React.Component<PrefsProps, ConfigDict> {
+  constructor(props: PrefsProps) {
     super(props);
 
     // React doesn't like input elements to be assigned null values
-    let values = {};
+    let values = {} as ConfigDict;
     Object.keys(props.values).map((key, _index) => {
       values[key] = props.values[key] === null ? "" : props.values[key];
     });
@@ -131,7 +148,7 @@ class Prefs extends React.Component {
     this.save = this.save.bind(this);
   }
 
-  handleInputChange(name, value) {
+  handleInputChange(name: string, value: any) {
     this.setState({ [name]: value });
   }
 
@@ -140,7 +157,7 @@ class Prefs extends React.Component {
   }
   save() {
     // Return nulls instead of empty strings
-    let values = {};
+    let values = {} as ConfigDict;
     Object.keys(this.state).map((key, _index) => {
       values[key] = this.state[key] === "" ? null : this.state[key];
     });
@@ -153,7 +170,7 @@ class Prefs extends React.Component {
       <div className="window">
         <div className="window-content">
           <form>
-            {this.props.prefs.map((pref, index) => (
+            {this.props.prefs.map((pref: ConfigPref, index: number) => (
               <PrefGroup
                 pref={pref}
                 value={this.state[pref.name]}
@@ -187,11 +204,9 @@ class Prefs extends React.Component {
   }
 }
 
-ipcRenderer.on("config", (event, message) => {
+ipcRenderer.on("config", (event: Electron.Event, message: any) => {
   ReactDOM.render(
     <Prefs prefs={message.info} values={message.conf} />,
     document.getElementById("root")
   );
 });
-
-export { PrefGroup, Prefs };

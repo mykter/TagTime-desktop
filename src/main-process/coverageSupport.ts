@@ -1,25 +1,26 @@
-const winston = require("winston");
-const fs = require("fs");
-const path = require("path");
+import * as winston from "winston";
+import * as fs from "fs";
+import * as path from "path";
 
 /**
  * Save istanbul coverage information (on program exit)
  */
-exports.saveCoverage = function() {
+export function saveCoverage() {
   if (!process.env.TAGTIME_E2E_COVERAGE_DIR) {
     return;
   }
 
   if (typeof __coverage__ !== "undefined") {
+    global.coverage = global.coverage || [];
     global.coverage.push(__coverage__); // eslint-disable-line no-undef
     winston.warn("main coverage");
   }
-  if (global.coverage.length === 0) {
+  if (!global.coverage || global.coverage.length === 0) {
     winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
   } else {
     // Find a unique file name
     let i = -1;
-    let coverageBase;
+    let coverageBase: string;
     do {
       i += 1;
       coverageBase = `coverage${i}.json`;
@@ -38,4 +39,4 @@ exports.saveCoverage = function() {
       fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, name), JSON.stringify(e));
     });
   }
-};
+}

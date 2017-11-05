@@ -6,14 +6,13 @@ const path = require("path");
 const openAboutWindow = require("about-window").default;
 const moment = require("moment");
 
-const Config = require("./config");
-const PingFile = require("./pingfile");
+const { Config } = require("./config");
+const { PingFile } = require("./pingfile");
 const prompts = require("./prompts");
 const { openPreferences } = require("./openPrefs");
 const { openEditor } = require("./edit");
 const { saveCoverage } = require("./coverageSupport");
-
-const PingTimes = require("../pingtimes");
+const { PingTimes } = require("../pingtimes");
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -236,7 +235,7 @@ let main = function() {
       app.on("window-all-closed", () => {});
 
       createTray();
-      prompts.schedulePings();
+      prompts.schedulePings(prompts.openPrompt);
       prompts.editorIfMissed();
     }
   });

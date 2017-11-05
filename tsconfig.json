@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2017",
+    "module": "commonJS",
     "moduleResolution": "node",
     "allowJs": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "jsx": "preserve",
     "strict": true
   }
 }

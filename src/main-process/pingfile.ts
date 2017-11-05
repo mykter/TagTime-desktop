@@ -1,91 +1,75 @@
-"use strict";
+import * as fs from "fs";
+import * as moment from "moment";
+import * as winston from "winston";
+import { dialog } from "electron";
 
-const fs = require("fs");
-const moment = require("moment");
-const winston = require("winston");
-
-const PingTimes = require("../pingtimes");
-const Ping = require("../ping");
+import { PingTimes } from "../pingtimes";
+import { Ping } from "../ping";
 
 /**
  * Parse a tagtime log into pings and append pings to it
  * PingFile doesn't hold the file opened.
  */
-module.exports = class PingFile {
+export class PingFile {
+  /**
+   * Whether this instance replaces invalid entries with nulls, or ignores them
+   */
+  keep_invalid: boolean;
+  path: string;
+  caching: boolean;
+  width: number;
+
+  private _pings: (Ping | null)[];
+  private _allTags: Set<string>;
+
   /**
    * Create a PingFile. Note the file isn't opened until pings is read
    * or push is called.
-   * @param {string} path The file to use
-   * @param {bool=} keep_invalid Whether to ignore invalid lines or return them
-   *                             as nulls. Defaults to false (discard).
-   * @param {bool=} create If true, create the file if it doesn't exist.
-   * @param {bool=} caching Whether to cache pings (i.e. assume the file will only be modified via
+   * @param path The file to use
+   * @param keep_invalid Whether to ignore invalid lines or return them
+   *                      as nulls. Defaults to false (discard).
+   * @param create If true, create the file if it doesn't exist.
+   * @param caching Whether to cache pings (i.e. assume the file will only be modified via
    *                        this instance)
-   * @param {int=} width The width to pad encoded tags to
+   * @param width The width to pad encoded tags to
    */
-  constructor(path, keep_invalid = false, create = false, caching = true, width = 0) {
+  constructor(path: string, keep_invalid = false, create = false, caching = true, width = 0) {
     this.path = path;
     this.keep_invalid = keep_invalid;
     this.caching = caching;
-    this._pings = null;
-    this._allTags = null;
     this.width = width;
 
     // Create the ping file if it doesn't exist
-    if (create) {
-      if (!fs.existsSync(this.path)) {
-        try {
-          winston.debug("Creating pingfile at ", this.path);
-          var fd = fs.openSync(this.path, "a");
-          fs.closeSync(fd);
-        } catch (err) {
-          winston.warn("Couldn't create ping file at location " + this.path);
-          const { dialog } = require("electron");
-          dialog.showErrorBox(
-            "TagTime - can't create ping file",
-            "Can't create the ping file '" + this.path + "'. Please change the path in settings."
-          );
-        }
+    if (create && !fs.existsSync(this.path)) {
+      winston.debug("Creating pingfile at ", this.path);
+      try {
+        let fd = fs.openSync(this.path, "a");
+        fs.closeSync(fd);
+      } catch (err) {
+        winston.warn("Couldn't create ping file at location " + this.path);
+        dialog.showErrorBox(
+          "TagTime - can't create ping file",
+          "Can't create the ping file '" + this.path + "'. Please change the path in settings."
+        );
       }
     }
   }
 
   /**
-   * @returns {bool} Whether this instance replaces invalid entries with nulls,
-   * or ignores them
+   * @returns The ping formatted for the log file (no trailing newline).
+   * @param ping The ping to encode. Must have a time.
+   * @param annotate If true, prepend ping.comment with time in ISO
+   * @param width The width to right pad tags to with spaces
+   * @throws if a ping is provided without a valid time property format
    */
-  get keep_invalid() {
-    return this._keep_invalid;
-  }
-  /**
-   * @param {bool} value Whether this instance replaces invalid entries with
-   * nulls, or ignores them
-   */
-  set keep_invalid(value) {
-    if (typeof value === "boolean") {
-      this._keep_invalid = value;
-    } else {
-      throw "PingFile.keep_invalid must be a boolean";
-    }
-  }
-
-  /**
-   * @returns {string} The ping formatted for the log file (no trailing
-   * newline).
-   * @param {ping} ping The ping to encode. Must have a time.
-   * @param {bool=} annotate If true, prepend ping.comment with time in ISO
-   * @param {int=} width The width to right pad tags to with spaces
-   * @throws if an ping is provided without a valid time property
-   * format
-   */
-  static encode(ping, annotate = true, width = 0) {
+  static encode(ping: Ping, annotate = true, width = 0): string {
     if (isNaN(ping.time) || ping.time < PingTimes.epoch) {
       throw "Invalid ping time in ping to be encoded: " +
         ping.time +
         " must be integer after the epoch";
     }
 
-    var tags = "";
+    let tags = "";
     if (ping.tags) {
       // cope with no tags
       if (typeof ping.tags === "string") {
@@ -96,11 +80,11 @@ module.exports = class PingFile {
       tags = tags + " ".repeat(Math.max(0, width - tags.length));
     }
 
-    var comment = "";
+    let comment = "";
     if (annotate) {
       // ISO 8601, with local timezone
       // TODO support other formats? What does original tagtime do?
-      var time = moment(ping.time, "x");
+      let time = moment(ping.time, "x");
       comment = time.format() + " " + time.format("ddd") + " ";
     }
     if (ping.comment) {
@@ -113,17 +97,17 @@ module.exports = class PingFile {
     }
 
     // trims to deal with empty tags or comment
-    var unixtime = Math.round(ping.time / 1000);
+    let unixtime = Math.round(ping.time / 1000);
     return (unixtime + " " + (tags.length > 0 ? tags + " " : "") + comment).trim();
   }
 
   /**
    * Not information preserving - tags are deduplicated, spacing lost
-   * @param {string} entry The log entry to parse
-   * @returns {ping} A ping or null if the entry couldn't be parsed
+   * @param entry The log entry to parse
+   * @returns A ping or null if the entry couldn't be parsed
    */
-  static parse(entry) {
-    var m = entry.match(/^(\d+)\s*(\s[^[]+)?(\[.*\])?\s*$/);
+  static parse(entry: string): Ping | null {
+    let m = entry.match(/^(\d+)\s*(\s[^[]+)?(\[.*\])?\s*$/);
     if (!m) {
       // TODO what is the comment syntax for ping files?
       winston.warn("Could not parse entry: '" + entry + "'");
@@ -131,21 +115,21 @@ module.exports = class PingFile {
     }
 
     // Time must be an integer after the epoch
-    var time = parseInt(m[1]);
+    let time = parseInt(m[1]);
     if (isNaN(time) || time * 1000 < PingTimes.epoch) {
       winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
       return null;
     }
     time = time * 1000; // upscale to js time
 
-    var tags;
+    let tags;
     if (m[2]) {
       tags = new Set(m[2].trim().split(/\s+/));
     } else {
       tags = new Set();
     }
 
-    var comment = null;
+    let comment = "";
     if (m[3]) {
       comment = m[3].slice(1, -1); // ditch the []
     }
@@ -154,15 +138,15 @@ module.exports = class PingFile {
   }
 
   /**
-   * @returns {ping[]} the log file as a list of pings (no caching)
+   * @returns the log file as a list of pings (no caching)
    * Behaviour depends on instance's keep_invalid property.
    * @throws fs exceptions if the file can't be read from
    */
-  get pings() {
+  get pings(): (Ping | null)[] {
     if (this.caching && this._pings) {
       return this._pings;
     }
-    var ps;
+    let ps: (Ping | null)[];
     try {
       ps = fs
         .readFileSync(this.path, "utf8")
@@ -177,9 +161,8 @@ module.exports = class PingFile {
       if (err.code === "ENOENT") {
         // File couldn't be opened
         winston.error("Couldn't open ping file '" + this.path + "', got error " + err);
-        var msg =
+        let msg =
           "Can't open the ping file '" + this.path + "'. Please check the path in settings.";
-        const { dialog } = require("electron");
         if (dialog) {
           dialog.showErrorBox("TagTime - can't open ping file", msg);
         } else {
@@ -204,11 +187,13 @@ module.exports = class PingFile {
       return this._allTags;
     }
 
-    var tags = new Set();
+    let tags = new Set();
     this.pings.map(ping => {
-      ping.tags.forEach(tag => {
-        tags.add(tag);
-      });
+      if (ping) {
+        ping.tags.forEach(tag => {
+          tags.add(tag);
+        });
+      }
     });
 
     if (this.caching) {
@@ -219,17 +204,16 @@ module.exports = class PingFile {
 
   /**
    * Saves a ping to the log file (and to the local cache)
-   * @param {ping} ping
-   * @param {bool=} annotate - see PingFile.encode
+   * @param annotate - see PingFile.encode
    * @throws fs exceptions if the file can't be written to
    */
-  push(ping, annotate = true) {
-    var nl = "";
+  push(ping: Ping, annotate = true) {
+    let nl = "";
     if (fs.existsSync(this.path)) {
       // The ping should be on a new line, so check whether the final byte
       // already is \n
-      var buffer = new Buffer(1);
-      var fd = fs.openSync(this.path, "r");
+      let buffer = new Buffer(1);
+      let fd = fs.openSync(this.path, "r");
       if (fs.readSync(fd, buffer, 0, 1, fs.fstatSync(fd).size - 1) === 1) {
         // test bytes read to cope with empty file
         if (buffer[0] !== 10) {
@@ -253,4 +237,4 @@ module.exports = class PingFile {
       }
     }
   }
-};
+}

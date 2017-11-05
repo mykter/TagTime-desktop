@@ -1,6 +1,6 @@
-import React from "react";
-import renderer from "react-test-renderer";
-import snapshot from "snap-shot";
+import * as React from "react";
+import * as renderer from "react-test-renderer";
+const snapshot = require("snap-shot");
 const should = require("should");
 
 import { PrefGroup } from "../src/preferences";
