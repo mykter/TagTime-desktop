@@ -13,7 +13,6 @@ let promptWindow: Electron.BrowserWindow | null;
  * Open a ping prompt window
  */
 export function openPrompt(time: number) {
-  console.log("hi!");
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");

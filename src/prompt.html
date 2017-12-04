@@ -5,43 +5,8 @@
   </head>
 
   <body>
-    <div class="window">
-      <div class="window-content">
-        <form id="theform">
-          <div class="form-group">
-            <label>What are you doing <i>right now</i>? </label>
-            <div id="time" class="pull-right"></div>
-            <br />
-            <input id="tags" class="form-control" data-role="tagsinput" autofocus placeholder="tag">
-          </div>
-          <div class="form-group">
-            <input id="comment" class="form-control" placeholder="Comment?">
-          </div>
-          <p><i>Previous: <span id="prev" /></i></p>
-        </form>
-      </div>
-
-      <footer class="toolbar toolbar-footer">
-        <div class="toolbar-actions">
-          <button id="edit" class="btn btn-large btn-default pull-left">
-            Edit
-          </button>
-
-          <button id="repeat" class="btn btn-large btn-positive pull-left">
-            Repeat
-          </button>
-
-          <button id="save" type="submit" form="theform" class="btn btn-large btn-primary pull-right">
-            Save
-          </button>
-        </div>
-      </footer>
+    <div id="root">
     </div>
-    <!-- See https://github.com/electron/electron/issues/254 -->
-    <script>window.$ = window.jQuery = require('jquery');</script>
-    <script>require('bootstrap');</script>
-    <script src='../../node_modules/typeahead.js/dist/typeahead.bundle.js'></script>
-    <script>require('bootstrap-tagsinput');</script>
     <script>require('./prompt');</script>
   </body>
 </html>

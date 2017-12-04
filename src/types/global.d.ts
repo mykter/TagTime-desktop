@@ -2,9 +2,9 @@
 
 import { Winston } from "winston";
 
-import { Config } from "./main-process/config";
-import { PingFile } from "./main-process/pingfile";
-import { PingTimes } from "./pingtimes";
+import { Config } from "../main-process/config";
+import { PingFile } from "../main-process/pingfile";
+import { PingTimes } from "../pingtimes";
 
 declare global {
   namespace NodeJS {

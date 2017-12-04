@@ -23,8 +23,8 @@ const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
 const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
-  sources: ["src/**/*.[tj]s?(x)"],
-  tests: ["test/**/*.[jt]s", "src/global.d.ts"],
+  sources: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"],
+  tests: ["test/**/*.[jt]s", "src/types/global.d.ts"],
   static: ["./src/css/*.css", "./src/*.html"]
 };
 

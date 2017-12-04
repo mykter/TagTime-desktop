@@ -11,12 +11,17 @@ const { Ping } = require("../../src/ping");
 
 describe("Prompts", function() {
   this.timeout(10000);
-  this.retries(2); // had an occasion where appveyor test transiently failed.
+  this.retries(0); // had an occasion where appveyor test transiently failed.
 
   let app, tmpLogFileName;
   let tmpPingFileName;
   let prevPing;
   let prevPingEncoded;
+
+  const tagsSelector = "#tags-input";
+  const saveSelector = "#save";
+  const repeatSelector = "#repeat";
+  const commentSelector = "#comment";
 
   before(function() {
     winston.level = "warning";
@@ -62,15 +67,12 @@ describe("Prompts", function() {
     return helper.until(() => fs.statSync(tmpPingFileName).size > prevPingEncoded.length + 10, 100);
   };
 
-  let saveInput = async function(tags, comment = null, button = "#save") {
-    // There are two input elements in the div
-    const tagsSelector = ".bootstrap-tagsinput input.tt-input";
-    await app.client.waitUntil(function() {
-      return app.client.hasFocus(tagsSelector);
-    });
+  let saveInput = async function(tags, comment = null, button = saveSelector) {
+    app.client.waitForExist(tagsSelector);
+
     await app.client.element(tagsSelector).setValue(tags);
     if (comment) {
-      await app.client.element("#comment").setValue(comment);
+      await app.client.element(commentSelector).setValue(comment);
     }
     if (button) {
       await app.client.click(button);
@@ -80,6 +82,9 @@ describe("Prompts", function() {
   let lastPingShouldEqual = function(tags, comment = null) {
     const pings = new PingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
+    winston.debug(
+      "asserting Set(" + Array.from(pings[1].tags) + ") should equal Set(" + tags + ")"
+    );
     _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);
     if (comment) {
       pings[1].comment.should.endWith(comment);
@@ -99,21 +104,32 @@ describe("Prompts", function() {
   });
 
   it("should repeat pings when the repeat button is pressed", async function() {
-    await saveInput("", null, "#repeat");
+    await saveInput("", null, repeatSelector);
     await untilSaved();
     lastPingShouldEqual(prevPing.tags);
   });
 
   it("should save a comment", async function() {
-    await saveInput("tag", "Test comment", "#save");
+    await saveInput("tag", "Test comment", saveSelector);
     await untilSaved();
     lastPingShouldEqual(["tag"], "Test comment");
   });
 
-  it("should save on enter key", async function() {
-    await saveInput("tag", null, null);
-    app.client.addValue("#comment", "Enter");
+  let saveOnEnter = async function(fieldSelector) {
+    await saveInput("tag,", null, null); // The comma forces tag termination as otherwise the first enter just finishes the tag
+    app.client.addValue(fieldSelector, "Enter");
     await untilSaved();
     lastPingShouldEqual(["tag"]);
+  };
+
+  it("should save on enter key in comment field", async function() {
+    await saveOnEnter(commentSelector);
   });
+
+  it("should save on enter key in tags field", async function() {
+    await saveOnEnter(tagsSelector);
+  });
+
+  it("should close and save afk tags on escape");
+  it("should save afk tags on close");
 });
