@@ -41,7 +41,7 @@
     "@types/commander": "^2.11.0",
     "@types/electron-store": "^1.2.0",
     "@types/electron-window-state": "^2.0.30",
-    "@types/lodash": "^4.14.77",
+    "@types/lodash": "^4.14.87",
     "@types/mocha": "^2.2.43",
     "@types/random-js": "^1.0.30",
     "@types/react": "^16.0.27",
