@@ -40,8 +40,8 @@ interface PromptProps {
   time: number;
 }
 class Prompt extends React.Component<PromptProps, PromptState> {
-  constructor() {
-    super();
+  constructor(props: PromptProps) {
+    super(props);
     this.state = { tags: [], comment: "", input: "" };
 
     this.handleChangeInput = this.handleChangeInput.bind(this);
