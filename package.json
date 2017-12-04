@@ -48,7 +48,7 @@
     "@types/react-dom": "^16.0.3",
     "@types/react-tagsinput": "^3.19.0",
     "@types/should": "^11.2.0",
-    "@types/sinon": "^2.3.5",
+    "@types/sinon": "^4.0.0",
     "@types/tmp": "0.0.33",
     "@types/webdriverio": "^4.8.4",
     "@types/winston": "^2.3.7",
