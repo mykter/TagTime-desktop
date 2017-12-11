@@ -1,12 +1,14 @@
-@import './main.css';
+@import "./main.css";
 
-input[name=seed] {
+input[name="seed"] {
   width: 130px;
 }
 
 .file-input {
-  width: calc(100% - 50px); // Space for the button
+  // Space for the button
+  width: calc(100% - 50px);
 }
+
 .file-btn {
   display: inline-block;
 }

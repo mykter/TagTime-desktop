@@ -1,0 +1,26 @@
+@import "../../../node_modules/photonkit/dist/css/photon.css";
+
+form {
+  width: 100%;
+}
+
+.window-content {
+  padding: 5px;
+  width: 100%;
+  overflow-x: hidden; /* don't want horzontal scrollbars to appear */
+}
+
+label {
+  font-size: unset;
+  white-space: unset; /* photon sets this to no-wrap for some reason */
+}
+
+input {
+  &[type="datetime-local"] {
+    width: 180px;
+  }
+
+  &[type="number"] {
+    width: 70px;
+  }
+}

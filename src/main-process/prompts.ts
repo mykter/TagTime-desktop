@@ -64,7 +64,7 @@ export function openPrompt(time: number) {
     if (promptWindow) {
       promptWindow.webContents.send("data", {
         time: time,
-        pings: allTags,
+        allTags: allTags,
         prevTags: prevTags,
         cancelTags: ["afk", "RETRO"] // TODO make configurable
       });

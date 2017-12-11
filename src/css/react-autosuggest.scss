@@ -1,0 +1,52 @@
+.react-autosuggest {
+  $font-size: 11px;
+  $item-line-height: 16px;
+  $item-vertical-pad: 5px;
+  $visible-items-count: 4;
+  $input-width: 100%;
+
+  &__container {
+    display: inline-block;
+  }
+
+  &__suggestions-container {
+    background: #fff;
+    box-shadow: 0.05em 0.01em 0.5em rgba(0, 0, 0, 0.2);
+    position: absolute;
+    z-index: 2;
+  }
+
+  &__suggestions-list {
+    font-size: $font-size;
+    list-style-type: none;
+    max-height: ($item-line-height + 2 * $item-vertical-pad) * $visible-items-count;
+    overflow-y: auto;
+    padding-left: 0;
+    width: $input-width;
+  }
+
+  &__suggestion {
+    border-bottom: 1px solid #ddd;
+    line-height: $item-line-height;
+    margin: 0;
+    padding: $item-vertical-pad 10px;
+    cursor: pointer;
+
+    mark {
+      padding: {
+        left: 0;
+        right: 0;
+      }
+    }
+
+    &--highlighted {
+      background: #99ebff;
+      cursor: pointer;
+    }
+
+    mark {
+      background: none;
+      text-decoration: underline;
+    }
+  }
+}

@@ -8,7 +8,8 @@ const gulp = require("gulp");
 const mocha = require("gulp-mocha");
 const sourcemaps = require("gulp-sourcemaps");
 const babel = require("gulp-babel");
-var ts = require("gulp-typescript");
+const ts = require("gulp-typescript");
+const sass = require("gulp-sass");
 
 const path = require("path");
 const del = require("del");
@@ -23,15 +24,19 @@ const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
 const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
 const paths = {
-  sources: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"],
-  tests: ["test/**/*.[jt]s", "src/types/global.d.ts"],
-  static: ["./src/css/*.css", "./src/*.html"]
+  sources: { paths: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"], onchange: "compile" },
+  sass: { paths: ["./src/**/*.scss"], onchange: "compile:sass" },
+  tests: { paths: ["test/**/*.[jt]s", "src/types/global.d.ts"], onchange: "compile:tests" },
+
+  // gulp.watch <v4 is broken but not documented as such. https://github.com/gulpjs/gulp/issues/651
+  // expect to see this watch picking up changes under ./app !
+  static: { paths: ["./src/*.html"], onchange: "copy" }
 };
 
 gulp.task("compile", function() {
-  var tsProject = ts.createProject("tsconfig.json");
+  let tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src(paths.sources, { base: "./" })
+    .src(paths.sources.paths, { base: "./" })
     .pipe(sourcemaps.init())
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
@@ -41,18 +46,27 @@ gulp.task("compile", function() {
 });
 
 gulp.task("compile:tests", function() {
-  var tsProject = ts.createProject("tsconfig.json");
+  let tsProject = ts.createProject("tsconfig.json");
   return gulp
-    .src(paths.tests, { base: "./" })
+    .src(paths.tests.paths, { base: "./" })
     .pipe(tsProject())
     .js // discard the type outputs (.dts)
     .pipe(babel())
     .pipe(gulp.dest(BUILD_DIR));
 });
 
+gulp.task("compile:sass", function() {
+  return gulp
+    .src(paths.sass.paths, { base: "./" })
+    .pipe(sourcemaps.init())
+    .pipe(sass().on("error", sass.logError))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(BUILD_DIR));
+});
+
 // Get any non-js components of the app
 gulp.task("copy", function() {
-  return gulp.src(paths.static, { base: "./" }).pipe(gulp.dest(BUILD_DIR));
+  return gulp.src(paths.static.paths, { base: "./" }).pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task("clean:build", function() {
@@ -66,7 +80,7 @@ gulp.task("clean:report", function() {
 });
 
 // Note we aren't running clean:build before this, because it was a pain in combo with watch.
-gulp.task("build", ["compile", "copy"]);
+gulp.task("build", ["compile", "compile:sass", "copy"]);
 gulp.task("build:tests", ["compile:tests", "build"]);
 
 gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
@@ -83,7 +97,7 @@ gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
   // tried reporting with writeReports, and it didn't seem to support specifying where the coverage
   // root dir was - it seems to be designed to be used in the inline / unit test case, not the
   // browser case
-  var text_report = child_process.execSync(
+  let text_report = child_process.execSync(
     "./node_modules/.bin/istanbul report json text-summary " +
       `--root='${COVERAGE_DIR}' --dir='${REPORT_DIR}'`
   );
@@ -97,20 +111,12 @@ gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
 });
 
 gulp.task("watch", () => {
-  gulp.watch(paths.sources, function(event) {
-    console.log("File " + event.path + " was " + event.type + ", rebuilding...");
-    gulp.start("build");
-  });
-  gulp.watch(paths.tests, function(event) {
-    console.log("File " + event.path + " was " + event.type + ", rebuilding...");
-    gulp.start("build:tests");
-  });
-  gulp.watch(paths.static, function(event) {
-    // gulp.watch <v4 is broken but not documented as such. https://github.com/gulpjs/gulp/issues/651
-    // expect to see this watch picking up changes under ./app !
-    console.log("File " + event.path + " was " + event.type + ", copying...");
-    gulp.start("copy");
-  });
+  for (let p in paths) {
+    gulp.watch(paths[p].paths, function(event) {
+      console.log("File " + event.path + " was " + event.type + "...");
+      gulp.start(paths[p].onchange);
+    });
+  }
 });
 
 gulp.task("default", ["watch", "build:tests"]);
