@@ -29,11 +29,13 @@ describe("Prompts", function() {
     let f;
     let pf;
     const time = PingTimes.epoch + 30000000;
+    const cancelTags = ["cancel", "tags"];
     beforeEach(function() {
       f = tmp.fileSync();
       pf = new PingFile(f.name);
       global.pingFile = pf;
       global.pings = new PingTimes(45, 0, null);
+      global.config = { user: { get: _item => cancelTags } }; // prompts needs to get the cancelTags config
     });
     afterEach(function() {
       f.removeCallback();
@@ -54,7 +56,7 @@ describe("Prompts", function() {
       pf.push(new Ping(time, "", ""));
       should(prompts.catchUp(global.pings.next(time))).be.true();
       pf.pings.length.should.equal(2);
-      pf.pings[1].tags.should.deepEqual(new Set(["afk", "RETRO"]));
+      pf.pings[1].tags.should.deepEqual(new Set(cancelTags));
     });
   });
 

@@ -86,7 +86,12 @@ function createTray() {
   tray.setToolTip(app.getName());
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: "Preferences", click: openPreferences },
+      {
+        label: "Preferences",
+        click: () => {
+          openPreferences();
+        }
+      },
       { label: "Edit Pings", click: openEditor },
       { label: "About", click: about },
       { label: "Quit", click: app.quit }
@@ -101,10 +106,10 @@ function createTray() {
 function mainTest(option: string) {
   switch (option) {
     case "prompt":
-      prompts.openPrompt(Date.now());
+      prompts.openPrompt(Date.now(), true);
       break;
     case "prefs":
-      openPreferences();
+      openPreferences(true);
       break;
     case "quit":
       break;
@@ -222,19 +227,17 @@ function main() {
     saveCoverage();
   });
 
+  /* The tray doesn't count as a window, so don't quit when the other windows
+  are closed.
+  In e2e test mode we will need to ensure we explicitly quit after closing a window. */
+  app.on("window-all-closed", () => {});
+
   app.on("ready", async function() {
     winston.debug(app.getName() + " ready");
     await installExtensions();
     if (program.test) {
       mainTest(program.test);
     } else {
-      /* The tray doesn't count as a window, so don't quit when the other windows
-      are closed.
-      In e2e test mode we will quit when there are no open windows - as a
-      consequence we can't test any asynchronous events in the main process after
-      all the windows have closed. */
-      app.on("window-all-closed", () => {});
-
       createTray();
       prompts.schedulePings(prompts.openPrompt);
       prompts.editorIfMissed();

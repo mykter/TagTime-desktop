@@ -1,5 +1,5 @@
 import * as winston from "winston";
-import { ipcMain, BrowserWindow } from "electron";
+import { app, ipcMain, BrowserWindow } from "electron";
 import windowStateKeeper = require("electron-window-state");
 
 import * as helper from "./helper";
@@ -8,16 +8,20 @@ import { Ping } from "../ping";
 
 // Global reference to prevent garbage collection
 let promptWindow: Electron.BrowserWindow | null;
+// A flag to capture if the prompt window was closed without saving tags
+let outstandingPing: Boolean = false;
 
 /**
  * Open a ping prompt window
  */
-export function openPrompt(time: number) {
+export function openPrompt(time: number, quitOnClose: Boolean = false) {
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
     return;
   }
+
+  outstandingPing = true;
 
   // Save & restore window position and dimensions
   let promptWindowState = windowStateKeeper({
@@ -66,7 +70,7 @@ export function openPrompt(time: number) {
         time: time,
         allTags: allTags,
         prevTags: prevTags,
-        cancelTags: ["afk", "RETRO"] // TODO make configurable
+        cancelTags: global.config.user.get("cancelTags")
       });
     }
   });
@@ -85,7 +89,14 @@ export function openPrompt(time: number) {
       }, 2500);
 
       promptWindow.on("closed", () => {
+        if (outstandingPing) {
+          winston.debug("Prompt was closed without saving, using cancelTags");
+          global.pingFile.push(new Ping(time, new Set(global.config.user.get("cancelTags")), ""));
+        }
         promptWindow = null;
+        if (quitOnClose) {
+          app.quit();
+        }
       });
     }
   });
@@ -136,9 +147,13 @@ export function catchUp(till: number): boolean {
     if (lastPing) {
       let p: Ping;
       while (till >= global.pings.next(lastPing.time)) {
-        // Replace every missing ping with an afk RETRO ping
+        // Replace every missing ping with the configured tags to use
         missedPings = true;
-        p = new Ping(global.pings.next(lastPing.time), new Set(["afk", "RETRO"]), "");
+        p = new Ping(
+          global.pings.next(lastPing.time),
+          new Set(global.config.user.get("cancelTags")),
+          ""
+        );
         global.pingFile.push(p);
         lastPing = p;
       }
@@ -165,7 +180,8 @@ export function editorIfMissed() {
 
 /* Handle events sent from the prompt window
  * Shouldn't be called directly - only exported so it can be tested :/ */
-export function savePing(evt: Electron.Event, message: { ping: Ping; coverage?: any }) {
+export function savePing(_evt: Electron.Event | null, message: { ping: Ping; coverage?: any }) {
+  outstandingPing = false;
   let ping = message.ping;
   winston.debug("Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]");
   global.pingFile.push(ping);

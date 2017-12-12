@@ -12,7 +12,8 @@ export enum ConfigName {
   pingFilePath = "pingFilePath",
   pingFileStart = "pingFileStart",
   period = "period",
-  seed = "seed"
+  seed = "seed",
+  cancelTags = "cancelTags"
 }
 export interface ConfigDict {
   [index: string]: any;
@@ -23,6 +24,7 @@ export interface ConfigDict {
   pingFileStart: number;
   period: number;
   seed: number;
+  cancelTags: Set<string>;
 }
 
 export interface ConfigPref {
@@ -180,6 +182,13 @@ export class Config {
         "Seed for your sequence of pings (random whole number; not backwards compatible with classic TagTime)",
       configurable: true,
       default: null // set at runtime
+    },
+    {
+      name: ConfigName.cancelTags,
+      type: "tags",
+      label: "The tags to use when not supplied by the user for any reason",
+      configurable: true,
+      default: ["afk", "RETRO"]
     }
   ];
 }

@@ -15,6 +15,7 @@ describe("Prompts", function() {
 
   let app, tmpLogFileName;
   let tmpPingFileName;
+  let tmpConfig;
   let prevPing;
   let prevPingEncoded;
 
@@ -33,7 +34,7 @@ describe("Prompts", function() {
     tmpPingFileName = tmp.tmpNameSync();
     fs.writeFileSync(tmpPingFileName, prevPingEncoded);
     // As the pingfile changes for each test, need to recreate the app each test
-    ({ app, tmpLogFileName } = helper.launchApp("prompt", tmpPingFileName));
+    ({ app, tmpLogFileName, tmpConfig } = helper.launchApp("prompt", tmpPingFileName));
     winston.debug("Launching app with " + app.path + " " + app.args);
     return app.start();
   });
@@ -130,6 +131,24 @@ describe("Prompts", function() {
     await saveOnEnter(tagsSelector);
   });
 
-  it("should close and save afk tags on escape");
-  it("should save afk tags on close");
+  let quitOnEscape = async function(fieldSelector) {
+    await saveInput("notused", "never seen", false);
+    app.client.addValue(fieldSelector, "Escape");
+    await untilSaved();
+    lastPingShouldEqual(tmpConfig["cancelTags"]);
+  };
+
+  it("should close and save afk tags on escape in the tags input box", async function() {
+    await quitOnEscape(tagsSelector);
+  });
+
+  it("should close and save afk tags on escape elsewhere - e.g. the comment box", async function() {
+    await quitOnEscape(commentSelector);
+  });
+
+  it("should save afk tags on close", async function() {
+    app.client.close();
+    await untilSaved();
+    lastPingShouldEqual(tmpConfig["cancelTags"]);
+  });
 });

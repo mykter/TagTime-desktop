@@ -28,6 +28,9 @@ export const PrefGroup = (props: PrefGroupProps) => {
       inProps["className"] =
         ("className" in inProps ? inProps["className"] + " " : "") + "file-input";
     }
+    if (props.pref.type === "tags") {
+      type = "input";
+    }
     return (
       <input
         readOnly={readOnly}
@@ -74,6 +77,9 @@ export const PrefGroup = (props: PrefGroupProps) => {
           value = null;
         }
         break;
+      case "tags":
+        value = value.split(" ,");
+
       /*
       case "file":
       case "input":

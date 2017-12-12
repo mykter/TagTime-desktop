@@ -1,11 +1,11 @@
-import { BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as winston from "winston";
 
 import * as helper from "./helper";
 import { Config } from "./config";
 
 let prefsWindow: Electron.BrowserWindow | null;
-export function openPreferences() {
+export function openPreferences(quitOnClosed: Boolean = false) {
   winston.debug("Showing preferences");
   if (prefsWindow) {
     winston.warn("Tried to open preferences window but it seems it already exists. Aborting.");
@@ -17,7 +17,7 @@ export function openPreferences() {
     minWidth: 205,
     minHeight: 185,
     width: 450,
-    height: 600,
+    height: 630,
     // icon : path, // defaults to executable
     title: "TagTime Preferences",
     show: false,
@@ -55,5 +55,8 @@ export function openPreferences() {
 
   prefsWindow.on("closed", () => {
     prefsWindow = null;
+    if (quitOnClosed) {
+      app.quit();
+    }
   });
 }
