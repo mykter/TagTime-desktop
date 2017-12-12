@@ -1,8 +1,8 @@
 .react-autosuggest {
   $font-size: 11px;
   $item-line-height: 16px;
-  $item-vertical-pad: 5px;
-  $visible-items-count: 4;
+  $item-vertical-pad: 2px;
+  $visible-items-count: 3;
   $input-width: 100%;
 
   &__container {
@@ -14,6 +14,7 @@
     box-shadow: 0.05em 0.01em 0.5em rgba(0, 0, 0, 0.2);
     position: absolute;
     z-index: 2;
+    margin-top: -8px; // pull it up into the input box a bit
   }
 
   &__suggestions-list {
