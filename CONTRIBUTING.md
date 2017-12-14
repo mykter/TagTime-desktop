@@ -33,7 +33,7 @@ Clean with `gulp clean:build`, or 'mrproper' clean with `npm run clean`.
 
 (electron-compile was trialled, but the runtime compilation was too slow and its 'magic' approach caused problems with electron-mocha and JSX)
 
-To build binaries including an installer, use `npm run pack`. From linux this will create Linux and MacOS binaries, from Windows it will create Windows binaries.
+To build binaries including an installer, use `npm run pack`. From linux this will create Linux and macOS binaries, from Windows it will create Windows binaries.
 
 To see what else you can do, try:
 

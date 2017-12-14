@@ -6,7 +6,7 @@
 ![Greenkeeper Badge](https://badges.greenkeeper.io/mykter/TagTime-desktop.svg)
 [![bitHound Overall Score](https://www.bithound.io/github/mykter/TagTime-desktop/badges/score.svg)](https://www.bithound.io/github/mykter/TagTime-desktop)
 
-This is a cross-platform desktop GUI re-implementation of [TagTime](https://github.com/dreeves/TagTime).
+This is a cross-platform desktop GUI implementation of [TagTime](https://github.com/dreeves/TagTime).
 
 To determine how you spend your time, TagTime literally randomly samples you. At random times it pops up and asks what you're doing right at that moment. You answer with tags.
 
@@ -18,12 +18,14 @@ Inspired by [alice0meta](https://github.com/alice0meta/TagTime).
 Download the latest installer from [Releases](https://github.com/mykter/TagTime-desktop/releases) and run it.
 
 The application will automatically launch in the background on system startup.
+Preferences can be set via the tray icon.
 
 # Contributing
+Contributions welcome! This is a fun side-project, and your use-case might be different to mine.
 Please see the CONTRIBUTING.md file for design and development info.
 
-# macOS
+## macOS
 This app has not been tested on macOS by a human, only travis-ci. Bug reports and pull requests welcome.
 
-# Beeminder
+## Beeminder
 I don't use [Beeminder](https://beeminder.com), so haven't implemented support. Pull requests welcome.
