@@ -6,6 +6,7 @@ const helper = require("./helper");
 
 describe("Preferences", function() {
   this.timeout(10000);
+  this.retries(2); // had an occasion where appveyor test transiently failed.
 
   let app, tmpLogFileName, tmpConfig, tmpConfigFile;
 
@@ -29,9 +30,7 @@ describe("Preferences", function() {
   });
 
   it("should open a window", function() {
-    app.client
-      .getWindowCount()
-      .should.eventually.equal(1);
+    app.client.getWindowCount().should.eventually.equal(1);
     // stop() will work, because the window is still open.
     // It's needed, because we just kill spectron rather than TagTime
     return app.stop();

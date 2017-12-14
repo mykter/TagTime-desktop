@@ -11,7 +11,7 @@ const { Ping } = require("../../src/ping");
 
 describe("Prompts", function() {
   this.timeout(10000);
-  this.retries(0); // had an occasion where appveyor test transiently failed.
+  this.retries(2); // had an occasion where appveyor test transiently failed.
 
   let app, tmpLogFileName;
   let tmpPingFileName;
