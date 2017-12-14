@@ -1,7 +1,6 @@
 require("should");
 const winston = require("winston");
 const fs = require("fs");
-const fkill = require("fkill");
 
 const helper = require("./helper");
 
@@ -25,7 +24,7 @@ describe("Preferences", function() {
   afterEach(function() {
     // app.stop doesn't work without a renderer window around, so need this fallback
     // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
-    fkill("chromedriver").then(() => {}, () => {});
+    helper.kill_spectron();
     winston.debug("Application logs follow:");
     winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });
