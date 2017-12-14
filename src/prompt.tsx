@@ -12,6 +12,7 @@ interface TagsProps {
   allTags: string[];
   inputValue: string;
   onChangeInput: (input: string) => void;
+  tagInputRef: (field: HTMLInputElement) => void;
 }
 const Tags = (props: TagsProps) => {
   const autocompleteRenderInput = (renderInputProps: TagsInput.RenderInputProps) => {
@@ -37,6 +38,7 @@ const Tags = (props: TagsProps) => {
       // Type should be autosuggest:Autosuggest, but the typings are missing ".input"
       if (autosuggest !== null) {
         renderInputProps.ref(autosuggest.input);
+        props.tagInputRef(autosuggest.input);
       }
     };
 
@@ -89,6 +91,8 @@ interface PromptProps {
   time: number;
 }
 class Prompt extends React.Component<PromptProps, PromptState> {
+  tagInputField: HTMLInputElement;
+
   constructor(props: PromptProps) {
     super(props);
     this.state = { tags: [], comment: "", input: "" };
@@ -151,9 +155,26 @@ class Prompt extends React.Component<PromptProps, PromptState> {
     this.setState((prevState, props) => ({ tags: props.prevTags }), callback);
   }
 
+  keyMap = { cancel: "esc", repeat: "alt+r", save: ["alt+s", "ctrl+s"] };
+
+  keyHandlers = {
+    cancel: () => {
+      this.cancel();
+    },
+    save: () => {
+      // If the shortcut key was pressed whilst the autocomplete selection box was open, the tag isn't
+      // saved in our state yet. Blur triggers it to complete.
+      this.tagInputField!.blur();
+      this.save();
+    },
+    repeat: () => {
+      this.repeat(this.save);
+    }
+  };
+
   render() {
     return (
-      <HotKeys keyMap={{ cancel: "esc" }} handlers={{ cancel: this.cancel }}>
+      <HotKeys keyMap={this.keyMap} handlers={this.keyHandlers}>
         <div className="window">
           <div className="window-content">
             <form id="theform" onSubmit={e => this.save(e)}>
@@ -173,6 +194,9 @@ class Prompt extends React.Component<PromptProps, PromptState> {
                   }}
                   onChangeInput={this.handleChangeInput}
                   inputValue={this.state.input}
+                  tagInputRef={(e: HTMLInputElement) => {
+                    this.tagInputField = e;
+                  }}
                 />
               </div>
               <div className="form-group">
@@ -194,6 +218,7 @@ class Prompt extends React.Component<PromptProps, PromptState> {
             <div className="toolbar-actions">
               <button
                 id="repeat"
+                title="Use the previous tags (ALT+R)"
                 className="btn btn-large btn-positive pull-left"
                 onClick={() => this.repeat(this.save)}
               >
@@ -202,6 +227,7 @@ class Prompt extends React.Component<PromptProps, PromptState> {
 
               <button
                 id="save"
+                title="Save the ping (CTRL+S / ALT+S)"
                 type="submit"
                 form="theform"
                 className="btn btn-large btn-primary pull-right"
