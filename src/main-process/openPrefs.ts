@@ -8,6 +8,7 @@ let prefsWindow: Electron.BrowserWindow | null;
 export function openPreferences(quitOnClosed: Boolean = false) {
   winston.debug("Showing preferences");
   if (prefsWindow) {
+    //TODO focus the existing window instead
     winston.warn("Tried to open preferences window but it seems it already exists. Aborting.");
     return;
   }

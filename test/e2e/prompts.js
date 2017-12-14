@@ -3,6 +3,7 @@ const tmp = require("tmp");
 const _ = require("lodash");
 const fs = require("fs");
 const winston = require("winston");
+const fkill = require("fkill");
 
 const helper = require("./helper");
 
@@ -40,11 +41,15 @@ describe("Prompts", function() {
   });
 
   afterEach(function() {
-    // spectron struggles if the window has closed already
+    // spectron struggles if the window has closed already, e.g.
     // https://github.com/electron/spectron/issues/101
-    // So we have the app quit when all the windows close in test mode, rather
-    // than trying to stop it here.
+    // So we have the app quit when all the windows close in test mode.
+    // Even this isn't enough - chromedriver will hang around waiting for its dead child,
+    // so we manually kill it (and any other running chromedriver instances ¯\_(ツ)_/¯)
 
+    // app.stop doesn't work without a renderer window around, so need this fallback
+    // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
+    fkill("chromedriver").then(() => {}, () => {});
     winston.debug("Application logs follow:");
     winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });
@@ -54,6 +59,8 @@ describe("Prompts", function() {
       .waitUntilWindowLoaded()
       .getWindowCount()
       .should.eventually.equal(1);
+    // stop() will work, because the window is still open.
+    // It's needed, because we just kill spectron rather than TagTime
     return app.stop();
   });
 

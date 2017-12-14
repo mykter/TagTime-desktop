@@ -1,5 +1,6 @@
 const winston = require("winston");
 const path = require("path");
+const psTree = require("ps-tree");
 
 exports.appPath = path.resolve(__dirname, "..", "..", "..");
 
@@ -83,5 +84,29 @@ exports.until = function(test, interval) {
       }
     };
     setTimeout(check, interval);
+  });
+};
+
+/**
+   * Kill a process and all of its children
+   * The tree-kill module doesn't work for me in this context
+   *  - the ps process never returns, it gets stuck as a defunct
+   *  process.
+   * @param {number} parentPid The root of the process tree to kill
+   */
+exports.tree_kill = function(parentPid) {
+  psTree(parentPid, function(err, children) {
+    children.forEach(function(child) {
+      try {
+        process.kill(child.PID, "SIGKILL");
+      } catch (e) {
+        // ignore it
+      }
+    });
+    try {
+      process.kill(parentPid, "SIGKILL");
+    } catch (e) {
+      // ignore it
+    }
   });
 };

@@ -1,6 +1,5 @@
 require("should");
 const child_process = require("child_process");
-const psTree = require("ps-tree");
 const isrunning = require("is-running");
 const tmp = require("tmp");
 const winston = require("winston");
@@ -14,30 +13,6 @@ describe("Application", function() {
 
   // There doesn't seem to be tooling to easily test Tray functionality,
   // e.g. see https://discuss.atom.io/t/automated-e2e-testing-of-electron-application-on-windows/21290
-
-  /**
-   * Kill a process and all of its children
-   * The tree-kill module doesn't work for me in this context
-   *  - the ps process never returns, it gets stuck as a defunct
-   *  process.
-   * @param {number} parentPid The root of the process tree to kill
-   */
-  let tree_kill = function(parentPid) {
-    psTree(parentPid, function(err, children) {
-      children.forEach(function(child) {
-        try {
-          process.kill(child.PID, "SIGKILL");
-        } catch (e) {
-          // ignore it
-        }
-      });
-      try {
-        process.kill(parentPid, "SIGKILL");
-      } catch (e) {
-        // ignore it
-      }
-    });
-  };
 
   /**
    * @returns {function} which calls callback if pid isn't running,
@@ -75,51 +50,48 @@ describe("Application", function() {
     tmpFile = tmp.fileSync();
   });
 
-  it.skip(
-    "should only allow one instance to run - but it's broken (issue #76), skipping",
-    function() {
-      this.timeout(15000);
+  it.skip("should only allow one instance to run - but it's broken (issue #76), skipping", function() {
+    this.timeout(15000);
 
-      app1 = spawnApp();
-      app1pid = app1.pid;
+    app1 = spawnApp();
+    app1pid = app1.pid;
 
-      return new Promise(function(fulfill, reject) {
-        let app1startup = function(buffer) {
-          if (buffer.toString().includes("ready")) {
-            app2 = spawnApp();
-            app2pid = app2.pid;
-            app2.on("exit", function(_code) {
-              fulfill(true);
-            });
+    return new Promise(function(fulfill, reject) {
+      let app1startup = function(buffer) {
+        if (buffer.toString().includes("ready")) {
+          app2 = spawnApp();
+          app2pid = app2.pid;
+          app2.on("exit", function(_code) {
+            fulfill(true);
+          });
 
-            // don't care which stream the notification will come on
-            app2.stdout.on("data", app2startup);
-            app2.stderr.on("data", app2startup);
-          }
-        };
+          // don't care which stream the notification will come on
+          app2.stdout.on("data", app2startup);
+          app2.stderr.on("data", app2startup);
+        }
+      };
 
-        let app2startup = function(buffer) {
-          if (buffer.toString().includes("starting up")) {
-            reject("Second instance is starting up");
-          }
-        };
+      let app2startup = function(buffer) {
+        if (buffer.toString().includes("starting up")) {
+          reject("Second instance is starting up");
+        }
+      };
 
-        // don't care which stream the notification will come on
-        app1.stdout.on("data", app1startup);
-        app1.stderr.on("data", app1startup);
-      });
-    }
-  );
+      // don't care which stream the notification will come on
+      app1.stdout.on("data", app1startup);
+      app1.stderr.on("data", app1startup);
+    });
+  });
 
   afterEach(function() {
     // Kill any processes spawned, and all their descendents.
     // app[12].kill doesn't work - it kills the node process, but its
     // descendants live on.
     if (app1pid) {
-      tree_kill(app1pid);
+      helper.tree_kill(app1pid);
     }
     if (app2pid) {
-      tree_kill(app2pid);
+      helper.tree_kill(app2pid);
     }
 
     // Only move on from this test when all the processes spawned are dead.

@@ -1,6 +1,7 @@
 require("should");
 const winston = require("winston");
 const fs = require("fs");
+const fkill = require("fkill");
 
 const helper = require("./helper");
 
@@ -14,13 +15,17 @@ describe("Preferences", function() {
     winston.level = "warning";
   });
 
-  beforeEach(function() {
+  beforeEach(async function() {
     ({ app, tmpConfig, tmpConfigFile, tmpLogFileName } = helper.launchApp("prefs", "/dev/null"));
     winston.debug("Launching app with " + app.path + " " + app.args);
-    return app.start();
+    await app.start();
+    await app.client.waitUntilWindowLoaded();
   });
 
   afterEach(function() {
+    // app.stop doesn't work without a renderer window around, so need this fallback
+    // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
+    fkill("chromedriver").then(() => {}, () => {});
     winston.debug("Application logs follow:");
     winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });
@@ -30,7 +35,8 @@ describe("Preferences", function() {
       .waitUntilWindowLoaded()
       .getWindowCount()
       .should.eventually.equal(1);
-
+    // stop() will work, because the window is still open.
+    // It's needed, because we just kill spectron rather than TagTime
     return app.stop();
   });
 
