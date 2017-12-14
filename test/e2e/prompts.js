@@ -39,14 +39,14 @@ describe("Prompts", function() {
     return app.start();
   });
 
-  afterEach(function() {
+  afterEach(async function() {
     // spectron struggles if the window has closed already, e.g.
     // https://github.com/electron/spectron/issues/101
     // So we have the app quit when all the windows close in test mode.
     // Even this isn't enough - chromedriver will hang around waiting for its dead child,
     // so we manually kill it (and any other running chromedriver instances ¯\_(ツ)_/¯)
 
-    helper.kill_spectron();
+    await helper.kill_spectron();
     winston.debug("Application logs follow:");
     winston.debug(fs.readFileSync(tmpLogFileName, { encoding: "utf8" }));
   });

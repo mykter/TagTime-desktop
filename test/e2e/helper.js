@@ -115,5 +115,5 @@ exports.tree_kill = function(parentPid) {
 exports.kill_spectron = function() {
   // app.stop doesn't work without a renderer window around, so need this fallback
   // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
-  fkill(["chromedriver", "chromedriver.exe"]).then(() => {}, () => {});
+  return fkill(["chromedriver", "chromedriver.exe"], {force:true,tree:true}).then(() => {}, () => {});
 };
