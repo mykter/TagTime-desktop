@@ -185,13 +185,6 @@
       "resolved": "https://registry.npmjs.org/7zip-bin/-/7zip-bin-2.3.4.tgz",
       "dev": true
     },
-    "7zip-bin-linux": {
-      "version": "1.2.0",
-      "from": "7zip-bin-linux@>=1.1.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/7zip-bin-linux/-/7zip-bin-linux-1.2.0.tgz",
-      "dev": true,
-      "optional": true
-    },
     "abbrev": {
       "version": "1.1.1",
       "from": "abbrev@>=1.0.0 <2.0.0",

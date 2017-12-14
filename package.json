@@ -90,6 +90,7 @@
     "typescript": "^2.6.2",
     "xvfb-maybe": "^0.2.1"
   },
+  "platformSpecificDependencies": [["7zip-bin-mac"], ["7zip-bin-win"], ["7zip-bin-linux"]],
   "scripts": {
     "build": "gulp clean:build && gulp build:tests",
     "start": "electron .",
@@ -101,11 +102,13 @@
     "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "precover":
+      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
     "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
     "pack": "electron-builder --dir",
+    "postshrinkwrap": "node ./support/clean-shrinkwrap.js",
     "dist": "electron-builder",
     "clean": "rimraf ./coverage ./dist ./doc ./app",
     "lint": "eslint src test support",
@@ -122,11 +125,7 @@
     },
     "linux": {
       "category": "Utility",
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ]
+      "target": ["AppImage", "deb", "rpm"]
     }
   }
 }
