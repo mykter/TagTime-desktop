@@ -24,7 +24,7 @@ export function saveCoverage() {
     do {
       i += 1;
       coverageBase = `coverage${i}.json`;
-    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, coverageBase)));
+    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, coverageBase)));
 
     global.coverage.forEach((e, i) => {
       let name;
@@ -36,7 +36,7 @@ export function saveCoverage() {
         // file came from
         name = "var" + i + "-" + coverageBase;
       }
-      fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR, name), JSON.stringify(e));
+      fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, name), JSON.stringify(e));
     });
   }
 }

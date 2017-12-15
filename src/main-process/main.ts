@@ -4,6 +4,7 @@ import * as path from "path";
 const openAboutWindow = require("about-window").default;
 import * as moment from "moment";
 import * as commander from "commander";
+import * as fs from "fs";
 
 import * as prompts from "./prompts";
 import { Config } from "./config";
@@ -132,8 +133,12 @@ function parseCommandLine() {
   } else {
     argvWorkaround = [process.argv[0], "", ...process.argv.slice(1)];
   }
+
+  // process.env.npm_package_version only guaranteed available when run from an npm script
+  let version = JSON.parse(fs.readFileSync(`${appRoot}/package.json`, "utf8")).version;
+
   commander
-    .version(process.env.npm_package_version)
+    .version(version)
     .option("--test <option>", "Development test mode")
     .option("--logfile <path>", "Send logging output to this file instead of stdout")
     .option("--configdir <path>", "Path which contains config file (test use only)")
