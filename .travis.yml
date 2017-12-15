@@ -8,7 +8,7 @@ sudo: false
 
 language: node_js
 node_js:
-  - 7
+  - "node"
 
 os:
   - linux
@@ -29,8 +29,6 @@ cache:
 before_script:
   - npm run build
 
-after_success:
-  - if [[ $TRAVIS_OS_NAME = "linux" ]]; then
-      npm run coveralls;
-    fi
-  - npm run dist
+script: # we want to be notified if any of these fail, so use script rather than after_success
+  - npm test && npm run dist # only dist if the tests pass
+  - if [[ $TRAVIS_OS_NAME = "linux" ]]; then npm run coveralls; fi
