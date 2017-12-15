@@ -2,7 +2,6 @@
 
 [![Linux & macOS Build Status](https://travis-ci.org/mykter/TagTime-desktop.svg?branch=master)](https://travis-ci.org/mykter/TagTime-desktop)
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/vo15dgoqrb6k4fc4?svg=true)](https://ci.appveyor.com/project/mykter/tagtime-desktop)
-[![Coverage Status](https://coveralls.io/repos/github/mykter/TagTime-desktop/badge.svg?branch=master)](https://coveralls.io/github/mykter/TagTime-desktop?branch=master)
 ![Greenkeeper Badge](https://badges.greenkeeper.io/mykter/TagTime-desktop.svg)
 [![bitHound Overall Score](https://www.bithound.io/github/mykter/TagTime-desktop/badges/score.svg)](https://www.bithound.io/github/mykter/TagTime-desktop)
 
