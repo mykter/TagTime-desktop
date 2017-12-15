@@ -21,6 +21,7 @@ cache:
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install
+  - npm install 7zip-bin-win # platform specific dependency of electron-builder
 
 # We don't want to run 'msbuild' but do need to build prior to testing
 build: off
