@@ -1,14 +1,14 @@
 require("should");
-const winston = require("winston");
-const fs = require("fs");
+const winston = require("winston"); // type errors with winston.level= if using "import"
+import * as fs from "fs";
 
-const helper = require("./helper");
+import * as helper from "./helper";
 
 describe("Preferences", function() {
   this.timeout(10000);
   this.retries(2); // had an occasion where appveyor test transiently failed.
 
-  let app, tmpLogFileName, tmpConfig, tmpConfigFile;
+  let app: any, tmpLogFileName: string, tmpConfig: helper.ConfigDict, tmpConfigFile: string;
 
   before(function() {
     winston.level = "warning";
@@ -42,7 +42,7 @@ describe("Preferences", function() {
     // Trying to wait for the app to close doesn't seem to work (app.isRunning() always returns true),
     // so just wait a bit instead... :-/
     await helper.until(() => true, 500);
-    let newConfig = JSON.parse(fs.readFileSync(tmpConfigFile));
+    let newConfig = JSON.parse(fs.readFileSync(tmpConfigFile, "utf8"));
     newConfig.should.deepEqual(tmpConfig);
   });
 
@@ -52,7 +52,7 @@ describe("Preferences", function() {
     await app.client.click("#save");
 
     await helper.until(() => fs.statSync(tmpConfigFile).mtime !== origModified, 100);
-    let newConfig = JSON.parse(fs.readFileSync(tmpConfigFile));
+    let newConfig = JSON.parse(fs.readFileSync(tmpConfigFile, "utf8"));
     tmpConfig.tagWidth = 33;
     newConfig.should.deepEqual(tmpConfig);
   });
