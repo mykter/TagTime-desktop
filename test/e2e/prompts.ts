@@ -1,23 +1,22 @@
 require("should");
-const tmp = require("tmp");
-const _ = require("lodash");
-const fs = require("fs");
-const winston = require("winston");
+import * as tmp from "tmp";
+import * as _ from "lodash";
+import * as fs from "fs";
+const winston = require("winston"); // type errors with winston.level= if using "import"
 
-const helper = require("./helper");
-
-const { PingFile } = require("../../src/main-process/pingfile");
-const { Ping } = require("../../src/ping");
+import * as helper from "./helper";
+import { PingFile } from "../../src/main-process/pingfile";
+import { Ping } from "../../src/ping";
 
 describe("Prompts", function() {
   this.timeout(10000);
   this.retries(2); // had an occasion where appveyor test transiently failed.
 
-  let app, tmpLogFileName;
-  let tmpPingFileName;
-  let tmpConfig;
-  let prevPing;
-  let prevPingEncoded;
+  let app: any, tmpLogFileName: string;
+  let tmpPingFileName: string;
+  let tmpConfig: helper.ConfigDict;
+  let prevPing: Ping;
+  let prevPingEncoded: string;
 
   const tagsSelector = "#tags-input";
   const saveSelector = "#save";
@@ -26,7 +25,7 @@ describe("Prompts", function() {
 
   before(function() {
     winston.level = "warning";
-    prevPing = new Ping(1234567890000, ["previous", "tags"], "");
+    prevPing = new Ping(1234567890000, new Set(["previous", "tags"]), "");
     prevPingEncoded = PingFile.encode(prevPing);
   });
 
@@ -72,7 +71,11 @@ describe("Prompts", function() {
     return helper.until(() => fs.statSync(tmpPingFileName).size > prevPingEncoded.length + 10, 100);
   };
 
-  let saveInput = async function(tags, comment = null, button = saveSelector) {
+  let saveInput = async function(
+    tags: string,
+    comment: string = "",
+    button: null | string = saveSelector
+  ) {
     app.client.waitForExist(tagsSelector);
 
     await app.client.element(tagsSelector).setValue(tags);
@@ -84,22 +87,22 @@ describe("Prompts", function() {
     }
   };
 
-  let lastPingShouldEqual = function(tags, comment = null) {
+  let lastPingShouldEqual = function(tags: Set<string>, comment?: string) {
     const pings = new PingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     winston.debug(
-      "asserting Set(" + Array.from(pings[1].tags) + ") should equal Set(" + tags + ")"
+      "asserting Set(" + Array.from(pings[1]!.tags) + ") should equal Set(" + tags + ")"
     );
-    _.isEqual(pings[1].tags, new Set(tags)).should.equal(true);
+    _.isEqual(pings[1]!.tags, new Set(tags)).should.equal(true);
     if (comment) {
-      pings[1].comment.should.endWith(comment);
+      pings[1]!.comment.should.endWith(comment);
     }
   };
 
   it("should save a ping with tags separated by spaces and commas", async function() {
     await saveInput("tag1 tag2, tag3");
     await untilSaved();
-    lastPingShouldEqual(["tag1", "tag2", "tag3"]);
+    lastPingShouldEqual(new Set(["tag1", "tag2", "tag3"]));
   });
 
   it('should repeat pings when a " is entered', async function() {
@@ -109,7 +112,7 @@ describe("Prompts", function() {
   });
 
   it("should repeat pings when the repeat button is pressed", async function() {
-    await saveInput("", null, repeatSelector);
+    await saveInput("", "", repeatSelector);
     await untilSaved();
     lastPingShouldEqual(prevPing.tags);
   });
@@ -117,14 +120,14 @@ describe("Prompts", function() {
   it("should save a comment", async function() {
     await saveInput("tag", "Test comment", saveSelector);
     await untilSaved();
-    lastPingShouldEqual(["tag"], "Test comment");
+    lastPingShouldEqual(new Set(["tag"]), "Test comment");
   });
 
-  let saveOnEnter = async function(fieldSelector) {
-    await saveInput("tag,", null, null); // The comma forces tag termination as otherwise the first enter just finishes the tag
+  let saveOnEnter = async function(fieldSelector: string) {
+    await saveInput("tag,", "", null); // The comma forces tag termination as otherwise the first enter just finishes the tag
     app.client.addValue(fieldSelector, "Enter");
     await untilSaved();
-    lastPingShouldEqual(["tag"]);
+    lastPingShouldEqual(new Set(["tag"]));
   };
 
   it("should save on enter key in comment field", async function() {
@@ -135,8 +138,8 @@ describe("Prompts", function() {
     await saveOnEnter(tagsSelector);
   });
 
-  let quitOnEscape = async function(fieldSelector) {
-    await saveInput("notused", "never seen", false);
+  let quitOnEscape = async function(fieldSelector: string) {
+    await saveInput("notused", "never seen", null);
     app.client.addValue(fieldSelector, "Escape");
     await untilSaved();
     lastPingShouldEqual(tmpConfig["cancelTags"]);
