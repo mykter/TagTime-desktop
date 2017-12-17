@@ -1,7 +1,8 @@
-const winston = require("winston");
-const path = require("path");
-const psTree = require("ps-tree");
-const fkill = require("fkill");
+import * as winston from "winston";
+import * as path from "path";
+import * as psTree from "ps-tree";
+import * as fkill from "fkill";
+import { ConfigDict } from "../../src/main-process/config";
 
 exports.appPath = path.resolve(__dirname, "..", "..", "..");
 
@@ -22,7 +23,7 @@ const _ = require("lodash");
  * @param options {dict} Any options to change from their defaults
  * @returns {string} directory containing the config file
  */
-let createConfig = function(options) {
+let createConfig = function(options: Partial<ConfigDict>) {
   var conf = _.clone(Config.defaultDict());
   for (var key in options) {
     conf[key] = options[key];
@@ -39,7 +40,7 @@ const tmp = require("tmp");
  * @param testParam {string} The parameter to pass to --test
  * @param pingFilePath {string} The ping file to put in this instances config file
  */
-exports.launchApp = function(testParam, pingFilePath = null) {
+exports.launchApp = function(testParam: string, pingFilePath?: string) {
   let Application = require("spectron").Application;
   let tmpLogFileName = tmp.tmpNameSync();
   let { configDir, configFile, config } = createConfig({
@@ -75,7 +76,7 @@ exports.launchApp = function(testParam, pingFilePath = null) {
  * Returns a promise that resolves once test() is truthy
  * Tests the value of test() every interval ms
  */
-exports.until = function(test, interval) {
+exports.until = function(test: () => Boolean, interval: number) {
   return new Promise(function(resolve, _reject) {
     let check = function() {
       if (test()) {
@@ -95,7 +96,7 @@ exports.until = function(test, interval) {
    *  process.
    * @param {number} parentPid The root of the process tree to kill
    */
-exports.tree_kill = function(parentPid) {
+exports.tree_kill = function(parentPid: number) {
   psTree(parentPid, function(err, children) {
     children.forEach(function(child) {
       try {
@@ -115,5 +116,8 @@ exports.tree_kill = function(parentPid) {
 exports.kill_spectron = function() {
   // app.stop doesn't work without a renderer window around, so need this fallback
   // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
-  return fkill(["chromedriver", "chromedriver.exe"], {force:true,tree:true}).then(() => {}, () => {});
+  return fkill(["chromedriver", "chromedriver.exe"], { force: true, tree: true }).then(
+    () => {},
+    () => {}
+  );
 };
