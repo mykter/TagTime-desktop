@@ -22,15 +22,24 @@ export const PrefGroup = (props: PrefGroupProps) => {
     if (isFormControl) {
       inProps["className"] = "form-control";
     }
-    let type = props.pref.type;
-    if (props.pref.type === "file") {
-      type = "input";
-      inProps["className"] =
-        ("className" in inProps ? inProps["className"] + " " : "") + "file-input";
+
+    let type;
+    switch (props.pref.type) {
+      case "file": {
+        type = "input";
+        inProps["className"] =
+          ("className" in inProps ? inProps["className"] + " " : "") + "file-input";
+        break;
+      }
+      case "tags": {
+        type = "input";
+        break;
+      }
+      default: {
+        type = props.pref.type;
+      }
     }
-    if (props.pref.type === "tags") {
-      type = "input";
-    }
+
     return (
       <input
         readOnly={readOnly}

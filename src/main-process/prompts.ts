@@ -5,6 +5,7 @@ import windowStateKeeper = require("electron-window-state");
 import * as helper from "./helper";
 import * as edit from "./edit";
 import { Ping } from "../ping";
+import { ConfigName } from "./config";
 
 // Global reference to prevent garbage collection
 let promptWindow: Electron.BrowserWindow | null;
@@ -166,7 +167,7 @@ export function catchUp(till: number): boolean {
  * Show an editor if the time is after the next ping in the pingfile
  */
 export function editorIfMissed() {
-  if (global.pingFile.pings.length === 0) {
+  if (!global.config.user.get(ConfigName.editorOnStartup) || global.pingFile.pings.length === 0) {
     return;
   }
 

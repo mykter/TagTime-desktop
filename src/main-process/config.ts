@@ -13,7 +13,8 @@ export enum ConfigName {
   pingFileStart = "pingFileStart",
   period = "period",
   seed = "seed",
-  cancelTags = "cancelTags"
+  cancelTags = "cancelTags",
+  editorOnStartup = "editorOnStartup"
 }
 export interface ConfigDict {
   [index: string]: any;
@@ -25,6 +26,7 @@ export interface ConfigDict {
   period: number;
   seed: number;
   cancelTags: Set<string>;
+  editorOnStartup: boolean;
 }
 
 export interface ConfigPref {
@@ -189,6 +191,13 @@ export class Config {
       label: "The tags to use when not supplied by the user for any reason",
       configurable: true,
       default: ["afk", "RETRO"]
+    },
+    {
+      name: ConfigName.editorOnStartup,
+      type: "checkbox",
+      label: "Open the tag editor on startup if pings have been missed since last run",
+      configurable: true,
+      default: false
     }
   ];
 }
