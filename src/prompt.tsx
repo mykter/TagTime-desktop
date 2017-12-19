@@ -31,8 +31,9 @@ const Tags = (props: TagsProps) => {
       return tag.toLowerCase().slice(0, inputLength) === inputValue;
     });
 
-    // If we just pass inputProps=renderInputProps directly, that includes addTag which isn't a DOM property
-    let { addTag, ...inputProps } = renderInputProps;
+    // If we just pass inputProps=renderInputProps directly, that includes addTag which isn't a DOM property,
+    // and onChange which we want to override
+    let { addTag, onChange, ...inputProps } = renderInputProps;
 
     const storeInputReference = (autosuggest: any) => {
       // Type should be autosuggest:Autosuggest, but the typings are missing ".input"
@@ -180,7 +181,7 @@ class Prompt extends React.Component<PromptProps, PromptState> {
             <form id="theform" onSubmit={e => this.save(e)}>
               <div className="form-group">
                 <label>
-                  What are you doing <i>right now</i>?{" "}
+                  What are you doing <i>right now</i>?
                 </label>
                 <div id="time" className="pull-right">
                   {moment(this.props.time, "x").format("HH:mm:ss")}
