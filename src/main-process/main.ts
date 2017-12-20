@@ -61,7 +61,7 @@ function singleInstance(alwaysQuit: boolean) {
 /**
  * Download and install developer extensions
  */
-async function installExtensions() {
+async function installDevExtensions() {
   const installer = require("electron-devtools-installer");
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ["REACT_DEVELOPER_TOOLS"];
@@ -190,7 +190,7 @@ function setupLogging(verbose: boolean, logfile: string) {
 /**
  * Add any missing pings to the file, and show an editor if we added any
  */
-function catchUp() {
+export function catchUp() {
   if (prompts.catchUp(Date.now())) {
     if (global.config.user.get(ConfigName.editorOnStartup)) {
       openEditor();
@@ -250,7 +250,7 @@ function main() {
 
   app.on("ready", async function() {
     winston.debug(app.getName() + " ready");
-    await installExtensions();
+    await installDevExtensions();
     if (program.test) {
       mainTest(program.test);
     } else {
@@ -261,4 +261,7 @@ function main() {
   });
 }
 
-main();
+// Only actually do anything if we weren't require'd but ran
+if (require.main === module) {
+  main();
+}

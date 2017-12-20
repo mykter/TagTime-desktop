@@ -7,8 +7,8 @@
 // This will get called prior to the standard log config on app startup,
 // so just need to ensure that doesn't overwrite this config.
 const winston = require("winston");
-var tmp = require("tmp");
-var logfile = tmp.tmpNameSync();
+const tmp = require("tmp");
+let logfile = tmp.tmpNameSync();
 winston.info("Test mode log config - only errors to console, all to " + logfile);
 winston.configure({
   transports: [
