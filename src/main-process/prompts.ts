@@ -3,9 +3,7 @@ import { app, ipcMain, BrowserWindow } from "electron";
 import windowStateKeeper = require("electron-window-state");
 
 import * as helper from "./helper";
-import * as edit from "./edit";
 import { Ping } from "../ping";
-import { ConfigName } from "./config";
 
 // Global reference to prevent garbage collection
 let promptWindow: Electron.BrowserWindow | null;
@@ -134,49 +132,36 @@ export function cancelSchedule() {
 }
 
 /**
- * Add missing pings to the ping file.
- * Only exported to support testing.
- * @returns Whether there were any missing pings that were added.
+ * Returns false if there are no pings missing from the ping file at the specified time
+ * Otherwise returns the time of the first missed ping
  */
-export function catchUp(till: number): boolean {
+function missedPing(time: number): boolean | number {
   if (global.pingFile.pings.length === 0) {
     return false;
   }
-  let missedPings = false;
-  if (global.pingFile.pings.length > 0) {
-    let lastPing = global.pingFile.pings[global.pingFile.pings.length - 1];
-    if (lastPing) {
-      let p: Ping;
-      while (till >= global.pings.next(lastPing.time)) {
-        // Replace every missing ping with the configured tags to use
-        missedPings = true;
-        p = new Ping(
-          global.pings.next(lastPing.time),
-          new Set(global.config.user.get("cancelTags")),
-          ""
-        );
-        global.pingFile.push(p);
-        lastPing = p;
-      }
-    }
+  let lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1]!.time;
+  let nextPingTime = global.pings.next(lastPingTime);
+  if (nextPingTime <= time) {
+    return nextPingTime;
+  } else {
+    return false;
   }
-  return missedPings;
 }
 
 /**
- * Show an editor if the time is after the next ping in the pingfile
+ * Add missing pings to the ping file.
+ * @returns Whether there were any missing pings that were added.
  */
-export function editorIfMissed() {
-  if (!global.config.user.get(ConfigName.editorOnStartup) || global.pingFile.pings.length === 0) {
-    return;
+export function catchUp(till: number): boolean {
+  let missed = false;
+  let missedTime;
+  while ((missedTime = missedPing(till))) {
+    missed = true;
+    // Replace every missing ping with the configured tags to use
+    let p = new Ping(missedTime as number, new Set(global.config.user.get("cancelTags")), "");
+    global.pingFile.push(p);
   }
-
-  if (catchUp(Date.now()))
-    if (promptWindow) {
-      winston.info("Skipping editor because prompt hasn't been answered");
-    } else {
-      edit.openEditor();
-    }
+  return missed;
 }
 
 /* Handle events sent from the prompt window

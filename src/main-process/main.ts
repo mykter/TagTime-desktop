@@ -7,7 +7,7 @@ import * as commander from "commander";
 import * as fs from "fs";
 
 import * as prompts from "./prompts";
-import { Config } from "./config";
+import { Config, ConfigName } from "./config";
 import { PingFile } from "./pingfile";
 import { openPreferences } from "./openPrefs";
 import { openEditor } from "./edit";
@@ -188,6 +188,17 @@ function setupLogging(verbose: boolean, logfile: string) {
 }
 
 /**
+ * Add any missing pings to the file, and show an editor if we added any
+ */
+function catchUp() {
+  if (prompts.catchUp(Date.now())) {
+    if (global.config.user.get(ConfigName.editorOnStartup)) {
+      openEditor();
+    }
+  }
+}
+
+/**
  * Application init
  */
 function main() {
@@ -244,8 +255,8 @@ function main() {
       mainTest(program.test);
     } else {
       createTray();
+      catchUp();
       prompts.schedulePings(prompts.openPrompt);
-      prompts.editorIfMissed();
     }
   });
 }
