@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as _ from "lodash";
 import * as tmp from "tmp";
 
-import { Config, ConfigDict } from "../../src/main-process/config";
+import { Config, ConfigDict, logFileName } from "../../src/main-process/config";
 export { ConfigDict } from "../../src/main-process/config"; // reexport for convenience
 
 export const appPath = path.resolve(__dirname, "..", "..", "..");
@@ -44,30 +44,22 @@ let createConfig = function(options: Partial<ConfigDict>) {
  */
 export function launchApp(testParam: string, pingFilePath?: string) {
   let Application = spectron.Application;
-  let tmpLogFileName: string = tmp.tmpNameSync();
   let { configDir, configFile, config } = createConfig({
     pingFilePath: pingFilePath,
     runOnStartup: false,
     firstRun: false
   });
-  winston.debug("Logging to " + tmpLogFileName);
+
+  let logFile = path.join(configDir, logFileName);
+  fs.writeFileSync(logFile, ""); // touch the log to ensure it exists - makes reading simpler
 
   let app = new Application({
     path: electronPath,
-    args: [
-      appPath,
-      "--test",
-      testParam,
-      "--logfile",
-      tmpLogFileName,
-      "--verbose",
-      "--configdir",
-      configDir
-    ]
+    args: [appPath, "--test", testParam, "--nostdout", "--verbose", "--configdir", configDir]
   });
   return {
     app: app,
-    tmpLogFileName: tmpLogFileName,
+    tmpLogFileName: logFile,
     tmpConfigDir: configDir,
     tmpConfigFile: configFile,
     tmpConfig: config
@@ -92,12 +84,12 @@ export function until(test: () => Boolean, interval: number) {
 }
 
 /**
-   * Kill a process and all of its children
-   * The tree-kill module doesn't work for me in this context
-   *  - the ps process never returns, it gets stuck as a defunct
-   *  process.
-   * @param {number} parentPid The root of the process tree to kill
-   */
+ * Kill a process and all of its children
+ * The tree-kill module doesn't work for me in this context
+ *  - the ps process never returns, it gets stuck as a defunct
+ *  process.
+ * @param {number} parentPid The root of the process tree to kill
+ */
 export function tree_kill(parentPid: number) {
   psTree(parentPid, function(err, children) {
     children.forEach(function(child) {

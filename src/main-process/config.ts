@@ -37,11 +37,25 @@ export interface ConfigPref {
   default: any;
 }
 
+export const logFileName = "debug.log";
+export const pingFileName = "tagtime.log";
+
 /**
  * Config for the main process - dependent on access to the user's config file
  * Contains persisted non-constant data under 'user'.
  */
 export class Config {
+  /**
+   * The directory where the default ping file, config file, and logs are.
+   */
+  static configPath(): string {
+    return app.getPath("userData");
+  }
+
+  static logFile(): string {
+    return path.join(Config.configPath(), logFileName);
+  }
+
   /**
    * The user config. Access with .get, .set, .has
    */
@@ -56,7 +70,7 @@ export class Config {
     // These two default config values are set here rather than in fieldInfo because the "app"
     // object isn't available in the test context
     initialConfig.seed = require("random-js")().integer(0, Math.pow(2, 32) - 1);
-    initialConfig.pingFilePath = path.join(app.getPath("userData"), "tagtime.log");
+    initialConfig.pingFilePath = path.join(Config.configPath(), pingFileName);
 
     var options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
     if (dir) {
@@ -160,7 +174,7 @@ export class Config {
       type: "file",
       label: "Ping file (where all your pings are recorded)",
       configurable: true,
-      default: null // set at runtime
+      default: null // assigned at runtime to avoid calling electron apis when imported by tests
     },
     {
       name: ConfigName.pingFileStart,

@@ -139,10 +139,10 @@ function parseCommandLine() {
 
   commander
     .version(version)
-    .option("--test <option>", "Development test mode")
-    .option("--logfile <path>", "Send logging output to this file instead of stdout")
-    .option("--configdir <path>", "Path which contains config file (test use only)")
+    .option("--nostdout", "Suppress logging on stdout (still goes to debug.log)")
     .option("-v, --verbose", "Debug logging")
+    .option("--test <option>", "Development test mode")
+    .option("--configdir <path>", "Path which contains config file (test use only)")
     .option(
       "--quit",
       "Tell another running instance to quit (useful for killing zombie " +
@@ -173,17 +173,19 @@ function firstRunTasks() {
 /**
  * Configure winston and expose to renderer windows via global.logger
  */
-function setupLogging(verbose: boolean, logfile: string) {
+function setupLogging(verbose: boolean, noStdout: boolean) {
   if (verbose) {
     winston.level = "debug";
   } else {
     winston.level = "warn";
   }
 
-  if (logfile) {
-    winston.add(winston.transports.File, { filename: logfile });
+  winston.add(winston.transports.File, { filename: Config.logFile() });
+
+  if (noStdout) {
     winston.remove(winston.transports.Console);
   }
+
   global.logger = winston;
 }
 
@@ -207,7 +209,7 @@ function main() {
 
   let program = parseCommandLine();
 
-  setupLogging(program.verbose, program.logfile);
+  setupLogging(program.verbose, program.nostdout);
 
   // Prevent second instance from running
   if (!singleInstance(program.quit)) {
