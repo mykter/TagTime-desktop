@@ -5,9 +5,9 @@
 ![Greenkeeper Badge](https://badges.greenkeeper.io/mykter/TagTime-desktop.svg)
 [![bitHound Overall Score](https://www.bithound.io/github/mykter/TagTime-desktop/badges/score.svg)](https://www.bithound.io/github/mykter/TagTime-desktop)
 
-This is a cross-platform desktop GUI implementation of [TagTime](https://github.com/dreeves/TagTime).
-
 [![Latest (pre)release](https://img.shields.io/github/release/mykter/TagTime-desktop/all.svg)](https://github.com/mykter/TagTime-desktop/releases)
+
+This is a cross-platform desktop GUI implementation of [TagTime](https://github.com/dreeves/TagTime).
 
 To determine how you spend your time, TagTime literally randomly samples you. At random times it pops up and asks what you're doing right at that moment. You answer with tags.
 
