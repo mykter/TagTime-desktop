@@ -46,31 +46,30 @@ export const pingFileName = "tagtime.log";
  */
 export class Config {
   /**
-   * The directory where the default ping file, config file, and logs are.
-   */
-  static configPath(): string {
-    return app.getPath("userData");
-  }
-
-  static logFile(): string {
-    return path.join(Config.configPath(), logFileName);
-  }
-
-  /**
    * The user config. Access with .get, .set, .has
    */
   user: ElectronStore;
   private _firstRun: Boolean | null;
+  /**
+   * The directory where the default ping file, config file, and logs are.
+   */
+  configPath: string;
 
   /**
    * @param {"text"} dir Specify a non-default config location. Should only be used for testing.
    */
   constructor(dir?: string) {
+    if (dir) {
+      this.configPath = dir;
+    } else {
+      this.configPath = app.getPath("userData");
+    }
+
     let initialConfig = Config.defaultDict();
     // These two default config values are set here rather than in fieldInfo because the "app"
     // object isn't available in the test context
     initialConfig.seed = require("random-js")().integer(0, Math.pow(2, 32) - 1);
-    initialConfig.pingFilePath = path.join(Config.configPath(), pingFileName);
+    initialConfig.pingFilePath = path.join(this.configPath, pingFileName);
 
     var options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
     if (dir) {
@@ -83,6 +82,10 @@ export class Config {
     if (this._firstRun) {
       this.user.set("firstRun", false);
     }
+  }
+
+  get logFile(): string {
+    return path.join(this.configPath, logFileName);
   }
 
   /**

@@ -180,13 +180,19 @@ function setupLogging(verbose: boolean, noStdout: boolean) {
     winston.level = "warn";
   }
 
-  winston.add(winston.transports.File, { filename: Config.logFile() });
-
   if (noStdout) {
     winston.remove(winston.transports.Console);
   }
 
   global.logger = winston;
+}
+
+/**
+ * Finish configuring winston. Uses global.config.
+ */
+function finalizeLogging() {
+  winston.add(winston.transports.File, { filename: global.config.logFile, handleExceptions: true });
+  winston.handleExceptions();
 }
 
 /**
@@ -219,6 +225,9 @@ function main() {
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
   global.config = new Config(program.configdir);
+
+  // now global.config is set up
+  finalizeLogging();
 
   let createPingFile = false;
   if (global.config.firstRun) {
