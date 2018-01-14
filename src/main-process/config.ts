@@ -115,7 +115,7 @@ export class Config {
   }
 
   get pingFileStartFormat() {
-    return "YYYY:MM:DDTHH:MM";
+    return "YYYY-MM-DDTHH:MM";
   }
 
   /**
