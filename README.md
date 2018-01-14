@@ -27,10 +27,6 @@ Preferences can be set via the tray icon.
 Contributions welcome! This is a fun side-project, and your use-case might be different to mine.
 Please see the CONTRIBUTING.md file for design and development info.
 
-## macOS
-
-This app has not been tested on macOS by a human, only travis-ci. Bug reports and pull requests welcome.
-
 ## Beeminder
 
 I don't use [Beeminder](https://beeminder.com), so haven't implemented support. Pull requests welcome.
