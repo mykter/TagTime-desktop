@@ -24,7 +24,7 @@ Preferences can be set via the tray icon.
 
 # Contributing
 
-Contributions welcome! This is a fun side-project, and your use-case might be different to mine.
+Contributions welcome! This is a fun side-project, there's lots to do, and your use-case might be different to mine.
 Please see the CONTRIBUTING.md file for design and development info.
 
 ## Beeminder
