@@ -1,10 +1,11 @@
-import { app, Menu, Tray } from "electron";
+import { app, Menu, Tray, nativeImage } from "electron";
 const winston = require("winston"); // type errors with winston.level= if using "import"
 import * as path from "path";
 const openAboutWindow = require("about-window").default;
 import * as moment from "moment";
 import * as commander from "commander";
 import * as fs from "fs";
+import { platform } from "os";
 
 import * as prompts from "./prompts";
 import { Config, ConfigName } from "./config";
@@ -17,8 +18,20 @@ import { PingTimes } from "../pingtimes";
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
+
 const appRoot = path.join(__dirname, "..", "..", "..");
-const icon_path = path.resolve(appRoot, "resources", "tagtime.png");
+const imagesPath = path.resolve(appRoot, "resources");
+const logoPath = path.resolve(imagesPath, "tagtime.png");
+
+let trayIconPath: string, trayPressedIcon: nativeImage;
+if (platform() === "darwin") {
+  trayIconPath = path.resolve(imagesPath, "mac.png");
+  trayPressedIcon = nativeImage.createFromPath(path.resolve(imagesPath, "macHighlight.png"));
+} else if (platform() === "win32") {
+  trayIconPath = path.resolve(imagesPath, "tagtime.ico");
+} else {
+  trayIconPath = logoPath;
+}
 
 /**
  * Ensures only one instance of the app is running at a time.
@@ -75,7 +88,7 @@ async function installDevExtensions() {
  * Launch an about window
  */
 function about() {
-  openAboutWindow({ icon_path: icon_path, package_json_dir: appRoot });
+  openAboutWindow({ icon_path: logoPath, package_json_dir: appRoot });
 }
 
 /**
@@ -83,7 +96,10 @@ function about() {
  */
 function createTray() {
   winston.debug("Creating tray");
-  tray = new Tray(icon_path);
+  tray = new Tray(trayIconPath);
+  if (platform() === "darwin") {
+    tray.setPressedImage(trayPressedIcon);
+  }
   tray.setToolTip(app.getName());
   tray.setContextMenu(
     Menu.buildFromTemplate([
