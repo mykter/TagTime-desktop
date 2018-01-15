@@ -48,7 +48,6 @@
     "@types/react-autosuggest": "^9.3.2",
     "@types/react-dom": "^16.0.3",
     "@types/react-tagsinput": "^3.19.0",
-    "@types/should": "^13.0.0",
     "@types/sinon": "^4.1.2",
     "@types/tmp": "0.0.33",
     "@types/webdriverio": "^4.8.6",
@@ -90,7 +89,17 @@
     "typescript": "^2.6.2",
     "xvfb-maybe": "^0.2.1"
   },
-  "platformSpecificDependencies": [["7zip-bin-mac"], ["7zip-bin-win"], ["7zip-bin-linux"]],
+  "platformSpecificDependencies": [
+    [
+      "7zip-bin-mac"
+    ],
+    [
+      "7zip-bin-win"
+    ],
+    [
+      "7zip-bin-linux"
+    ]
+  ],
   "scripts": {
     "build": "gulp clean:build && gulp build:tests",
     "start": "electron .",
@@ -102,8 +111,7 @@
     "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover":
-      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
     "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
@@ -125,7 +133,11 @@
     },
     "linux": {
       "category": "Utility",
-      "target": ["AppImage", "deb", "rpm"]
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ]
     }
   }
 }

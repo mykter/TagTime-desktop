@@ -144,12 +144,6 @@
       "resolved": "https://registry.npmjs.org/@types/react-tagsinput/-/react-tagsinput-3.19.1.tgz",
       "dev": true
     },
-    "@types/should": {
-      "version": "13.0.0",
-      "from": "@types/should@13.0.0",
-      "resolved": "https://registry.npmjs.org/@types/should/-/should-13.0.0.tgz",
-      "dev": true
-    },
     "@types/sinon": {
       "version": "4.1.3",
       "from": "@types/sinon@4.1.3",
