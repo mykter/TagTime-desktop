@@ -1088,9 +1088,9 @@
       "dev": true
     },
     "builder-util": {
-      "version": "4.1.4",
-      "from": "builder-util@4.1.4",
-      "resolved": "https://registry.npmjs.org/builder-util/-/builder-util-4.1.4.tgz",
+      "version": "4.1.2",
+      "from": "builder-util@4.1.2",
+      "resolved": "https://registry.npmjs.org/builder-util/-/builder-util-4.1.2.tgz",
       "dev": true,
       "dependencies": {
         "ansi-styles": {
@@ -1132,9 +1132,9 @@
       }
     },
     "builder-util-runtime": {
-      "version": "4.0.1",
-      "from": "builder-util-runtime@4.0.1",
-      "resolved": "https://registry.npmjs.org/builder-util-runtime/-/builder-util-runtime-4.0.1.tgz",
+      "version": "4.0.0",
+      "from": "builder-util-runtime@4.0.0",
+      "resolved": "https://registry.npmjs.org/builder-util-runtime/-/builder-util-runtime-4.0.0.tgz",
       "dev": true,
       "dependencies": {
         "debug": {
@@ -1814,9 +1814,9 @@
       "dev": true
     },
     "electron-builder": {
-      "version": "19.53.5",
-      "from": "electron-builder@19.53.5",
-      "resolved": "https://registry.npmjs.org/electron-builder/-/electron-builder-19.53.5.tgz",
+      "version": "19.53.2",
+      "from": "electron-builder@19.53.2",
+      "resolved": "https://registry.npmjs.org/electron-builder/-/electron-builder-19.53.2.tgz",
       "dev": true,
       "dependencies": {
         "ansi-styles": {
@@ -1884,9 +1884,9 @@
       }
     },
     "electron-builder-lib": {
-      "version": "19.53.5",
-      "from": "electron-builder-lib@19.53.5",
-      "resolved": "https://registry.npmjs.org/electron-builder-lib/-/electron-builder-lib-19.53.5.tgz",
+      "version": "19.53.2",
+      "from": "electron-builder-lib@19.53.2",
+      "resolved": "https://registry.npmjs.org/electron-builder-lib/-/electron-builder-lib-19.53.2.tgz",
       "dev": true,
       "dependencies": {
         "debug": {
@@ -1994,9 +1994,9 @@
       }
     },
     "electron-publish": {
-      "version": "19.53.3",
-      "from": "electron-publish@19.53.3",
-      "resolved": "https://registry.npmjs.org/electron-publish/-/electron-publish-19.53.3.tgz",
+      "version": "19.52.0",
+      "from": "electron-publish@19.52.0",
+      "resolved": "https://registry.npmjs.org/electron-publish/-/electron-publish-19.52.0.tgz",
       "dev": true,
       "dependencies": {
         "ansi-styles": {
