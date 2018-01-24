@@ -15,8 +15,13 @@ interface TagsProps {
   tagInputRef: (field: HTMLInputElement) => void;
 }
 const Tags = (props: TagsProps) => {
-  const autocompleteRenderInput = (renderInputProps: TagsInput.RenderInputProps) => {
-    const handleOnChange = (e: any, { newValue, method }: Autosuggest.ChangeEvent) => {
+  const autocompleteRenderInput = (
+    renderInputProps: TagsInput.RenderInputProps
+  ) => {
+    const handleOnChange = (
+      e: any,
+      { newValue, method }: Autosuggest.ChangeEvent
+    ) => {
       if (method === "enter") {
         e.preventDefault();
       } else {
@@ -24,7 +29,8 @@ const Tags = (props: TagsProps) => {
       }
     };
 
-    const inputValue = renderInputProps.value && renderInputProps.value.trim().toLowerCase();
+    const inputValue =
+      renderInputProps.value && renderInputProps.value.trim().toLowerCase();
     const inputLength = inputValue.length;
 
     let suggestions = props.allTags.filter(tag => {
@@ -47,7 +53,9 @@ const Tags = (props: TagsProps) => {
       <Autosuggest
         ref={storeInputReference}
         suggestions={suggestions}
-        shouldRenderSuggestions={value => Boolean(value) && value.trim().length > 0}
+        shouldRenderSuggestions={value =>
+          Boolean(value) && value.trim().length > 0
+        }
         getSuggestionValue={suggestion => suggestion}
         renderSuggestion={suggestion => <span>{suggestion}</span>}
         inputProps={{ onChange: handleOnChange, ...inputProps }}
@@ -87,6 +95,7 @@ interface PromptState {
 }
 interface PromptProps {
   prevTags: string[];
+  prevComment: string;
   allTags: string[];
   cancelTags: string[];
   time: number;
@@ -108,7 +117,10 @@ class Prompt extends React.Component<PromptProps, PromptState> {
   cancel() {
     if (this.state.input === "") {
       // If the user isn't in the middle of entering a tag, set the tags to the cancelTags, and save + quit once that's done
-      this.setState((prevState, props) => ({ tags: props.cancelTags }), this.save);
+      this.setState(
+        (prevState, props) => ({ tags: props.cancelTags }),
+        this.save
+      );
     } else {
       this.setState({ input: "" });
     }
@@ -153,7 +165,13 @@ class Prompt extends React.Component<PromptProps, PromptState> {
   // Replace the current tags with the previous tags
   // If specified, callback is called after the state has been updated
   repeat(callback?: () => void) {
-    this.setState((prevState, props) => ({ tags: props.prevTags }), callback);
+    this.setState(
+      (prevState, props) => ({
+        tags: props.prevTags,
+        comment: props.prevComment
+      }),
+      callback
+    );
   }
 
   keyMap = { cancel: "esc", repeat: "alt+r", save: ["alt+s", "ctrl+s"] };
@@ -172,6 +190,14 @@ class Prompt extends React.Component<PromptProps, PromptState> {
       this.repeat(this.save);
     }
   };
+
+  previous() {
+    let comment = "";
+    if (this.props.prevComment) {
+      comment = ` [${this.props.prevComment}]`;
+    }
+    return this.props.prevTags.join(", ") + comment;
+  }
 
   render() {
     return (
@@ -210,7 +236,7 @@ class Prompt extends React.Component<PromptProps, PromptState> {
                 />
               </div>
               <p>
-                <i>Previous: {this.props.prevTags.join(", ")}</i>
+                <i>Previous: {this.previous()}</i>
               </p>
             </form>
           </div>
@@ -247,7 +273,13 @@ ipcRenderer.on(
   "data",
   (
     _event: Electron.Event,
-    message: { time: number; allTags: string[]; prevTags: string[]; cancelTags: string[] }
+    message: {
+      time: number;
+      allTags: string[];
+      prevTags: string[];
+      prevComment: string;
+      cancelTags: string[];
+    }
   ) => {
     ReactDOM.render(<Prompt {...message} />, document.getElementById("root"));
   }

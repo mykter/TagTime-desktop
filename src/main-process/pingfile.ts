@@ -33,7 +33,13 @@ export class PingFile {
    *                        this instance)
    * @param width The width to pad encoded tags to
    */
-  constructor(path: string, keep_invalid = false, create = false, caching = true, width = 0) {
+  constructor(
+    path: string,
+    keep_invalid = false,
+    create = false,
+    caching = true,
+    width = 0
+  ) {
     this.path = path;
     this.keep_invalid = keep_invalid;
     this.caching = caching;
@@ -49,7 +55,9 @@ export class PingFile {
         winston.warn("Couldn't create ping file at location " + this.path);
         dialog.showErrorBox(
           "TagTime - can't create ping file",
-          "Can't create the ping file '" + this.path + "'. Please change the path in settings."
+          "Can't create the ping file '" +
+            this.path +
+            "'. Please change the path in settings."
         );
       }
     }
@@ -98,7 +106,38 @@ export class PingFile {
 
     // trims to deal with empty tags or comment
     let unixtime = Math.round(ping.time / 1000);
-    return (unixtime + " " + (tags.length > 0 ? tags + " " : "") + comment).trim();
+    return (
+      unixtime +
+      " " +
+      (tags.length > 0 ? tags + " " : "") +
+      comment
+    ).trim();
+  }
+
+  /**
+   * Because we're using an unstructured text file, we occasionally want to retrieve the 'pure' comment.
+   * Bring on a new storage format.
+   * @param comment A potentially time-annotated comment
+   * @returns The same comment but with its time prefix removed, if it had one
+   */
+  static unannotateComment(comment: string): string {
+    let prefix = /^(\S+) \w\w\w( (.+))?$/; // see encode - comments look like "ISO ddd comment"
+    let match = comment.match(prefix);
+    if (match) {
+      // check the first group is a valid datetime
+      let m = moment(match[1], moment.defaultFormat);
+      if (m.isValid()) {
+        // looks like a timestamp annotation
+        if (match[3]) {
+          return match[3];
+        } else {
+          // There is no comment, just a timestamp
+          return "";
+        }
+      }
+    }
+    // One of the tests failed, don't prune the comment
+    return comment;
   }
 
   /**
@@ -160,9 +199,13 @@ export class PingFile {
     } catch (err) {
       if (err.code === "ENOENT") {
         // File couldn't be opened
-        winston.error("Couldn't open ping file '" + this.path + "', got error " + err);
+        winston.error(
+          "Couldn't open ping file '" + this.path + "', got error " + err
+        );
         let msg =
-          "Can't open the ping file '" + this.path + "'. Please check the path in settings.";
+          "Can't open the ping file '" +
+          this.path +
+          "'. Please check the path in settings.";
         if (dialog) {
           dialog.showErrorBox("TagTime - can't open ping file", msg);
         } else {
@@ -224,7 +267,11 @@ export class PingFile {
       fs.closeSync(fd);
     }
 
-    fs.appendFileSync(this.path, nl + PingFile.encode(ping, annotate, this.width) + "\n", "utf8");
+    fs.appendFileSync(
+      this.path,
+      nl + PingFile.encode(ping, annotate, this.width) + "\n",
+      "utf8"
+    );
     if (this.caching) {
       if (this._pings) {
         this._pings.push(ping);

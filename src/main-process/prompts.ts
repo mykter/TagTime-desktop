@@ -4,6 +4,7 @@ import windowStateKeeper = require("electron-window-state");
 
 import * as helper from "./helper";
 import { Ping } from "../ping";
+import { PingFile } from "./pingfile";
 
 // Global reference to prevent garbage collection
 let promptWindow: Electron.BrowserWindow | null;
@@ -16,7 +17,9 @@ let outstandingPing: Boolean = false;
 export function openPrompt(time: number, quitOnClose: Boolean = false) {
   winston.debug("Showing prompt");
   if (promptWindow) {
-    winston.warn("Tried to open a prompt window but the old one wasn't cleaned up. Aborting.");
+    winston.warn(
+      "Tried to open a prompt window but the old one wasn't cleaned up. Aborting."
+    );
     return;
   }
 
@@ -59,16 +62,20 @@ export function openPrompt(time: number, quitOnClose: Boolean = false) {
   promptWindow.webContents.on("did-finish-load", () => {
     let allTags: string[] = [];
     let prevTags: string[] = [];
+    let prevComment: string = "";
 
     if (global.pingFile.pings.length > 0) {
       allTags = Array.from(global.pingFile.allTags);
-      prevTags = Array.from(global.pingFile.pings.slice(-1)[0]!.tags);
+      let prevPing = global.pingFile.pings.slice(-1)[0]!;
+      prevTags = Array.from(prevPing.tags);
+      prevComment = PingFile.unannotateComment(prevPing.comment);
     }
     if (promptWindow) {
       promptWindow.webContents.send("data", {
         time: time,
         allTags: allTags,
         prevTags: prevTags,
+        prevComment: prevComment,
         cancelTags: global.config.user.get("cancelTags")
       });
     }
@@ -90,7 +97,9 @@ export function openPrompt(time: number, quitOnClose: Boolean = false) {
       promptWindow.on("closed", () => {
         if (outstandingPing) {
           winston.debug("Prompt was closed without saving, using cancelTags");
-          global.pingFile.push(new Ping(time, new Set(global.config.user.get("cancelTags")), ""));
+          global.pingFile.push(
+            new Ping(time, new Set(global.config.user.get("cancelTags")), "")
+          );
         }
         promptWindow = null;
         if (quitOnClose) {
@@ -116,7 +125,9 @@ export function schedulePings(onPing: (time: number) => void) {
 
   _scheduleTimer = setTimeout(() => {
     if (promptWindow) {
-      winston.info("Skipping prompt because current prompt hasn't been answered");
+      winston.info(
+        "Skipping prompt because current prompt hasn't been answered"
+      );
     } else {
       onPing(next);
     }
@@ -139,7 +150,8 @@ function missedPing(time: number): boolean | number {
   if (global.pingFile.pings.length === 0) {
     return false;
   }
-  let lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1]!.time;
+  let lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1]!
+    .time;
   let nextPingTime = global.pings.next(lastPingTime);
   if (nextPingTime <= time) {
     return nextPingTime;
@@ -158,7 +170,11 @@ export function catchUp(till: number): boolean {
   while ((missedTime = missedPing(till))) {
     missed = true;
     // Replace every missing ping with the configured tags to use
-    let p = new Ping(missedTime as number, new Set(global.config.user.get("cancelTags")), "");
+    let p = new Ping(
+      missedTime as number,
+      new Set(global.config.user.get("cancelTags")),
+      ""
+    );
     global.pingFile.push(p);
   }
   return missed;
@@ -166,10 +182,15 @@ export function catchUp(till: number): boolean {
 
 /* Handle events sent from the prompt window
  * Shouldn't be called directly - only exported so it can be tested :/ */
-export function savePing(_evt: Electron.Event | null, message: { ping: Ping; coverage?: any }) {
+export function savePing(
+  _evt: Electron.Event | null,
+  message: { ping: Ping; coverage?: any }
+) {
   outstandingPing = false;
   let ping = message.ping;
-  winston.debug("Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]");
+  winston.debug(
+    "Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]"
+  );
   global.pingFile.push(ping);
 
   // The prompt window might pass us coverage information to save

@@ -25,7 +25,11 @@ describe("Prompts", function() {
 
   before(function() {
     winston.level = "warning";
-    prevPing = new Ping(1234567890000, new Set(["previous", "tags"]), "");
+    prevPing = new Ping(
+      1234567890000,
+      new Set(["previous", "tags"]),
+      "last comment"
+    );
     prevPingEncoded = PingFile.encode(prevPing);
   });
 
@@ -33,7 +37,10 @@ describe("Prompts", function() {
     tmpPingFileName = tmp.tmpNameSync();
     fs.writeFileSync(tmpPingFileName, prevPingEncoded);
     // As the pingfile changes for each test, need to recreate the app each test
-    ({ app, tmpLogFileName, tmpConfig } = helper.launchApp("prompt", tmpPingFileName));
+    ({ app, tmpLogFileName, tmpConfig } = helper.launchApp(
+      "prompt",
+      tmpPingFileName
+    ));
     winston.debug("Launching app with " + app.path + " " + app.args);
     return app.start();
   });
@@ -68,7 +75,10 @@ describe("Prompts", function() {
 
     // fs.watchFile looks like a solution, but what if the app has finished writing before the
     // watcher starts? So manually check to see if the file has more data in it than it started with
-    return helper.until(() => fs.statSync(tmpPingFileName).size > prevPingEncoded.length + 10, 100);
+    return helper.until(
+      () => fs.statSync(tmpPingFileName).size > prevPingEncoded.length + 10,
+      100
+    );
   };
 
   let saveInput = async function(
@@ -91,7 +101,11 @@ describe("Prompts", function() {
     const pings = new PingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     winston.debug(
-      "asserting Set(" + Array.from(pings[1]!.tags) + ") should equal Set(" + tags + ")"
+      "asserting Set(" +
+        Array.from(pings[1]!.tags) +
+        ") should equal Set(" +
+        tags +
+        ")"
     );
     _.isEqual(pings[1]!.tags, new Set(tags)).should.equal(true);
     if (comment) {
@@ -114,7 +128,7 @@ describe("Prompts", function() {
   it("should repeat pings when the repeat button is pressed", async function() {
     await saveInput("", "", repeatSelector);
     await untilSaved();
-    lastPingShouldEqual(prevPing.tags);
+    lastPingShouldEqual(prevPing.tags, prevPing.comment);
   });
 
   it("should save a comment", async function() {
