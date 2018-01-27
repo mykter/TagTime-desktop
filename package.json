@@ -90,29 +90,29 @@
     "xvfb-maybe": "^0.2.1"
   },
   "platformSpecificDependencies": [
-    [
-      "7zip-bin-mac"
-    ],
-    [
-      "7zip-bin-win"
-    ],
-    [
-      "7zip-bin-linux"
-    ]
+    ["7zip-bin-mac"],
+    ["7zip-bin-win"],
+    ["7zip-bin-linux"]
   ],
   "scripts": {
+    "postinstall":
+      "git apply -p1 < ./patches/react-autosuggest-9.3.2-tab.patch",
     "build": "gulp clean:build && gulp build:tests",
     "start": "electron .",
     "test": "run-s -n test:renderer test:main test:e2e lint",
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
     "test:main": "xvfb-maybe electron-mocha ./app/test/main",
     "test:e2e": "xvfb-maybe mocha ./app/test/e2e",
-    "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
-    "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
+    "debugtest":
+      "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
+    "debugtestmain":
+      "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
-    "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
+    "precover":
+      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "cover":
+      "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
     "pack": "electron-builder --dir",
@@ -120,7 +120,8 @@
     "dist": "electron-builder",
     "clean": "rimraf ./coverage ./dist ./doc ./app",
     "lint": "eslint src test support",
-    "doc": "jsdoc src --destination doc --package ./package.json --readme ./README"
+    "doc":
+      "jsdoc src --destination doc --package ./package.json --readme ./README"
   },
   "build": {
     "appId": "com.mykter.tagtime",
@@ -133,11 +134,7 @@
     },
     "linux": {
       "category": "Utility",
-      "target": [
-        "AppImage",
-        "deb",
-        "rpm"
-      ]
+      "target": ["AppImage", "deb", "rpm"]
     }
   }
 }
