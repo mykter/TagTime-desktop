@@ -36,6 +36,7 @@ describe("Application", function() {
     return child_process.spawn(helper.electronPath, [
       helper.appPath,
       "--verbose",
+      "--prod", // single-instance isn't enforced in dev mode
       "--configdir",
       helper.createConfig({ pingFilePath: tmpFile.name, firstRun: false }) // skip the launch on startup config bit
     ]);

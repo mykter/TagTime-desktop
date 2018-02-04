@@ -17,3 +17,6 @@ coverage/
 
 # Build
 app/
+
+# Development mode config directory
+devconfig/

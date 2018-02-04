@@ -8,7 +8,14 @@ import * as fs from "fs";
 import { platform } from "os";
 
 import * as prompts from "./prompts";
-import { Config, ConfigName } from "./config";
+import {
+  Config,
+  ConfigName,
+  appRoot,
+  imagesPath,
+  logoPath,
+  trayIconPath
+} from "./config";
 import { PingFile } from "./pingfile";
 import { openPreferences } from "./openPrefs";
 import { openEditor } from "./edit";
@@ -18,20 +25,6 @@ import { PingTimes } from "../pingtimes";
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let tray;
-
-const appRoot = path.join(__dirname, "..", "..", "..");
-const imagesPath = path.resolve(appRoot, "resources");
-const logoPath = path.resolve(imagesPath, "tagtime.png");
-
-let trayIconPath: string, trayPressedIcon: nativeImage;
-if (platform() === "darwin") {
-  trayIconPath = path.resolve(imagesPath, "mac.png");
-  trayPressedIcon = nativeImage.createFromPath(path.resolve(imagesPath, "macHighlight.png"));
-} else if (platform() === "win32") {
-  trayIconPath = path.resolve(imagesPath, "tagtime.ico");
-} else {
-  trayIconPath = logoPath;
-}
 
 /**
  * Ensures only one instance of the app is running at a time.
@@ -52,7 +45,8 @@ function singleInstance(alwaysQuit: boolean) {
       app.quit();
     } else {
       notify(app.getName() + " is already running", {
-        body: "You can't run multiple copies of TagTime, please quit first if you want to restart."
+        body:
+          "You can't run multiple copies of TagTime, please quit first if you want to restart."
       });
     }
   });
@@ -60,11 +54,15 @@ function singleInstance(alwaysQuit: boolean) {
     // Quit regardless.
     // Can't offer any useful info to the user - secondInstance might return
     // false even if there was a second instance, because it has now quit.
-    winston.debug("Quitting per --quit; if a second instance existed it has been notified.");
+    winston.debug(
+      "Quitting per --quit; if a second instance existed it has been notified."
+    );
     app.quit();
     return false;
   } else if (secondInstance) {
-    winston.warn("An instance of " + app.getName() + " is already running, quitting...");
+    winston.warn(
+      "An instance of " + app.getName() + " is already running, quitting..."
+    );
     app.quit();
     return false;
   }
@@ -98,6 +96,9 @@ function createTray() {
   winston.debug("Creating tray");
   tray = new Tray(trayIconPath);
   if (platform() === "darwin") {
+    let trayPressedIcon = nativeImage.createFromPath(
+      path.resolve(imagesPath, "macHighlight.png")
+    );
     tray.setPressedImage(trayPressedIcon);
   }
   tray.setToolTip(app.getName());
@@ -151,18 +152,30 @@ function parseCommandLine() {
   }
 
   // process.env.npm_package_version only guaranteed available when run from an npm script
-  let version = JSON.parse(fs.readFileSync(`${appRoot}/package.json`, "utf8")).version;
+  let version = JSON.parse(fs.readFileSync(`${appRoot}/package.json`, "utf8"))
+    .version;
 
   commander
     .version(version)
-    .option("--nostdout", "Suppress logging on stdout (still goes to debug.log)")
+    .option(
+      "--nostdout",
+      "Suppress logging on stdout (still goes to debug.log)"
+    )
     .option("-v, --verbose", "Debug logging")
     .option("--test <option>", "Development test mode")
-    .option("--configdir <path>", "Path which contains config file (test use only)")
+    .option(
+      "--configdir <path>",
+      "Path which contains config file (test use only)"
+    )
     .option(
       "--quit",
       "Tell another running instance to quit (useful for killing zombie " +
         "--test instances that don't have a tray icon)"
+    )
+    .option(
+      "--prod",
+      "Usually, the presence of a .git folder in the application root directory will \
+cause TagTime to use a local config directory. --prod suppresses this behaviour."
     )
     .parse(argvWorkaround);
   return commander;
@@ -183,7 +196,10 @@ function firstRunTasks() {
       global.config.user.get("period") +
       " minutes)."
   );
-  global.config.user.set("pingFileStart", moment().format(global.config.pingFileStartFormat));
+  global.config.user.set(
+    "pingFileStart",
+    moment().format(global.config.pingFileStartFormat)
+  );
 }
 
 /**
@@ -207,7 +223,10 @@ function setupLogging(verbose: boolean, noStdout: boolean) {
  * Finish configuring winston. Uses global.config.
  */
 function finalizeLogging() {
-  winston.add(winston.transports.File, { filename: global.config.logFile, handleExceptions: true });
+  winston.add(winston.transports.File, {
+    filename: global.config.logFile,
+    handleExceptions: true
+  });
   winston.handleExceptions();
 }
 
@@ -233,16 +252,15 @@ function main() {
 
   setupLogging(program.verbose, program.nostdout);
 
-  // Prevent second instance from running
-  if (!singleInstance(program.quit)) {
+  global.config = new Config(program.configdir, program.prod);
+
+  // Prevent second instance from running (unless in dev mode)
+  if (!global.config.isDev && !singleInstance(program.quit)) {
     saveCoverage();
     return;
   }
 
   winston.debug(app.getName() + " v" + app.getVersion() + " starting up");
-  global.config = new Config(program.configdir);
-
-  // now global.config is set up
   finalizeLogging();
 
   let createPingFile = false;

@@ -3,6 +3,8 @@ import AutoLaunch = require("auto-launch");
 import ElectronStore = require("electron-store");
 import * as winston from "winston";
 import * as path from "path";
+import * as fs from "fs";
+import { platform } from "os";
 
 export enum ConfigName {
   runOnStartup = "runOnStartup",
@@ -39,6 +41,18 @@ export interface ConfigPref {
 
 export const logFileName = "debug.log";
 export const pingFileName = "tagtime.log";
+export const appRoot = path.join(__dirname, "..", "..", "..");
+export const imagesPath = path.resolve(appRoot, "resources");
+export const logoPath = path.resolve(imagesPath, "tagtime.png");
+export let trayIconPath: string;
+if (platform() === "darwin") {
+  trayIconPath = path.resolve(imagesPath, "mac.png");
+} else if (platform() === "win32") {
+  trayIconPath = path.resolve(imagesPath, "tagtime.ico");
+} else {
+  trayIconPath = logoPath;
+}
+const devConfigDir = "./devconfig";
 
 /**
  * Config for the main process - dependent on access to the user's config file
@@ -50,19 +64,31 @@ export class Config {
    */
   user: ElectronStore;
   private _firstRun: Boolean | null;
+  private _isDev: Boolean;
+
   /**
    * The directory where the default ping file, config file, and logs are.
    */
   configPath: string;
 
   /**
-   * @param {"text"} dir Specify a non-default config location. Should only be used for testing.
+   * @param dir Specify a non-default config location. Should only be used for testing.
+   * @param forceProd If true, isDev will be false. Otherwise attempts to automatically detect development mode.
    */
-  constructor(dir?: string) {
+  constructor(dir?: string, forceProd?: boolean) {
+    if (forceProd) {
+      // Don't try and detect development mode
+      this._isDev = false;
+    }
+
     if (dir) {
       this.configPath = dir;
     } else {
-      this.configPath = app.getPath("userData");
+      if (this.isDev) {
+        this.configPath = path.resolve(appRoot, devConfigDir);
+      } else {
+        this.configPath = app.getPath("userData");
+      }
     }
 
     let initialConfig = Config.defaultDict();
@@ -74,6 +100,8 @@ export class Config {
     var options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
     if (dir) {
       options.cwd = dir;
+    } else if (this.isDev) {
+      options.cwd = this.configPath;
     }
     this.user = new ElectronStore(options);
     winston.debug("Config file path: " + this.user.path);
@@ -82,6 +110,19 @@ export class Config {
     if (this._firstRun) {
       this.user.set("firstRun", false);
     }
+  }
+
+  /**
+   * Is the application running in a development environment (vs a release environment)?
+   */
+  get isDev(): Boolean {
+    if (this._isDev === undefined) {
+      this._isDev = fs.existsSync(".git");
+      if (this._isDev) {
+        winston.debug("Development mode");
+      }
+    }
+    return this._isDev;
   }
 
   get logFile(): string {
@@ -98,10 +139,14 @@ export class Config {
   setupAutoLaunch() {
     var autoLauncher = new AutoLaunch({ name: app.getName() });
     if (this.user.get("runOnStartup")) {
-      winston.info("Setting app to run on startup");
-      autoLauncher.enable().catch(reason => {
-        winston.warn("Couldn't enable launch on system startup: " + reason);
-      });
+      if (this.isDev) {
+        winston.info("Ignoring runOnStartup as in development mode.");
+      } else {
+        winston.info("Setting app to run on startup");
+        autoLauncher.enable().catch(reason => {
+          winston.warn("Couldn't enable launch on system startup: " + reason);
+        });
+      }
     }
   }
 
@@ -212,7 +257,8 @@ export class Config {
     {
       name: ConfigName.editorOnStartup,
       type: "checkbox",
-      label: "Open the tag editor on startup if pings have been missed since last run",
+      label:
+        "Open the tag editor on startup if pings have been missed since last run",
       configurable: true,
       default: false
     }
