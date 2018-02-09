@@ -10,6 +10,7 @@ const sourcemaps = require("gulp-sourcemaps");
 const babel = require("gulp-babel");
 const ts = require("gulp-typescript");
 const sass = require("gulp-sass");
+const patch = require("gulp-apply-patch");
 
 const path = require("path");
 const del = require("del");
@@ -23,15 +24,43 @@ const COVERAGE_ROOT_DIR = path.join(BASE_DIR, "coverage");
 const COVERAGE_DIR = path.join(COVERAGE_ROOT_DIR, "e2e-collection");
 const REPORT_DIR = path.join(COVERAGE_ROOT_DIR, "raw", "e2e-report");
 const NYC_DIR = path.join(COVERAGE_ROOT_DIR, "raw");
+const PATCHED_MODULES_DIR = path.join(BUILD_DIR, "node_modules");
+const PATCHES_DIR = path.join(BASE_DIR, "patches");
+const NODE_MODULES = path.join(BASE_DIR, "node_modules");
 const paths = {
-  sources: { paths: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"], onchange: "compile" },
+  sources: {
+    paths: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"],
+    onchange: "compile"
+  },
   sass: { paths: ["./src/**/*.scss"], onchange: "compile:sass" },
-  tests: { paths: ["test/**/*.[jt]s", "src/types/global.d.ts"], onchange: "compile:tests" },
+  tests: {
+    paths: ["test/**/*.[jt]s", "src/types/global.d.ts"],
+    onchange: "compile:tests"
+  },
 
   // gulp.watch <v4 is broken but not documented as such. https://github.com/gulpjs/gulp/issues/651
   // expect to see this watch picking up changes under ./app !
   static: { paths: ["./src/*.html"], onchange: "copy" }
 };
+
+gulp.task("patch", function() {
+  // Get all the directories in the patches folder
+  let to_patch = fs
+    .readdirSync(PATCHES_DIR)
+    .filter(f => fs.statSync(path.join(PATCHES_DIR, f)).isDirectory());
+
+  // If there's only a single entry in the patches directory, the {set glob} won't match, so
+  // add a dummy entry to work around that
+  to_patch.push("nonexistent_dummy_package");
+
+  // Convert the patch directories into a glob that matches the corresponding source packages.
+  let globs_to_patch = NODE_MODULES + "/{" + to_patch.join(",") + "}/**/*";
+
+  return gulp
+    .src(globs_to_patch, { base: NODE_MODULES }) // copy only the modules that have patches
+    .pipe(patch(PATCHES_DIR + "/**/*.patch"))
+    .pipe(gulp.dest(PATCHED_MODULES_DIR));
+});
 
 gulp.task("compile", function() {
   let tsProject = ts.createProject("tsconfig.json");
@@ -66,7 +95,9 @@ gulp.task("compile:sass", function() {
 
 // Get any non-js components of the app
 gulp.task("copy", function() {
-  return gulp.src(paths.static.paths, { base: "./" }).pipe(gulp.dest(BUILD_DIR));
+  return gulp
+    .src(paths.static.paths, { base: "./" })
+    .pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task("clean:build", function() {
@@ -80,7 +111,7 @@ gulp.task("clean:report", function() {
 });
 
 // Note we aren't running clean:build before this, because it was a pain in combo with watch.
-gulp.task("build", ["compile", "compile:sass", "copy"]);
+gulp.task("build", ["compile", "compile:sass", "copy", "patch"]);
 gulp.task("build:tests", ["compile:tests", "build"]);
 
 gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
@@ -102,7 +133,10 @@ gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
       `--root='${COVERAGE_DIR}' --dir='${REPORT_DIR}'`
   );
   process.stdout.write(text_report);
-  fs.renameSync(path.join(REPORT_DIR, "coverage-final.json"), path.join(NYC_DIR, "e2e.json"));
+  fs.renameSync(
+    path.join(REPORT_DIR, "coverage-final.json"),
+    path.join(NYC_DIR, "e2e.json")
+  );
 
   // Remove the coverage dir else istanbul will fail when trying to build the overall combined
   // report. Don't use a clean:cover dependency because it will already have run once so gulp won't

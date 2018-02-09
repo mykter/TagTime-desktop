@@ -1,0 +1,11 @@
+--- react-autosuggest/dist/Autosuggest.js
++++ react-autosuggest/dist/Autosuggest.js
+@@ -408,6 +408,8 @@ var Autosuggest = function (_Component) {
+ 
+               break;
+ 
++            // Tab
++            case 9:
+             // Enter
+             case 13:
+               {

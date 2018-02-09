@@ -1,0 +1,6 @@
+Treat tab like enter when a list of suggestions is visible.
+
+Other versions of this patch have been rejected upstream:
+ - https://github.com/moroshko/react-autosuggest/pull/164
+ - https://github.com/moroshko/react-autosuggest/pull/333
+ - https://github.com/moroshko/react-autosuggest/pull/427
