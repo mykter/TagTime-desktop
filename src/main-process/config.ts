@@ -43,7 +43,7 @@ export const logFileName = "debug.log";
 export const pingFileName = "tagtime.log";
 export const appRoot = path.join(__dirname, "..", "..", "..");
 export const imagesPath = path.resolve(appRoot, "resources");
-export const logoPath = path.resolve(imagesPath, "tagtime.png");
+export const logoPath = path.resolve(imagesPath, "icon.png");
 export let trayIconPath: string;
 if (platform() === "darwin") {
   trayIconPath = path.resolve(imagesPath, "mac.png");
