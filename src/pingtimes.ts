@@ -14,16 +14,16 @@ export class PingTimes {
   startOfPings: UnixTime;
 
   /**
-     * The list of pings since the earliest asked for.
-     *
-     * With a 45 minute period there have been roughly 100k pings since the tagtime
-     * epoch. So we could store a list of all of them, but it's easy enough to only
-     * store from the earliest we've been asked for (at the cost of having to
-     * recompute them all if asked for an earlier one)
-     */
-  pings: UnixTime[];
+   * The list of pings since the earliest asked for.
+   *
+   * With a 45 minute period there have been roughly 100k pings since the tagtime
+   * epoch. So we could store a list of all of them, but it's easy enough to only
+   * store from the earliest we've been asked for (at the cost of having to
+   * recompute them all if asked for an earlier one)
+   */
+  pings: UnixTime[] = [];
 
-  private engine: Random.Engine;
+  private engine: Random.Engine | undefined;
 
   /**
    * The birth of tagtime.
@@ -65,7 +65,10 @@ export class PingTimes {
    * @returns {real} in [0,1]
    */
   rand(): number {
-    return Random.real(0, 1)(this.engine);
+    if (!this.engine) {
+      this.reseed();
+    }
+    return Random.real(0, 1)(this.engine!);
   }
 
   /**

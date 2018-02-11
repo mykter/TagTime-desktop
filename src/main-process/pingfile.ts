@@ -19,8 +19,8 @@ export class PingFile {
   caching: boolean;
   width: number;
 
-  private _pings: (Ping | null)[];
-  private _allTags: Set<string>;
+  private _pings: (Ping | null)[] | undefined;
+  private _allTags: Set<string> | undefined;
 
   /**
    * Create a PingFile. Note the file isn't opened until pings is read
@@ -279,7 +279,7 @@ export class PingFile {
 
       if (this._allTags) {
         ping.tags.forEach(t => {
-          this._allTags.add(t);
+          this._allTags!.add(t);
         });
       }
     }

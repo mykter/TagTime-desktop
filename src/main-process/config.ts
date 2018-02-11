@@ -64,7 +64,7 @@ export class Config {
    */
   user: ElectronStore;
   private _firstRun: Boolean | null;
-  private _isDev: Boolean;
+  private _isDev: Boolean | undefined;
 
   /**
    * The directory where the default ping file, config file, and logs are.

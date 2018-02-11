@@ -101,7 +101,7 @@ interface PromptProps {
   time: number;
 }
 class Prompt extends React.Component<PromptProps, PromptState> {
-  tagInputField: HTMLInputElement;
+  tagInputField: HTMLInputElement | undefined;
 
   constructor(props: PromptProps) {
     super(props);
@@ -183,7 +183,10 @@ class Prompt extends React.Component<PromptProps, PromptState> {
     save: () => {
       // If the shortcut key was pressed whilst the autocomplete selection box was open, the tag isn't
       // saved in our state yet. Blur triggers it to complete.
-      this.tagInputField!.blur();
+      // (the input field should be already set by the Tags component)
+      if (this.tagInputField) {
+        this.tagInputField.blur();
+      }
       this.save();
     },
     repeat: () => {
