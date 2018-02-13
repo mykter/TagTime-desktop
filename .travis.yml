@@ -16,10 +16,13 @@ os:
 
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:snappy-dev/tools'
     packages:
       - rpm       # dist
       - xvfb      # testing
       - openjpeg-tools # this + gm for electron-builder's icon work
+      - snapcraft # 14.04 doesn't come with this by default, and its not in the main repo
 
 cache:
   directories:
