@@ -20,7 +20,6 @@ addons:
       - rpm       # dist
       - xvfb      # testing
       - openjpeg-tools # this + gm for electron-builder's icon work
-      - graphicsmagick
 
 cache:
   directories:
