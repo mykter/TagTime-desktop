@@ -16,13 +16,14 @@ os:
 
 addons:
   apt:
-    sources:
-      - sourceline: 'ppa:snappy-dev/tools'
     packages:
-      - rpm       # dist
-      - xvfb      # testing
-      - openjpeg-tools # this + gm for electron-builder's icon work
-      - snapcraft # 14.04 doesn't come with this by default, and its not in the main repo
+      - rpm            # dist
+      - xvfb           # testing
+      - openjpeg-tools # electron-builder's icon dependency
+      - snapd          # to, in turn, install snapcraft as a snap
+
+install:
+  - sudo snap install snapcraft
 
 cache:
   directories:
