@@ -97,24 +97,19 @@
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
     "test:main": "xvfb-maybe electron-mocha ./app/test/main",
     "test:e2e": "xvfb-maybe mocha ./app/test/e2e",
-    "debugtest":
-      "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
-    "debugtestmain":
-      "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
+    "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
+    "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover":
-      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
-    "cover":
-      "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
+    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "clean": "rimraf ./coverage ./dist ./doc ./app",
     "lint": "eslint src test support",
-    "doc":
-      "jsdoc src --destination doc --package ./package.json --readme ./README"
+    "doc": "jsdoc src --destination doc --package ./package.json --readme ./README"
   },
   "build": {
     "appId": "com.mykter.tagtime",
@@ -127,7 +122,12 @@
     },
     "linux": {
       "category": "Utility",
-      "target": ["AppImage", "deb", "rpm"]
+      "target": [
+        "snap",
+        "AppImage",
+        "deb",
+        "rpm"
+      ]
     },
     "directories": {
       "buildResources": "resources"
