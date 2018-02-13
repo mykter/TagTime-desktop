@@ -19,7 +19,7 @@ addons:
     packages:
       - rpm       # dist
       - xvfb      # testing
-      - libopenjp2-tools # this + gm for electron-builder's icon work
+      - openjpeg2-tools # this + gm for electron-builder's icon work
       - graphicsmagick
 
 cache:
