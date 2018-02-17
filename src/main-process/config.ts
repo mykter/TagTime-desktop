@@ -52,7 +52,7 @@ if (platform() === "darwin") {
 } else {
   trayIconPath = logoPath;
 }
-const devConfigDir = "./devconfig";
+const devConfigDir = path.resolve(appRoot, "devconfig");
 
 /**
  * Config for the main process - dependent on access to the user's config file
@@ -85,7 +85,7 @@ export class Config {
       this.configPath = dir;
     } else {
       if (this.isDev) {
-        this.configPath = path.resolve(appRoot, devConfigDir);
+        this.configPath = devConfigDir;
       } else {
         this.configPath = app.getPath("userData");
       }
@@ -117,7 +117,7 @@ export class Config {
    */
   get isDev(): Boolean {
     if (this._isDev === undefined) {
-      this._isDev = fs.existsSync(".git");
+      this._isDev = fs.existsSync(path.resolve(appRoot, ".git"));
       if (this._isDev) {
         winston.debug("Development mode");
       }
