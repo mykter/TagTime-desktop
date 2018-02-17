@@ -23,7 +23,7 @@ addons:
       - snapd          # to, in turn, install snapcraft as a snap
 
 install:
-  - sudo snap install --classic snapcraft
+  - if [[ $TRAVIS_OS_NAME = "linux" ]]; then sudo snap install --classic snapcraft; fi
   - npm install
 
 cache:
