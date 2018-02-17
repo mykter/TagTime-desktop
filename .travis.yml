@@ -24,6 +24,7 @@ addons:
 
 install:
   - sudo snap install --classic snapcraft
+  - npm install
 
 cache:
   directories:
