@@ -23,7 +23,7 @@ addons:
       - snapd          # to, in turn, install snapcraft as a snap
 
 install:
-  - sudo snap install snapcraft
+  - sudo snap install --classic snapcraft
 
 cache:
   directories:
