@@ -1,20 +1,20 @@
-import * as winston from "winston";
-import { app, ipcMain, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import windowStateKeeper = require("electron-window-state");
+import * as winston from "winston";
 
-import * as helper from "./helper";
 import { Ping } from "../ping";
+import * as helper from "./helper";
 import { PingFile } from "./pingfile";
 
 // Global reference to prevent garbage collection
 let promptWindow: Electron.BrowserWindow | null;
 // A flag to capture if the prompt window was closed without saving tags
-let outstandingPing: Boolean = false;
+let outstandingPing: boolean = false;
 
 /**
  * Open a ping prompt window
  */
-export function openPrompt(time: number, quitOnClose: Boolean = false) {
+export function openPrompt(time: number, quitOnClose: boolean = false) {
   winston.debug("Showing prompt");
   if (promptWindow) {
     winston.warn(
@@ -26,7 +26,7 @@ export function openPrompt(time: number, quitOnClose: Boolean = false) {
   outstandingPing = true;
 
   // Save & restore window position and dimensions
-  let promptWindowState = windowStateKeeper({
+  const promptWindowState = windowStateKeeper({
     defaultWidth: 500,
     defaultHeight: 200,
     file: "promptWindowState.json"
@@ -66,16 +66,16 @@ export function openPrompt(time: number, quitOnClose: Boolean = false) {
 
     if (global.pingFile.pings.length > 0) {
       allTags = Array.from(global.pingFile.allTags);
-      let prevPing = global.pingFile.pings.slice(-1)[0]!;
+      const prevPing = global.pingFile.pings.slice(-1)[0]!;
       prevTags = Array.from(prevPing.tags);
       prevComment = PingFile.unannotateComment(prevPing.comment);
     }
     if (promptWindow) {
       promptWindow.webContents.send("data", {
-        time: time,
-        allTags: allTags,
-        prevTags: prevTags,
-        prevComment: prevComment,
+        time,
+        allTags,
+        prevTags,
+        prevComment,
         cancelTags: global.config.user.get("cancelTags")
       });
     }
@@ -120,8 +120,8 @@ let _scheduleTimer: NodeJS.Timer;
  * If a ping is due this second, it won't be scheduled.
  */
 export function schedulePings(onPing: (time: number) => void) {
-  let now = Date.now();
-  let next = global.pings.next(now);
+  const now = Date.now();
+  const next = global.pings.next(now);
 
   _scheduleTimer = setTimeout(() => {
     if (promptWindow) {
@@ -150,9 +150,9 @@ function missedPing(time: number): boolean | number {
   if (global.pingFile.pings.length === 0) {
     return false;
   }
-  let lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1]!
+  const lastPingTime = global.pingFile.pings[global.pingFile.pings.length - 1]!
     .time;
-  let nextPingTime = global.pings.next(lastPingTime);
+  const nextPingTime = global.pings.next(lastPingTime);
   if (nextPingTime <= time) {
     return nextPingTime;
   } else {
@@ -166,16 +166,17 @@ function missedPing(time: number): boolean | number {
  */
 export function catchUp(till: number): boolean {
   let missed = false;
-  let missedTime;
-  while ((missedTime = missedPing(till))) {
+  let missedTime = missedPing(till);
+  while (missedTime) {
     missed = true;
     // Replace every missing ping with the configured tags to use
-    let p = new Ping(
+    const p = new Ping(
       missedTime as number,
       new Set(global.config.user.get("cancelTags")),
       ""
     );
     global.pingFile.push(p);
+    missedTime = missedPing(till);
   }
   return missed;
 }
@@ -187,7 +188,7 @@ export function savePing(
   message: { ping: Ping; coverage?: any }
 ) {
   outstandingPing = false;
-  let ping = message.ping;
+  const ping = message.ping;
   winston.debug(
     "Saving ping @ " + ping.time + ": " + ping.tags + " [" + ping.comment + "]"
   );

@@ -1,11 +1,10 @@
-"use strict";
-const should = require("should");
-const _ = require("lodash");
-const stats = require("stats-lite");
+import _ = require("lodash");
+import should = require("should");
+import stats = require("stats-lite");
 
 import { PingTimes } from "../src/pingtimes";
 
-describe("Pings", function() {
+describe("Pingtimes", function() {
   const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
   const notBefore = time - 10000000;
   let pings: PingTimes;
@@ -42,20 +41,20 @@ describe("Pings", function() {
     });
 
     it("should not return pings before notBefore", function() {
-      should(pings.prev(notBefore)).be.null;
+      should(pings.prev(notBefore)).be.null();
     });
   });
 
   describe("next() & prev()", function() {
     it("should be idempotent", function() {
-      let ping = pings.next(time);
+      const ping = pings.next(time);
       pings.prev(pings.next(ping))!.should.equal(ping);
     });
   });
 
   it("should return consistent answers when requesting an earlier time", function() {
-    let a = pings.next(time);
-    let b = pings.prev(a)!;
+    const a = pings.next(time);
+    const b = pings.prev(a)!;
     pings.prev(b - 100000000);
     pings.next(time).should.equal(a);
   });
@@ -63,7 +62,7 @@ describe("Pings", function() {
   it("should give different results for different seeds", function() {
     pings.seed = 1;
     pings.reset();
-    let a = pings.next(time);
+    const a = pings.next(time);
 
     pings.seed = 2;
     pings.reset();
@@ -73,7 +72,7 @@ describe("Pings", function() {
   it("should give the same results for the same seeds", function() {
     pings.seed = 3;
     pings.reset();
-    let a = pings.next(time);
+    const a = pings.next(time);
 
     pings.seed = 4;
     pings.reset();
@@ -96,7 +95,7 @@ describe("Pings", function() {
     pings.reset();
 
     // generate a bunch of pings, and record the gap between them
-    let gaps = [];
+    const gaps = [];
     let prev = time;
     let next;
     for (let x = 1; x <= 2000; x++) {
@@ -107,18 +106,24 @@ describe("Pings", function() {
 
     // i_have_no_idea_what_im_doing_dog.gif
 
-    Math.round(_.mean(gaps)).should.be.approximately(pings.period, 0.1 * pings.period);
+    Math.round(_.mean(gaps)).should.be.approximately(
+      pings.period,
+      0.1 * pings.period
+    );
 
-    let mode = stats.mode(gaps);
+    const gapsMode = stats.mode(gaps);
 
-    let mode_matcher = function(mode: number) {
-      (pings.period - mode).should.be.approximately(pings.period, 0.2 * pings.period);
+    const modeMatcher = function(mode: number) {
+      (pings.period - mode).should.be.approximately(
+        pings.period,
+        0.2 * pings.period
+      );
     };
-    if (typeof mode !== "number") {
+    if (typeof gapsMode !== "number") {
       // check that at least one matches
-      Array.from(mode).should.matchAny(mode_matcher);
+      Array.from(gapsMode).should.matchAny(modeMatcher);
     } else {
-      mode_matcher(mode);
+      modeMatcher(gapsMode);
     }
   });
 });

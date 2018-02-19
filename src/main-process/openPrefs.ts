@@ -1,15 +1,17 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as winston from "winston";
 
-import * as helper from "./helper";
 import { Config } from "./config";
+import * as helper from "./helper";
 
 let prefsWindow: Electron.BrowserWindow | null;
-export function openPreferences(quitOnClosed: Boolean = false) {
+export function openPreferences(quitOnClosed: boolean = false) {
   winston.debug("Showing preferences");
   if (prefsWindow) {
-    //TODO focus the existing window instead
-    winston.warn("Tried to open preferences window but it seems it already exists. Aborting.");
+    // TODO focus the existing window instead
+    winston.warn(
+      "Tried to open preferences window but it seems it already exists. Aborting."
+    );
     return;
   }
 
@@ -48,9 +50,11 @@ export function openPreferences(quitOnClosed: Boolean = false) {
 
   ipcMain.on("save-config", (_evt: any, message: any) => {
     winston.debug("Saving config");
-    for (let key in message) {
-      winston.debug("   " + key + ": " + JSON.stringify(message[key]));
-      global.config.user.set(key, message[key]);
+    for (const key in message) {
+      if (message.hasOwnProperty(key)) {
+        winston.debug("   " + key + ": " + JSON.stringify(message[key]));
+        global.config.user.set(key, message[key]);
+      }
     }
   });
 

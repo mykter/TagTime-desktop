@@ -1,7 +1,8 @@
+import { ipcRenderer, remote } from "electron";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { ipcRenderer, remote } from "electron";
-import { ConfigDict, ConfigPref, ConfigName } from "./main-process/config";
+
+import { ConfigDict, ConfigName, ConfigPref } from "./main-process/config";
 
 interface PrefGroupProps {
   setValue: (name: string, value: any) => void;
@@ -16,19 +17,29 @@ enum ValueKey {
 
 export const PrefGroup = (props: PrefGroupProps) => {
   // Return an input element for pref, with value= or checked= as specified in valKey
-  const inputElement = (valKey: ValueKey, isFormControl: boolean, readOnly = false) => {
-    let inProps: { [index: string]: any; className?: string; value?: any; checked?: boolean } = {};
+  const inputElement = (
+    valKey: ValueKey,
+    isFormControl: boolean,
+    readOnly = false
+  ) => {
+    const inProps: {
+      [index: string]: any;
+      className?: string;
+      value?: any;
+      checked?: boolean;
+    } = {};
     inProps[valKey] = props.value;
     if (isFormControl) {
-      inProps["className"] = "form-control";
+      inProps.className = "form-control";
     }
 
     let type;
     switch (props.pref.type) {
       case "file": {
         type = "input";
-        inProps["className"] =
-          ("className" in inProps ? inProps["className"] + " " : "") + "file-input";
+        inProps.className =
+          ("className" in inProps ? inProps.className + " " : "") +
+          "file-input";
         break;
       }
       case "tags": {
@@ -101,7 +112,8 @@ export const PrefGroup = (props: PrefGroupProps) => {
     return null;
   }
 
-  let afterLabel, inLabel;
+  let afterLabel;
+  let inLabel;
   switch (props.pref.type) {
     case "checkbox":
       inLabel = inputElement(ValueKey.checked, false);
@@ -145,7 +157,7 @@ export class Prefs extends React.Component<PrefsProps, ConfigDict> {
     super(props);
 
     // React doesn't like input elements to be assigned null values
-    let values = {} as ConfigDict;
+    const values = {} as ConfigDict;
     Object.keys(props.values).map((key, _index) => {
       values[key] = props.values[key] === null ? "" : props.values[key];
     });
@@ -163,24 +175,7 @@ export class Prefs extends React.Component<PrefsProps, ConfigDict> {
     this.save = this.save.bind(this);
   }
 
-  handleInputChange(name: string, value: any) {
-    this.setState({ [name]: value });
-  }
-
-  cancel() {
-    remote.getCurrentWindow().close();
-  }
-  save() {
-    // Return nulls instead of empty strings
-    let values = {} as ConfigDict;
-    Object.keys(this.state).map((key, _index) => {
-      values[key] = this.state[key] === "" ? null : this.state[key];
-    });
-    ipcRenderer.send("save-config", values);
-    remote.getCurrentWindow().close();
-  }
-
-  render() {
+  public render() {
     return (
       <div className="window">
         <div className="window-content">
@@ -216,6 +211,23 @@ export class Prefs extends React.Component<PrefsProps, ConfigDict> {
         </footer>
       </div>
     );
+  }
+
+  private handleInputChange(name: string, value: any) {
+    this.setState({ [name]: value });
+  }
+
+  private cancel() {
+    remote.getCurrentWindow().close();
+  }
+  private save() {
+    // Return nulls instead of empty strings
+    const values = {} as ConfigDict;
+    Object.keys(this.state).map((key, _index) => {
+      values[key] = this.state[key] === "" ? null : this.state[key];
+    });
+    ipcRenderer.send("save-config", values);
+    remote.getCurrentWindow().close();
   }
 }
 

@@ -1,21 +1,26 @@
-import * as winston from "winston";
-import * as path from "path";
-import * as psTree from "ps-tree";
 import * as fkill from "fkill";
-const spectron = require("spectron");
 import * as fs from "fs";
 import * as _ from "lodash";
+import * as path from "path";
+import * as psTree from "ps-tree";
+import spectron = require("spectron");
 import * as tmp from "tmp";
+import * as winston from "winston";
 
 import { Config, ConfigDict, logFileName } from "../../src/main-process/config";
 export { ConfigDict } from "../../src/main-process/config"; // reexport for convenience
 
 export const appPath = path.resolve(__dirname, "..", "..", "..");
 
-let nodeModulesPath = path.resolve(appPath, "node_modules");
+const nodeModulesPath = path.resolve(appPath, "node_modules");
 let tmpElectronPath;
 if (process.platform === "win32") {
-  tmpElectronPath = path.resolve(nodeModulesPath, "electron", "dist", "electron.exe");
+  tmpElectronPath = path.resolve(
+    nodeModulesPath,
+    "electron",
+    "dist",
+    "electron.exe"
+  );
 } else {
   tmpElectronPath = path.resolve(nodeModulesPath, ".bin", "electron");
 }
@@ -26,16 +31,18 @@ export const electronPath = tmpElectronPath;
  * @param options {dict} Any options to change from their defaults
  * @returns {string} directory containing the config file
  */
-let createConfig = function(options: Partial<ConfigDict>) {
-  let conf: ConfigDict = _.clone(Config.defaultDict());
-  for (let key in options) {
-    conf[key] = options[key];
+function createConfig(options: Partial<ConfigDict>) {
+  const conf: ConfigDict = _.clone(Config.defaultDict());
+  for (const key in options) {
+    if (options.hasOwnProperty(key)) {
+      conf[key] = options[key];
+    }
   }
-  let configDir: string = tmp.dirSync().name;
-  let configFile: string = path.join(configDir, "config.json");
+  const configDir: string = tmp.dirSync().name;
+  const configFile: string = path.join(configDir, "config.json");
   fs.writeFileSync(configFile, JSON.stringify(conf));
-  return { configDir: configDir, configFile: configFile, config: conf };
-};
+  return { configDir, configFile, config: conf };
+}
 
 /**
  * Launch the applicaiton under spectron
@@ -43,22 +50,30 @@ let createConfig = function(options: Partial<ConfigDict>) {
  * @param pingFilePath {string} The ping file to put in this instances config file
  */
 export function launchApp(testParam: string, pingFilePath?: string) {
-  let Application = spectron.Application;
-  let { configDir, configFile, config } = createConfig({
-    pingFilePath: pingFilePath,
+  const Application = spectron.Application;
+  const { configDir, configFile, config } = createConfig({
+    pingFilePath,
     runOnStartup: false,
     firstRun: false
   });
 
-  let logFile = path.join(configDir, logFileName);
+  const logFile = path.join(configDir, logFileName);
   fs.writeFileSync(logFile, ""); // touch the log to ensure it exists - makes reading simpler
 
-  let app = new Application({
+  const app = new Application({
     path: electronPath,
-    args: [appPath, "--test", testParam, "--nostdout", "--verbose", "--configdir", configDir]
+    args: [
+      appPath,
+      "--test",
+      testParam,
+      "--nostdout",
+      "--verbose",
+      "--configdir",
+      configDir
+    ]
   });
   return {
-    app: app,
+    app,
     tmpLogFileName: logFile,
     tmpConfigDir: configDir,
     tmpConfigFile: configFile,
@@ -70,9 +85,9 @@ export function launchApp(testParam: string, pingFilePath?: string) {
  * Returns a promise that resolves once test() is truthy
  * Tests the value of test() every interval ms
  */
-export function until(test: () => Boolean, interval: number) {
+export function until(test: () => boolean, interval: number) {
   return new Promise(function(resolve, _reject) {
-    let check = function() {
+    const check = function() {
       if (test()) {
         resolve();
       } else {
@@ -110,8 +125,15 @@ export function tree_kill(parentPid: number) {
 export function kill_spectron() {
   // app.stop doesn't work without a renderer window around, so need this fallback
   // the kill might fail because there is no chromedriver e.g. a test ran app.stop()
-  return fkill(["chromedriver", "chromedriver.exe"], { force: true, tree: true }).then(
-    () => {},
-    () => {}
+  return fkill(["chromedriver", "chromedriver.exe"], {
+    force: true,
+    tree: true
+  }).then(
+    () => {
+      /* do nothing */
+    },
+    () => {
+      /* do nothing */
+    }
   );
 }

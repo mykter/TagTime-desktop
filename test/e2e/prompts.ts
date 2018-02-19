@@ -1,18 +1,19 @@
-require("should");
-import * as tmp from "tmp";
-import * as _ from "lodash";
 import * as fs from "fs";
-const winston = require("winston"); // type errors with winston.level= if using "import"
+import * as _ from "lodash";
+import * as should from "should";
+import * as tmp from "tmp";
+import winston = require("winston"); // type errors with winston.level= if using "import"
 
-import * as helper from "./helper";
 import { PingFile } from "../../src/main-process/pingfile";
 import { Ping } from "../../src/ping";
+import * as helper from "./helper";
 
 describe("Prompts", function() {
   this.timeout(10000);
   this.retries(2); // had an occasion where appveyor test transiently failed.
 
-  let app: any, tmpLogFileName: string;
+  let app: any;
+  let tmpLogFileName: string;
   let tmpPingFileName: string;
   let tmpConfig: helper.ConfigDict;
   let prevPing: Ping;
@@ -67,7 +68,7 @@ describe("Prompts", function() {
     return app.stop();
   });
 
-  let untilSaved = function() {
+  const untilSaved = function() {
     // As the app is gone, verify the pingfile separately.
     // Note that writeSync doesn't do synchronous file i/o, so there's no
     // guarantee the pingfile exists yet! See
@@ -81,7 +82,7 @@ describe("Prompts", function() {
     );
   };
 
-  let saveInput = async function(
+  const saveInput = async function(
     tags: string,
     comment: string = "",
     button: null | string = saveSelector
@@ -97,7 +98,7 @@ describe("Prompts", function() {
     }
   };
 
-  let lastPingShouldEqual = function(tags: Set<string>, comment?: string) {
+  const lastPingShouldEqual = function(tags: Set<string>, comment?: string) {
     const pings = new PingFile(tmpPingFileName).pings;
     pings.length.should.equal(2);
     winston.debug(
@@ -137,7 +138,7 @@ describe("Prompts", function() {
     lastPingShouldEqual(new Set(["tag"]), "Test comment");
   });
 
-  let saveOnEnter = async function(fieldSelector: string) {
+  const saveOnEnter = async function(fieldSelector: string) {
     await saveInput("tag,", "", null); // The comma forces tag termination as otherwise the first enter just finishes the tag
     app.client.addValue(fieldSelector, "Enter");
     await untilSaved();
@@ -152,11 +153,11 @@ describe("Prompts", function() {
     await saveOnEnter(tagsSelector);
   });
 
-  let quitOnEscape = async function(fieldSelector: string) {
+  const quitOnEscape = async function(fieldSelector: string) {
     await saveInput("notused", "never seen", null);
     app.client.addValue(fieldSelector, "Escape");
     await untilSaved();
-    lastPingShouldEqual(tmpConfig["cancelTags"]);
+    lastPingShouldEqual(tmpConfig.cancelTags);
   };
 
   it("should close and save afk tags on escape in the tags input box", async function() {
@@ -170,6 +171,6 @@ describe("Prompts", function() {
   it("should save afk tags on close", async function() {
     app.client.close();
     await untilSaved();
-    lastPingShouldEqual(tmpConfig["cancelTags"]);
+    lastPingShouldEqual(tmpConfig.cancelTags);
   });
 });

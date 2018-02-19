@@ -1,10 +1,10 @@
-import { app } from "electron";
 import AutoLaunch = require("auto-launch");
+import { app } from "electron";
 import ElectronStore = require("electron-store");
-import * as winston from "winston";
-import * as path from "path";
 import * as fs from "fs";
 import { platform } from "os";
+import * as path from "path";
+import * as winston from "winston";
 
 export enum ConfigName {
   runOnStartup = "runOnStartup",
@@ -60,135 +60,9 @@ const devConfigDir = path.resolve(appRoot, "devconfig");
  */
 export class Config {
   /**
-   * The user config. Access with .get, .set, .has
-   */
-  user: ElectronStore;
-  private _firstRun: Boolean | null;
-  private _isDev: Boolean | undefined;
-
-  /**
-   * The directory where the default ping file, config file, and logs are.
-   */
-  configPath: string;
-
-  /**
-   * @param dir Specify a non-default config location. Should only be used for testing.
-   * @param forceProd If true, isDev will be false. Otherwise attempts to automatically detect development mode.
-   */
-  constructor(dir?: string, forceProd?: boolean) {
-    if (forceProd) {
-      // Don't try and detect development mode
-      this._isDev = false;
-    }
-
-    if (dir) {
-      this.configPath = dir;
-    } else {
-      if (this.isDev) {
-        this.configPath = devConfigDir;
-      } else {
-        this.configPath = app.getPath("userData");
-      }
-    }
-
-    let initialConfig = Config.defaultDict();
-    // These two default config values are set here rather than in fieldInfo because the "app"
-    // object isn't available in the test context
-    initialConfig.seed = require("random-js")().integer(0, Math.pow(2, 32) - 1);
-    initialConfig.pingFilePath = path.join(this.configPath, pingFileName);
-
-    var options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
-    if (dir) {
-      options.cwd = dir;
-    } else if (this.isDev) {
-      options.cwd = this.configPath;
-    }
-    this.user = new ElectronStore(options);
-    winston.debug("Config file path: " + this.user.path);
-
-    this._firstRun = this.user.get("firstRun");
-    if (this._firstRun) {
-      this.user.set("firstRun", false);
-    }
-  }
-
-  /**
-   * Is the application running in a development environment (vs a release environment)?
-   */
-  get isDev(): Boolean {
-    if (this._isDev === undefined) {
-      this._isDev = fs.existsSync(path.resolve(appRoot, ".git"));
-      if (this._isDev) {
-        winston.debug("Development mode");
-      }
-    }
-    return this._isDev;
-  }
-
-  get logFile(): string {
-    return path.join(this.configPath, logFileName);
-  }
-
-  /**
-   * @returns {bool} Whether this is the first run of the application or not.
-   */
-  get firstRun() {
-    return this._firstRun;
-  }
-
-  setupAutoLaunch() {
-    var autoLauncher = new AutoLaunch({ name: app.getName() });
-    if (this.user.get("runOnStartup")) {
-      if (this.isDev) {
-        winston.info("Ignoring runOnStartup as in development mode.");
-      } else {
-        winston.info("Setting app to run on startup");
-        autoLauncher.enable().catch(reason => {
-          winston.warn("Couldn't enable launch on system startup: " + reason);
-        });
-      }
-    }
-  }
-
-  /**
-   * Period is stored in minutes in the config file.
-   * Use this helper to get it in a useful form.
-   * @returns {time} period in milliseconds
-   */
-  get period() {
-    return this.user.get("period") * 60 * 1000;
-  }
-
-  get pingFileStartFormat() {
-    return "YYYY-MM-DDTHH:MM";
-  }
-
-  /**
-   * Returns the user config but in pure dictionary form, for sending over IPC
-   */
-  get userDict(): ConfigDict {
-    let conf = {} as ConfigDict;
-    for (let field of Config.fieldInfo) {
-      conf[field.name] = this.user.get(field.name);
-    }
-    return conf;
-  }
-
-  /**
-   * Returns an object mapping field names to their (static) default values.
-   */
-  static defaultDict(): ConfigDict {
-    let conf = {} as ConfigDict;
-    for (let field of Config.fieldInfo) {
-      conf[field.name] = field.default;
-    }
-    return conf;
-  }
-
-  /**
    * For each config field its: type, description, and whether it is user configurable
    */
-  static fieldInfo: ConfigPref[] = [
+  public static fieldInfo: ConfigPref[] = [
     {
       name: ConfigName.firstRun,
       type: "checkbox",
@@ -263,4 +137,131 @@ export class Config {
       default: false
     }
   ];
+
+  /**
+   * Returns an object mapping field names to their (static) default values.
+   */
+  public static defaultDict(): ConfigDict {
+    const conf = {} as ConfigDict;
+    for (const field of Config.fieldInfo) {
+      conf[field.name] = field.default;
+    }
+    return conf;
+  }
+
+  /**
+   * The user config. Access with .get, .set, .has
+   */
+  public user: ElectronStore;
+
+  private _firstRun: boolean | null;
+  private _isDev: boolean | undefined;
+
+  /**
+   * The directory where the default ping file, config file, and logs are.
+   */
+  private configPath: string;
+
+  /**
+   * @param dir Specify a non-default config location. Should only be used for testing.
+   * @param forceProd If true, isDev will be false. Otherwise attempts to automatically detect development mode.
+   */
+  constructor(dir?: string, forceProd?: boolean) {
+    if (forceProd) {
+      // Don't try and detect development mode
+      this._isDev = false;
+    }
+
+    if (dir) {
+      this.configPath = dir;
+    } else {
+      if (this.isDev) {
+        this.configPath = devConfigDir;
+      } else {
+        this.configPath = app.getPath("userData");
+      }
+    }
+
+    const initialConfig = Config.defaultDict();
+    // These two default config values are set here rather than in fieldInfo because the "app"
+    // object isn't available in the test context
+    initialConfig.seed = require("random-js")().integer(0, Math.pow(2, 32) - 1);
+    initialConfig.pingFilePath = path.join(this.configPath, pingFileName);
+
+    const options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
+    if (dir) {
+      options.cwd = dir;
+    } else if (this.isDev) {
+      options.cwd = this.configPath;
+    }
+    this.user = new ElectronStore(options);
+    winston.debug("Config file path: " + this.user.path);
+
+    this._firstRun = this.user.get("firstRun");
+    if (this._firstRun) {
+      this.user.set("firstRun", false);
+    }
+  }
+
+  /**
+   * Is the application running in a development environment (vs a release environment)?
+   */
+  get isDev(): boolean {
+    if (this._isDev === undefined) {
+      this._isDev = fs.existsSync(path.resolve(appRoot, ".git"));
+      if (this._isDev) {
+        winston.debug("Development mode");
+      }
+    }
+    return this._isDev;
+  }
+
+  get logFile(): string {
+    return path.join(this.configPath, logFileName);
+  }
+
+  /**
+   * @returns {bool} Whether this is the first run of the application or not.
+   */
+  get firstRun() {
+    return this._firstRun;
+  }
+
+  public setupAutoLaunch() {
+    const autoLauncher = new AutoLaunch({ name: app.getName() });
+    if (this.user.get("runOnStartup")) {
+      if (this.isDev) {
+        winston.info("Ignoring runOnStartup as in development mode.");
+      } else {
+        winston.info("Setting app to run on startup");
+        autoLauncher.enable().catch(reason => {
+          winston.warn("Couldn't enable launch on system startup: " + reason);
+        });
+      }
+    }
+  }
+
+  /**
+   * Period is stored in minutes in the config file.
+   * Use this helper to get it in a useful form.
+   * @returns {time} period in milliseconds
+   */
+  get period() {
+    return this.user.get("period") * 60 * 1000;
+  }
+
+  get pingFileStartFormat() {
+    return "YYYY-MM-DDTHH:MM";
+  }
+
+  /**
+   * Returns the user config but in pure dictionary form, for sending over IPC
+   */
+  get userDict(): ConfigDict {
+    const conf = {} as ConfigDict;
+    for (const field of Config.fieldInfo) {
+      conf[field.name] = this.user.get(field.name);
+    }
+    return conf;
+  }
 }

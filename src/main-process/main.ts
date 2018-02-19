@@ -1,26 +1,26 @@
-import { app, Menu, Tray, nativeImage } from "electron";
-const winston = require("winston"); // type errors with winston.level= if using "import"
-import * as path from "path";
-const openAboutWindow = require("about-window").default;
-import * as moment from "moment";
+import openAboutWindow from "about-window";
 import * as commander from "commander";
+import { app, Menu, nativeImage, Tray } from "electron";
 import * as fs from "fs";
+import * as moment from "moment";
 import { platform } from "os";
+import * as path from "path";
+import winston = require("winston"); // type errors with winston.level= if using "import"
 
-import * as prompts from "./prompts";
+import { PingTimes } from "../pingtimes";
 import {
+  appRoot,
   Config,
   ConfigName,
-  appRoot,
   imagesPath,
   logoPath,
   trayIconPath
 } from "./config";
-import { PingFile } from "./pingfile";
-import { openPreferences } from "./openPrefs";
-import { openEditor } from "./edit";
 import { saveCoverage } from "./coverageSupport";
-import { PingTimes } from "../pingtimes";
+import { openEditor } from "./edit";
+import { openPreferences } from "./openPrefs";
+import { PingFile } from "./pingfile";
+import * as prompts from "./prompts";
 
 // Keep a global reference, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -96,7 +96,7 @@ function createTray() {
   winston.debug("Creating tray");
   tray = new Tray(trayIconPath);
   if (platform() === "darwin") {
-    let trayPressedIcon = nativeImage.createFromPath(
+    const trayPressedIcon = nativeImage.createFromPath(
       path.resolve(imagesPath, "macHighlight.png")
     );
     tray.setPressedImage(trayPressedIcon);
@@ -132,7 +132,7 @@ function mainTest(option: string) {
     case "quit":
       break;
     default:
-      throw "Didn't recognise test option " + option;
+      throw new Error("Didn't recognise test option " + option);
   }
 }
 
@@ -152,7 +152,7 @@ function parseCommandLine() {
   }
 
   // process.env.npm_package_version only guaranteed available when run from an npm script
-  let version = JSON.parse(fs.readFileSync(`${appRoot}/package.json`, "utf8"))
+  const version = JSON.parse(fs.readFileSync(`${appRoot}/package.json`, "utf8"))
     .version;
 
   commander
@@ -248,7 +248,7 @@ function main() {
   // Coverage variables from the main and renderer processes accumulate here
   global.coverage = [];
 
-  let program = parseCommandLine();
+  const program = parseCommandLine();
 
   setupLogging(program.verbose, program.nostdout);
 
@@ -291,7 +291,9 @@ function main() {
   /* The tray doesn't count as a window, so don't quit when the other windows
   are closed.
   In e2e test mode we will need to ensure we explicitly quit after closing a window. */
-  app.on("window-all-closed", () => {});
+  app.on("window-all-closed", () => {
+    /* do nothing */
+  });
 
   app.on("ready", async function() {
     winston.debug(app.getName() + " ready");

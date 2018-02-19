@@ -1,0 +1,22 @@
+---
+extends:
+- tslint:recommended
+- tslint-react
+- tslint-config-prettier # disable all formatting related tslint rules
+rulesDirectory: []
+defaultSeverity: error
+rules:
+  only-arrow-functions: false # mocha doesn't support arrow functions
+  interface-name:
+    - true
+    - never-prefix
+  variable-name:
+    - allow-leading-underscore
+  object-literal-sort-keys:
+    - match-declaration-order
+  jsx-no-lambda: false
+jsRules: {}
+linterOptions:
+  exclude:
+  - 'app/**/*'
+  - '**/*.js'

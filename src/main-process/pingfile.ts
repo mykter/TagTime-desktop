@@ -1,10 +1,10 @@
+import { dialog } from "electron";
 import * as fs from "fs";
 import * as moment from "moment";
 import * as winston from "winston";
-import { dialog } from "electron";
 
-import { PingTimes } from "../pingtimes";
 import { Ping } from "../ping";
+import { PingTimes } from "../pingtimes";
 
 /**
  * Parse a tagtime log into pings and append pings to it
@@ -12,14 +12,130 @@ import { Ping } from "../ping";
  */
 export class PingFile {
   /**
-   * Whether this instance replaces invalid entries with nulls, or ignores them
+   * @returns The ping formatted for the log file (no trailing newline).
+   * @param ping The ping to encode. Must have a time.
+   * @param annotate If true, prepend ping.comment with time in ISO
+   * @param width The width to right pad tags to with spaces
+   * @throws if a ping is provided without a valid time property format
    */
-  keep_invalid: boolean;
-  path: string;
-  caching: boolean;
-  width: number;
+  public static encode(ping: Ping, annotate = true, width = 0): string {
+    if (isNaN(ping.time) || ping.time < PingTimes.epoch) {
+      throw new Error(
+        "Invalid ping time in ping to be encoded: " +
+          ping.time +
+          " must be integer after the epoch"
+      );
+    }
 
-  private _pings: (Ping | null)[] | undefined;
+    let tags = "";
+    if (ping.tags) {
+      // cope with no tags
+      if (typeof ping.tags === "string") {
+        throw new Error("Tags of ping to be encoded is a string");
+      }
+      tags = Array.from(ping.tags).join(" ");
+      // pad right with spaces
+      tags = tags + " ".repeat(Math.max(0, width - tags.length));
+    }
+
+    let comment = "";
+    if (annotate) {
+      // ISO 8601, with local timezone
+      // TODO support other formats? What does original tagtime do?
+      const time = moment(ping.time, "x");
+      comment = time.format() + " " + time.format("ddd") + " ";
+    }
+    if (ping.comment) {
+      comment += ping.comment;
+    }
+    comment = comment.trim();
+    if (comment !== "") {
+      // don't output empty comments
+      comment = "[" + comment + "]";
+    }
+
+    // trims to deal with empty tags or comment
+    const unixtime = Math.round(ping.time / 1000);
+    return (
+      unixtime +
+      " " +
+      (tags.length > 0 ? tags + " " : "") +
+      comment
+    ).trim();
+  }
+
+  /**
+   * Not information preserving - tags are deduplicated, spacing lost
+   * @param entry The log entry to parse
+   * @returns A ping or null if the entry couldn't be parsed
+   */
+  public static parse(entry: string): Ping | null {
+    const m = entry.match(/^(\d+)\s*(\s[^[]+)?(\[.*\])?\s*$/);
+    if (!m) {
+      // TODO what is the comment syntax for ping files?
+      winston.warn("Could not parse entry: '" + entry + "'");
+      return null;
+    }
+
+    // Time must be an integer after the epoch
+    let time = parseInt(m[1], 10);
+    if (isNaN(time) || time * 1000 < PingTimes.epoch) {
+      winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
+      return null;
+    }
+    time = time * 1000; // upscale to js time
+
+    let tags;
+    if (m[2]) {
+      tags = new Set(m[2].trim().split(/\s+/));
+    } else {
+      tags = new Set();
+    }
+
+    let comment = "";
+    if (m[3]) {
+      comment = m[3].slice(1, -1); // ditch the []
+    }
+
+    return new Ping(time, tags, comment);
+  }
+
+  /**
+   * Because we're using an unstructured text file, we occasionally want to retrieve the 'pure' comment.
+   * Bring on a new storage format.
+   * @param comment A potentially time-annotated comment
+   * @returns The same comment but with its time prefix removed, if it had one
+   */
+  public static unannotateComment(comment: string): string {
+    const prefix = /^(\S+) \w\w\w( (.+))?$/; // see encode - comments look like "ISO ddd comment"
+    const match = comment.match(prefix);
+    if (match) {
+      // check the first group is a valid datetime
+      const m = moment(match[1], moment.defaultFormat);
+      if (m.isValid()) {
+        // looks like a timestamp annotation
+        if (match[3]) {
+          return match[3];
+        } else {
+          // There is no comment, just a timestamp
+          return "";
+        }
+      }
+    }
+    // One of the tests failed, don't prune the comment
+    return comment;
+  }
+
+  /**
+   * Whether this instance replaces invalid entries with nulls, or ignores them
+   * Only public for tests
+   */
+  public keep_invalid: boolean;
+  private path: string;
+  private caching: boolean;
+  private width: number;
+
+  private _pings: Array<Ping | null> | undefined;
   private _allTags: Set<string> | undefined;
 
   /**
@@ -49,7 +165,7 @@ export class PingFile {
     if (create && !fs.existsSync(this.path)) {
       winston.debug("Creating pingfile at ", this.path);
       try {
-        let fd = fs.openSync(this.path, "a");
+        const fd = fs.openSync(this.path, "a");
         fs.closeSync(fd);
       } catch (err) {
         winston.warn("Couldn't create ping file at location " + this.path);
@@ -64,128 +180,15 @@ export class PingFile {
   }
 
   /**
-   * @returns The ping formatted for the log file (no trailing newline).
-   * @param ping The ping to encode. Must have a time.
-   * @param annotate If true, prepend ping.comment with time in ISO
-   * @param width The width to right pad tags to with spaces
-   * @throws if a ping is provided without a valid time property format
-   */
-  static encode(ping: Ping, annotate = true, width = 0): string {
-    if (isNaN(ping.time) || ping.time < PingTimes.epoch) {
-      throw "Invalid ping time in ping to be encoded: " +
-        ping.time +
-        " must be integer after the epoch";
-    }
-
-    let tags = "";
-    if (ping.tags) {
-      // cope with no tags
-      if (typeof ping.tags === "string") {
-        throw "Tags of ping to be encoded is a string";
-      }
-      tags = Array.from(ping.tags).join(" ");
-      // pad right with spaces
-      tags = tags + " ".repeat(Math.max(0, width - tags.length));
-    }
-
-    let comment = "";
-    if (annotate) {
-      // ISO 8601, with local timezone
-      // TODO support other formats? What does original tagtime do?
-      let time = moment(ping.time, "x");
-      comment = time.format() + " " + time.format("ddd") + " ";
-    }
-    if (ping.comment) {
-      comment += ping.comment;
-    }
-    comment = comment.trim();
-    if (comment !== "") {
-      // don't output empty comments
-      comment = "[" + comment + "]";
-    }
-
-    // trims to deal with empty tags or comment
-    let unixtime = Math.round(ping.time / 1000);
-    return (
-      unixtime +
-      " " +
-      (tags.length > 0 ? tags + " " : "") +
-      comment
-    ).trim();
-  }
-
-  /**
-   * Because we're using an unstructured text file, we occasionally want to retrieve the 'pure' comment.
-   * Bring on a new storage format.
-   * @param comment A potentially time-annotated comment
-   * @returns The same comment but with its time prefix removed, if it had one
-   */
-  static unannotateComment(comment: string): string {
-    let prefix = /^(\S+) \w\w\w( (.+))?$/; // see encode - comments look like "ISO ddd comment"
-    let match = comment.match(prefix);
-    if (match) {
-      // check the first group is a valid datetime
-      let m = moment(match[1], moment.defaultFormat);
-      if (m.isValid()) {
-        // looks like a timestamp annotation
-        if (match[3]) {
-          return match[3];
-        } else {
-          // There is no comment, just a timestamp
-          return "";
-        }
-      }
-    }
-    // One of the tests failed, don't prune the comment
-    return comment;
-  }
-
-  /**
-   * Not information preserving - tags are deduplicated, spacing lost
-   * @param entry The log entry to parse
-   * @returns A ping or null if the entry couldn't be parsed
-   */
-  static parse(entry: string): Ping | null {
-    let m = entry.match(/^(\d+)\s*(\s[^[]+)?(\[.*\])?\s*$/);
-    if (!m) {
-      // TODO what is the comment syntax for ping files?
-      winston.warn("Could not parse entry: '" + entry + "'");
-      return null;
-    }
-
-    // Time must be an integer after the epoch
-    let time = parseInt(m[1]);
-    if (isNaN(time) || time * 1000 < PingTimes.epoch) {
-      winston.warn("Invalid time while parsing entry: '" + m[1] + "'");
-      return null;
-    }
-    time = time * 1000; // upscale to js time
-
-    let tags;
-    if (m[2]) {
-      tags = new Set(m[2].trim().split(/\s+/));
-    } else {
-      tags = new Set();
-    }
-
-    let comment = "";
-    if (m[3]) {
-      comment = m[3].slice(1, -1); // ditch the []
-    }
-
-    return new Ping(time, tags, comment);
-  }
-
-  /**
    * @returns the log file as a list of pings (no caching)
    * Behaviour depends on instance's keep_invalid property.
    * @throws fs exceptions if the file can't be read from
    */
-  get pings(): (Ping | null)[] {
+  get pings(): Array<Ping | null> {
     if (this.caching && this._pings) {
       return this._pings;
     }
-    let ps: (Ping | null)[];
+    let ps: Array<Ping | null>;
     try {
       ps = fs
         .readFileSync(this.path, "utf8")
@@ -202,7 +205,7 @@ export class PingFile {
         winston.error(
           "Couldn't open ping file '" + this.path + "', got error " + err
         );
-        let msg =
+        const msg =
           "Can't open the ping file '" +
           this.path +
           "'. Please check the path in settings.";
@@ -230,7 +233,7 @@ export class PingFile {
       return this._allTags;
     }
 
-    let tags = new Set();
+    const tags = new Set();
     this.pings.map(ping => {
       if (ping) {
         ping.tags.forEach(tag => {
@@ -250,13 +253,13 @@ export class PingFile {
    * @param annotate - see PingFile.encode
    * @throws fs exceptions if the file can't be written to
    */
-  push(ping: Ping, annotate = true) {
+  public push(ping: Ping, annotate = true) {
     let nl = "";
     if (fs.existsSync(this.path)) {
       // The ping should be on a new line, so check whether the final byte
       // already is \n
-      let buffer = new Buffer(1);
-      let fd = fs.openSync(this.path, "r");
+      const buffer = new Buffer(1);
+      const fd = fs.openSync(this.path, "r");
       if (fs.readSync(fd, buffer, 0, 1, fs.fstatSync(fd).size - 1) === 1) {
         // test bytes read to cope with empty file
         if (buffer[0] !== 10) {

@@ -1,6 +1,6 @@
-import * as winston from "winston";
 import * as fs from "fs";
 import * as path from "path";
+import * as winston from "winston";
 
 /**
  * Save istanbul coverage information (on program exit)
@@ -16,7 +16,9 @@ export function saveCoverage() {
     winston.warn("main coverage");
   }
   if (!global.coverage || global.coverage.length === 0) {
-    winston.error("TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available.");
+    winston.error(
+      "TAGTIME_E2E_COVERAGE_DIR is set but no coverage information available."
+    );
   } else {
     // Find a unique file name
     let i = -1;
@@ -24,19 +26,26 @@ export function saveCoverage() {
     do {
       i += 1;
       coverageBase = `coverage${i}.json`;
-    } while (fs.existsSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, coverageBase)));
+    } while (
+      fs.existsSync(
+        path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, coverageBase)
+      )
+    );
 
-    global.coverage.forEach((e, i) => {
+    global.coverage.forEach((e, k) => {
       let name;
-      if (i === 0) {
+      if (k === 0) {
         // The first file we write is the unique name
         name = coverageBase;
       } else {
         // subsequent ones are prefixed, to allow identifying which run a
         // file came from
-        name = "var" + i + "-" + coverageBase;
+        name = "var" + k + "-" + coverageBase;
       }
-      fs.writeFileSync(path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, name), JSON.stringify(e));
+      fs.writeFileSync(
+        path.join(process.env.TAGTIME_E2E_COVERAGE_DIR!, name),
+        JSON.stringify(e)
+      );
     });
   }
 }
