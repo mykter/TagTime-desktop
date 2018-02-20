@@ -1,0 +1,5 @@
+Each subdirectory here corresponds to the same named directory under the top level node_modules directory.
+
+Each directory contains one or more patch files, that are applied to the node module by gulp during the build. More specifically, a patched copy of the module is created in the app build directory, which takes precedence over the original module when imported.
+
+See http://mykter.com/2018/02/09/patching-node-packages for a more detailed discussion of this approach and the alternatives.
