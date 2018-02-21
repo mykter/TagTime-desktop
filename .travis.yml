@@ -34,5 +34,5 @@ before_script:
   - npm run build
 
 script: # we want to be notified if any of these fail, so use script rather than after_success
-  - npm test && npm run dist # only dist if the tests pass
+  - npm test && DEBUG=electron-builder npm run dist # only dist if the tests pass
   - if [[ $TRAVIS_OS_NAME = "linux" ]]; then npm run coveralls; fi
