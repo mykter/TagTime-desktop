@@ -59,7 +59,7 @@
     "coveralls": "^3.0.0",
     "cross-env": "^5.1.1",
     "electron": "^1.8.1",
-    "electron-builder": "^20.0.8",
+    "electron-builder": "^20.1.1",
     "electron-mocha": "^5.0.0",
     "eslint": "^4.13.1",
     "eslint-plugin-react": "^7.5.1",
@@ -100,24 +100,19 @@
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
     "test:main": "xvfb-maybe electron-mocha ./app/test/main",
     "test:e2e": "xvfb-maybe mocha ./app/test/e2e",
-    "debugtest":
-      "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
-    "debugtestmain":
-      "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
+    "debugtest": "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
+    "debugtestmain": "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
-    "precover":
-      "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
-    "cover":
-      "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
+    "precover": "cross-env NODE_ENV=coverage run-s -n cover:e2e \"test:{main,renderer} -- --require ./support/istanbul-reporter\"",
+    "cover": "nyc report --temp-directory ./coverage/raw --reporter=html --reporter=lcov",
     "precoveralls": "npm run cover",
     "coveralls": "coveralls < ./coverage/lcov.info",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "clean": "rimraf ./coverage ./dist ./doc ./app",
     "lint": "eslint src test support && tslint --project .",
-    "doc":
-      "jsdoc src --destination doc --package ./package.json --readme ./README"
+    "doc": "jsdoc src --destination doc --package ./package.json --readme ./README"
   },
   "build": {
     "appId": "com.mykter.tagtime",
@@ -130,7 +125,12 @@
     },
     "linux": {
       "category": "Utility",
-      "target": ["snap", "AppImage", "deb", "rpm"]
+      "target": [
+        "snap",
+        "AppImage",
+        "deb",
+        "rpm"
+      ]
     }
   }
 }
