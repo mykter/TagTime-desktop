@@ -19,7 +19,7 @@ addons:
     packages:
       - rpm            # dist
       - xvfb           # testing
-      - openjpeg-tools # electron-builder's icon dependency
+      - libopenjpeg-dev # electron-builder's icon dependency
       - snapd          # to, in turn, install snapcraft as a snap
 
 install:
