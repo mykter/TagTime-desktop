@@ -324,10 +324,10 @@ describe("PingFile", function() {
       ).should.be.true();
     };
     it("should return the set of recorded pings with caching", function() {
-      return testAllTags(true);
+      testAllTags(true);
     });
     it("should return the set of recorded pings without caching", function() {
-      return testAllTags(false);
+      testAllTags(false);
     });
   });
 });
