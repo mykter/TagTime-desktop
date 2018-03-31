@@ -18,24 +18,31 @@ const Tags = (props: TagsProps) => {
   const autocompleteRenderInput = (
     renderInputProps: TagsInput.RenderInputProps
   ) => {
+    let inputValue = "";
+    if (renderInputProps.value) {
+      inputValue = renderInputProps.value.trim().toLowerCase();
+    }
+    const inputLength = inputValue.length;
+
+    const suggestions = props.allTags.filter(
+      tag =>
+        inputLength > 0 &&
+        tag.toLowerCase().slice(0, inputLength) === inputValue
+    );
+
     const handleOnChange = (
       e: any,
       { newValue, method }: Autosuggest.ChangeEvent
     ) => {
-      if (method === "enter") {
+      if (method === "enter" && inputLength > 0) {
+        // preventDefault to stop the currently entered text being used as a tag
+        // but _don't_ preventDefault if there's no options available - otherwise this
+        // will stop form submission
         e.preventDefault();
       } else {
         renderInputProps.onChange(e);
       }
     };
-
-    const inputValue =
-      renderInputProps.value && renderInputProps.value.trim().toLowerCase();
-    const inputLength = inputValue.length;
-
-    const suggestions = props.allTags.filter(tag => {
-      return tag.toLowerCase().slice(0, inputLength) === inputValue;
-    });
 
     // If we just pass inputProps=renderInputProps directly, that includes addTag which isn't a DOM property,
     // and onChange which we want to override
