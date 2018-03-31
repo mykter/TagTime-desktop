@@ -77,6 +77,7 @@
     "istanbul": "^0.4.5",
     "jsdoc": "^3.5.5",
     "mkdirp": "^0.5.1",
+    "mocha-appveyor-reporter": "^0.4.0",
     "npm-run-all": "^4.1.2",
     "nyc": "^11.6.0",
     "ps-tree": "^1.1.0",
@@ -97,7 +98,9 @@
   "scripts": {
     "build": "gulp clean:build && gulp build:tests",
     "start": "electron .",
-    "test": "run-s -n test:renderer test:main test:e2e lint",
+    "test": "run-s -n test:* lint",
+    "appveyor-test":
+      "run-s -n \"test:* -- --reporter mocha-appveyor-reporter \" lint",
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
     "test:main": "xvfb-maybe electron-mocha ./app/test/main",
     "test:e2e": "xvfb-maybe mocha ./app/test/e2e",
