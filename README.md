@@ -5,7 +5,7 @@
 [![bitHound Overall Score](https://www.bithound.io/github/mykter/TagTime-desktop/badges/score.svg)](https://www.bithound.io/github/mykter/TagTime-desktop)
 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/vo15dgoqrb6k4fc4?svg=true)](https://ci.appveyor.com/project/mykter/tagtime-desktop)
-[![AppVeyor tests](https://img.shields.io/appveyor/tests/mykter/TagTime-desktop.svg)](https://ci.appveyor.com/project/mykter/tagtime-desktop/build/tests)
+[![AppVeyor tests](https://img.shields.io/appveyor/tests/mykter/TagTime-desktop.svg?logo=appveyor)](https://ci.appveyor.com/project/mykter/tagtime-desktop/build/tests)
 
 [![Latest (pre)release](https://img.shields.io/github/release/mykter/TagTime-desktop/all.svg)](https://github.com/mykter/TagTime-desktop/releases)
 
