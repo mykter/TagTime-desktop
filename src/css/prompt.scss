@@ -11,3 +11,6 @@
   font-size: 13px;
 }
 
+.react-tagsinput-input {
+  width: unset; // defaults to 80px, which looks like it truncates long tags as you're typing them
+}
