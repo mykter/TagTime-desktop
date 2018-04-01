@@ -132,11 +132,10 @@ export class PingFile {
    */
   public keep_invalid: boolean;
   private path: string;
-  private caching: boolean;
   private width: number;
 
   private _pings: Array<Ping | null> | undefined;
-  private _allTags: Set<string> | undefined;
+  private _allTags: { [index: string]: number } | undefined;
 
   /**
    * Create a PingFile. Note the file isn't opened until pings is read
@@ -145,20 +144,11 @@ export class PingFile {
    * @param keep_invalid Whether to ignore invalid lines or return them
    *                      as nulls. Defaults to false (discard).
    * @param create If true, create the file if it doesn't exist.
-   * @param caching Whether to cache pings (i.e. assume the file will only be modified via
-   *                        this instance)
    * @param width The width to pad encoded tags to
    */
-  constructor(
-    path: string,
-    keep_invalid = false,
-    create = false,
-    caching = true,
-    width = 0
-  ) {
+  constructor(path: string, keep_invalid = false, create = false, width = 0) {
     this.path = path;
     this.keep_invalid = keep_invalid;
-    this.caching = caching;
     this.width = width;
 
     // Create the ping file if it doesn't exist
@@ -180,72 +170,83 @@ export class PingFile {
   }
 
   /**
-   * @returns the log file as a list of pings (no caching)
+   * @returns the log file as a list of pings
    * Behaviour depends on instance's keep_invalid property.
    * @throws fs exceptions if the file can't be read from
    */
   get pings(): Array<Ping | null> {
-    if (this.caching && this._pings) {
-      return this._pings;
-    }
-    let ps: Array<Ping | null>;
-    try {
-      ps = fs
-        .readFileSync(this.path, "utf8")
-        .toString()
-        .trim() // trailing new line would give us a spurious null
-        .split("\n")
-        .map(PingFile.parse)
-        .filter((e, _i, _a) => {
-          return this.keep_invalid || e !== null;
-        });
-    } catch (err) {
-      if (err.code === "ENOENT") {
-        // File couldn't be opened
-        winston.error(
-          "Couldn't open ping file '" + this.path + "', got error " + err
-        );
-        const msg =
-          "Can't open the ping file '" +
-          this.path +
-          "'. Please check the path in settings.";
-        if (dialog) {
-          dialog.showErrorBox("TagTime - can't open ping file", msg);
+    if (!this._pings) {
+      let ps: Array<Ping | null>;
+      try {
+        ps = fs
+          .readFileSync(this.path, "utf8")
+          .toString()
+          .trim() // trailing new line would give us a spurious null
+          .split("\n")
+          .map(PingFile.parse)
+          .filter((e, _i, _a) => {
+            return this.keep_invalid || e !== null;
+          });
+      } catch (err) {
+        if (err.code === "ENOENT") {
+          // File couldn't be opened
+          winston.error(
+            "Couldn't open ping file '" + this.path + "', got error " + err
+          );
+          const msg =
+            "Can't open the ping file '" +
+            this.path +
+            "'. Please check the path in settings.";
+          if (dialog) {
+            dialog.showErrorBox("TagTime - can't open ping file", msg);
+          } else {
+            winston.error(msg);
+          }
+          return [];
         } else {
-          winston.error(msg);
+          throw err;
         }
-        return [];
-      } else {
-        throw err;
       }
-    }
-    if (this.caching) {
       this._pings = ps;
     }
-    return ps;
+    return this._pings;
   }
 
   /**
    * @returns {Set of tags} all unique tags in the pingfile
    */
   get allTags() {
-    if (this.caching && this._allTags) {
-      return this._allTags;
-    }
+    return new Set(Object.keys(this.allTagsFrequencies));
+  }
 
-    const tags = new Set();
-    this.pings.map(ping => {
-      if (ping) {
-        ping.tags.forEach(tag => {
-          tags.add(tag);
-        });
-      }
-    });
-
-    if (this.caching) {
-      this._allTags = tags;
-    }
+  /**
+   * @returns {Array of tags} all unique tags in the pingfile, ordered by frequency of occurency
+   */
+  get allTagsOrdered() {
+    const tags = Object.keys(this.allTagsFrequencies);
+    tags.sort((a, b) => this._allTags![b] - this._allTags![a]);
     return tags;
+  }
+
+  /**
+   * @returns An object mapping all unique tags to the count of times they appear
+   */
+  get allTagsFrequencies() {
+    if (!this._allTags) {
+      this._allTags = {};
+      this.pings.map(ping => {
+        if (ping) {
+          ping.tags.forEach(tag => {
+            if (tag in this._allTags!) {
+              this._allTags![tag] += 1;
+            } else {
+              this._allTags![tag] = 1;
+            }
+          });
+        }
+      });
+    }
+    return this._allTags;
   }
 
   /**
@@ -275,16 +276,19 @@ export class PingFile {
       nl + PingFile.encode(ping, annotate, this.width) + "\n",
       "utf8"
     );
-    if (this.caching) {
-      if (this._pings) {
-        this._pings.push(ping);
-      }
+    if (this._pings) {
+      this._pings.push(ping);
+    }
 
-      if (this._allTags) {
-        ping.tags.forEach(t => {
-          this._allTags!.add(t);
-        });
-      }
+    if (this._allTags) {
+      // only update the cache if it exists already
+      ping.tags.forEach(t => {
+        if (t in this._allTags!) {
+          this._allTags![t] += 1;
+        } else {
+          this._allTags![t] = 1;
+        }
+      });
     }
   }
 }

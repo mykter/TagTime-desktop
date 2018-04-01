@@ -1,6 +1,6 @@
 {
   "name": "tagtime-desktop",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
@@ -16262,9 +16262,9 @@
       }
     },
     "react-hotkeys": {
-      "version": "1.0.5",
-      "resolved": "https://registry.npmjs.org/react-hotkeys/-/react-hotkeys-1.0.5.tgz",
-      "integrity": "sha1-UYD5aStQvozjzjQug6AyH/s9Khc=",
+      "version": "1.0.6",
+      "resolved": "https://registry.npmjs.org/react-hotkeys/-/react-hotkeys-1.0.6.tgz",
+      "integrity": "sha1-RxkBpCjAFTBNOZi9/MKSCtT8KVw=",
       "requires": {
         "lodash.isboolean": "3.0.3",
         "lodash.isequal": "4.5.0",

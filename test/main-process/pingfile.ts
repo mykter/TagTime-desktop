@@ -268,14 +268,14 @@ describe("PingFile", function() {
     });
   });
 
-  const testPush = function(caching: boolean) {
+  it("get should return the pings pushed", function() {
     const p = {
       time: 1487459622000,
       tags: new Set(["one", "two"]),
       comment: "c"
     };
     const f = tmp.fileSync();
-    const pf = new PingFile(f.name, false, false, caching);
+    const pf = new PingFile(f.name, false, false);
     pf.push(p, false);
     pf.push(p, false);
     pf.pings.should.have.length(2);
@@ -286,12 +286,6 @@ describe("PingFile", function() {
       should(ping!.comment).equal(p.comment);
     });
     f.removeCallback();
-  };
-  it("get should return the pings pushed, without caching", function() {
-    testPush(false);
-  });
-  it("get should return the pings pushed, with caching", function() {
-    testPush(true);
   });
 
   describe("allTags", function() {
@@ -308,26 +302,37 @@ describe("PingFile", function() {
       pf = new PingFile(f.name);
       _.isEqual(pf.allTags, new Set()).should.be.true();
     });
+    it("...Frequencies should return an empty object if there are no pings", function() {
+      pf = new PingFile(f.name);
+      _.isEqual(pf.allTagsFrequencies, {}).should.be.true();
+    });
+    it("...Ordered should return an empty array if there are no pings", function() {
+      pf = new PingFile(f.name);
+      _.isEqual(pf.allTagsOrdered, []).should.be.true();
+    });
 
-    const testAllTags = function(caching: boolean) {
-      pf = new PingFile(f.name, false, false, caching);
+    function beforeEachWithPings() {
+      pf = new PingFile(f.name, false, false);
+      pf.push({ time: 1487459624000, tags: new Set(["three"]), comment: "" });
       pf.push({ time: 1487459622000, tags: new Set(["one"]), comment: "" });
       pf.push({
         time: 1487459623000,
         tags: new Set(["one", "two"]),
         comment: ""
       });
-      pf.push({ time: 1487459624000, tags: new Set(["three"]), comment: "" });
-      return _.isEqual(
-        pf.allTags,
-        new Set(["one", "two", "three"])
-      ).should.be.true();
-    };
-    it("should return the set of recorded pings with caching", function() {
-      testAllTags(true);
+    }
+    it("should return the set of recorded pings", function() {
+      beforeEachWithPings();
+      _.isEqual(pf.allTags, new Set(["one", "two", "three"])).should.be.true();
     });
-    it("should return the set of recorded pings without caching", function() {
-      testAllTags(false);
+    it("...Frequencies should return the recorded pings and their occurences", function() {
+      beforeEachWithPings();
+      const ref = { one: 2, two: 1, three: 1 };
+      _.isEqual(pf.allTagsFrequencies, ref).should.be.true();
+    });
+    it("...Ordered should return an array with the most frequent tag first", function() {
+      beforeEachWithPings();
+      pf.allTagsOrdered[0].should.equal("one");
     });
   });
 });

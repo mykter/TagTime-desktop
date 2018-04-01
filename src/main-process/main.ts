@@ -274,7 +274,6 @@ function main() {
     global.config.user.get("pingFilePath"),
     false,
     createPingFile,
-    true,
     global.config.user.get("tagWidth")
   );
   global.pings = new PingTimes(

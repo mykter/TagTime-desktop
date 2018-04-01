@@ -65,7 +65,7 @@ export function openPrompt(time: number, quitOnClose: boolean = false) {
     let prevComment: string = "";
 
     if (global.pingFile.pings.length > 0) {
-      allTags = Array.from(global.pingFile.allTags);
+      allTags = global.pingFile.allTagsOrdered;
       const prevPing = global.pingFile.pings.slice(-1)[0]!;
       prevTags = Array.from(prevPing.tags);
       prevComment = PingFile.unannotateComment(prevPing.comment);

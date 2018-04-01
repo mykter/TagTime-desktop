@@ -34,7 +34,7 @@
     "react": "^16.3.0",
     "react-autosuggest": "^9.3.4",
     "react-dom": "^16.3.0",
-    "react-hotkeys": "^1.0.5",
+    "react-hotkeys": "^1.0.6",
     "react-tagsinput": "^3.19.0",
     "winston": "^2.4.1"
   },
@@ -102,12 +102,12 @@
     "appveyor-test":
       "run-s -n \"test:* -- --reporter mocha-appveyor-reporter \" lint",
     "test:renderer": "xvfb-maybe electron-mocha --renderer ./app/test",
-    "test:main": "xvfb-maybe electron-mocha ./app/test/main",
+    "test:main": "xvfb-maybe electron-mocha ./app/test/main-process",
     "test:e2e": "xvfb-maybe mocha ./app/test/e2e",
     "debugtest":
       "xvfb-maybe electron-mocha --renderer --debug --interactive ./app/test/",
     "debugtestmain":
-      "xvfb-maybe electron-mocha --debug --interactive ./app/test/main",
+      "xvfb-maybe electron-mocha --debug --interactive ./app/test/main-process",
     "precover:e2e": "gulp clean:build",
     "cover:e2e": "xvfb-maybe gulp report:e2e",
     "precover":
