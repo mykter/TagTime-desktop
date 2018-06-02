@@ -79,7 +79,7 @@
     "mkdirp": "^0.5.1",
     "mocha-appveyor-reporter": "^0.4.0",
     "npm-run-all": "^4.1.2",
-    "nyc": "^11.6.0",
+    "nyc": "^12.0.1",
     "ps-tree": "^1.1.0",
     "react-test-renderer": "^16.3.0",
     "rimraf": "^2.6.2",
