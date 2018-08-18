@@ -2,7 +2,7 @@ import { ipcRenderer, remote } from "electron";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { ConfigDict, ConfigName, ConfigPref } from "./main-process/config";
+import { ConfigDict, ConfigPref } from "./main-process/config";
 
 interface PrefGroupProps {
   setValue: (name: string, value: any) => void;
