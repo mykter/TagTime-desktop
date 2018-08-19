@@ -33,8 +33,7 @@ To analyze where your time is being spent, check out this [Visualizer](https://a
 
 # Contributing
 
-Contributions welcome! This is a fun side-project, there's lots to do, and your use-case might be different to mine.
-Please see the CONTRIBUTING.md file for design and development info.
+Contributions welcome! This is a fun side-project, there's lots to do, and your use-case might be different to mine. Take a look at the [issues](https://github.com/mykter/TagTime-desktop/issues) and raise a new one for feature requests or bug reports. Submit a Pull Request if you've got changes you'd like to contribute. Please see the CONTRIBUTING.md file for design and development info.
 
 ## Beeminder
 
