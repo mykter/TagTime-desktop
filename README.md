@@ -25,8 +25,11 @@ Inspired by [alice0meta](https://github.com/alice0meta/TagTime).
 
 Download the latest installer from [Releases](https://github.com/mykter/TagTime-desktop/releases) and run it.
 
-The application will automatically launch in the background on system startup.
-Preferences can be set via the tray icon.
+The application will automatically launch in the background on system startup. Preferences can be set via the tray icon.
+
+To view and edit your past pings, right click the tray icon and choose Edit Pings.
+
+To analyze where your time is being spent, check out this [Visualizer](https://alexschell.shinyapps.io/tagtime-vis/) or use the perl scripts from the [original TagTime implementation](https://github.com/tagtime/TagTime). At some point you'll be able to analyze your time usage directly from within the app.
 
 # Contributing
 
