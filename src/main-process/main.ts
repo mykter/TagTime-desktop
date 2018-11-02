@@ -34,11 +34,11 @@ let tray;
  * @return true if this is the only instance, false otherwise
  */
 function singleInstance(alwaysQuit: boolean) {
-  const secondInstance = app.makeSingleInstance((argv, _cwd) => {
+  app.on("second-instance", (event, commandLine, workingDirectory) => {
     // Runs in the existing app when another instance is launched
     winston.debug("A second instance was started");
     const notify = require("electron-main-notification");
-    if (argv.includes("--quit")) {
+    if (commandLine.includes("--quit")) {
       notify(app.getName() + " quitting.", {
         body: "Quitting as another instance was run with --quit"
       });
@@ -50,16 +50,17 @@ function singleInstance(alwaysQuit: boolean) {
       });
     }
   });
+
+  const instanceLock = app.requestSingleInstanceLock();
+
   if (alwaysQuit) {
     // Quit regardless.
-    // Can't offer any useful info to the user - secondInstance might return
-    // false even if there was a second instance, because it has now quit.
     winston.debug(
       "Quitting per --quit; if a second instance existed it has been notified."
     );
     app.quit();
     return false;
-  } else if (secondInstance) {
+  } else if (!instanceLock) {
     winston.warn(
       "An instance of " + app.getName() + " is already running, quitting..."
     );

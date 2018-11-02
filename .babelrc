@@ -1,8 +1,13 @@
 {
-  "presets": ["electron", "react"],
+  "presets": [
+    "electron",
+    "@babel/preset-react"
+  ],
   "env": {
     "coverage": {
-      "plugins": ["istanbul"]
+      "plugins": [
+        "istanbul"
+      ]
     }
   }
 }
