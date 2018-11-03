@@ -10,7 +10,7 @@ clone_depth: 1
 skip_tags: true
 
 environment:
-  nodejs_version: "8"
+  nodejs_version: "10"
 # GH_TOKEN set via UI
 
 cache:

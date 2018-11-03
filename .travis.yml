@@ -8,7 +8,7 @@ sudo: false
 
 language: node_js
 node_js:
-  - "8"
+  - "10"
 
 os:
   - linux
@@ -17,10 +17,10 @@ os:
 addons:
   apt:
     packages:
-      - rpm            # dist
-      - xvfb           # testing
+      - rpm # dist
+      - xvfb # testing
       - openjpeg-tools # electron-builder's icon dependency
-      - snapd          # to, in turn, install snapcraft as a snap
+      - snapd # to, in turn, install snapcraft as a snap
 
 install:
   - if [[ $TRAVIS_OS_NAME = "linux" ]]; then sudo snap install --classic snapcraft && source /etc/profile.d/apps-bin-path.sh && snap list && snapcraft --version; fi
@@ -35,4 +35,5 @@ before_script:
 
 script: # we want to be notified if any of these fail, so use script rather than after_success
   - npm test && npm run dist # only dist if the tests pass
-  - if [[ $TRAVIS_OS_NAME = "linux" ]]; then npm run coveralls; fi
+  # coverage is broken, don't waste time re-running the tests
+  #- if [[ $TRAVIS_OS_NAME = "linux" ]]; then npm run coveralls; fi
