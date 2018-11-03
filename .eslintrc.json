@@ -12,10 +12,17 @@
       "jsx": true
     }
   },
+  "settings": {
+    "react": {
+      "version": "16.0"
+    }
+  },
   "extends": ["eslint:recommended", "plugin:react/recommended"],
   "rules": {
-    "no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+    "no-unused-vars": [
+      "error",
+      { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }
+    ],
     "react/prop-types": 0
-  },
-  "plugins": ["react"]
+  }
 }

@@ -25,7 +25,9 @@ describe("Prompts", function() {
   const commentSelector = "#comment";
 
   before(function() {
-    winston.level = "warning";
+    winston.configure({
+      transports: [new winston.transports.Console({ level: "warning" })]
+    });
     prevPing = new Ping(
       1234567890000,
       new Set(["previous", "tags"]),

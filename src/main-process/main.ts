@@ -224,11 +224,13 @@ function setupLogging(verbose: boolean, noStdout: boolean) {
  * Finish configuring winston. Uses global.config.
  */
 function finalizeLogging() {
-  winston.add(winston.transports.File, {
-    filename: global.config.logFile,
-    handleExceptions: true
-  });
-  winston.handleExceptions();
+  winston.add(
+    new winston.transports.File({
+      filename: global.config.logFile,
+      handleExceptions: true,
+      level: winston.level
+    })
+  );
 }
 
 /**

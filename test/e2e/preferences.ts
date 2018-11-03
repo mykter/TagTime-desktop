@@ -14,7 +14,9 @@ describe("Preferences", function() {
   let tmpConfigFile: string;
 
   before(function() {
-    winston.level = "warning";
+    winston.configure({
+      transports: [new winston.transports.Console({ level: "warning" })]
+    });
   });
 
   beforeEach(async function() {

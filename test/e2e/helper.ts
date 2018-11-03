@@ -5,7 +5,6 @@ import * as path from "path";
 import * as psTree from "ps-tree";
 import spectron = require("spectron");
 import * as tmp from "tmp";
-import * as winston from "winston";
 
 import { Config, ConfigDict, logFileName } from "../../src/main-process/config";
 export { ConfigDict } from "../../src/main-process/config"; // reexport for convenience
@@ -45,7 +44,7 @@ function createConfig(options: Partial<ConfigDict>) {
 }
 
 /**
- * Launch the applicaiton under spectron
+ * Launch the application under spectron
  * @param testParam {string} The parameter to pass to --test
  * @param pingFilePath {string} The ping file to put in this instances config file
  */

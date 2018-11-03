@@ -1,6 +1,6 @@
 // We extend the global object with various properties - tell typescript about them here
 
-import { Winston } from "winston";
+import * as winston from "winston";
 
 import { Config } from "../main-process/config";
 import { PingFile } from "../main-process/pingfile";
@@ -13,7 +13,7 @@ declare global {
       coverage: undefined | any[];
       pingFile: PingFile;
       pings: PingTimes;
-      logger: Winston;
+      logger: typeof winston;
     }
   }
   export var __coverage__: any;
