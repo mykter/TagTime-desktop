@@ -7,7 +7,6 @@
 const gulp = require("gulp");
 const mocha = require("gulp-mocha");
 const sourcemaps = require("gulp-sourcemaps");
-const babel = require("gulp-babel");
 const ts = require("gulp-typescript");
 const sass = require("gulp-sass");
 const patch = require("gulp-apply-patch");
@@ -43,6 +42,11 @@ const paths = {
   static: { paths: ["./src/*.html"], onchange: "copy" }
 };
 
+// Need separate projects for parallel builds
+// According to the docs, must be defined outside of the task they're used in
+const tsProjectBuild = ts.createProject("tsconfig.json");
+const tsProjectTests = ts.createProject("tsconfig.json");
+
 gulp.task("patch", function() {
   // Get all the directories in the patches folder
   let to_patch = fs
@@ -63,24 +67,20 @@ gulp.task("patch", function() {
 });
 
 gulp.task("compile", function() {
-  let tsProject = ts.createProject("tsconfig.json");
   return gulp
     .src(paths.sources.paths, { base: "./" })
     .pipe(sourcemaps.init())
-    .pipe(tsProject())
+    .pipe(tsProjectBuild())
     .js // discard the type outputs (.dts)
-    .pipe(babel())
     .pipe(sourcemaps.write())
     .pipe(gulp.dest(BUILD_DIR));
 });
 
 gulp.task("compile:tests", function() {
-  let tsProject = ts.createProject("tsconfig.json");
   return gulp
     .src(paths.tests.paths, { base: "./" })
-    .pipe(tsProject())
+    .pipe(tsProjectTests())
     .js // discard the type outputs (.dts)
-    .pipe(babel())
     .pipe(gulp.dest(BUILD_DIR));
 });
 
@@ -115,6 +115,7 @@ gulp.task("build", ["compile", "compile:sass", "copy", "patch"]);
 gulp.task("build:tests", ["compile:tests", "build"]);
 
 gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
+  // TODO: this previously depended on babel's istanbul plugin? removed when babel broke, but coverage wasn't working then anyway
   // The e2e tests will pick this up and launch our instrumented app
   process.env.TAGTIME_E2E_COVERAGE_DIR = COVERAGE_DIR;
   process.env.NODE_ENV = "coverage";

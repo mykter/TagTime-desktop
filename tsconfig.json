@@ -6,7 +6,7 @@
     "allowJs": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "strict": true,
     "baseUrl": "./src/types",
     "typeRoots": ["./node_modules/@types", "./src/types"]
