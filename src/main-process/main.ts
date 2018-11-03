@@ -207,11 +207,21 @@ function firstRunTasks() {
  * Configure winston and expose to renderer windows via global.logger
  */
 function setupLogging(verbose: boolean, noStdout: boolean) {
+  let level: string;
   if (verbose) {
-    winston.level = "debug";
+    level = "debug";
   } else {
-    winston.level = "warn";
+    level = "warn";
   }
+
+  winston.configure({
+    transports: [
+      new winston.transports.Console({
+        level,
+        format: winston.format.simple()
+      })
+    ]
+  });
 
   if (noStdout) {
     winston.remove(winston.transports.Console);
