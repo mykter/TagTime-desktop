@@ -6,34 +6,34 @@ const should = require("should");
 import { PrefGroup } from "../src/preferences";
 
 const numPref = {
-  name: "num",
-  type: "number",
+  configurable: true,
   label: "Configurable number field",
-  configurable: true
+  name: "num",
+  type: "number"
 };
 const datePref = {
-  name: "n",
-  type: "datetime-local",
+  configurable: true,
   label: "Configurable datetime field",
-  configurable: true
+  name: "n",
+  type: "datetime-local"
 };
 const checkPref = {
-  name: "n",
-  type: "checkbox",
+  configurable: true,
   label: "Configurable checkbox field",
-  configurable: true
+  name: "n",
+  type: "checkbox"
 };
 const filePref = {
-  name: "myfile",
-  type: "file",
+  configurable: true,
   label: "Static file field",
-  configurable: true
+  name: "myfile",
+  type: "file"
 };
 const nonConfigurablePref = {
-  name: "nothere",
-  type: "input",
+  configurable: false,
   label: "Not configurable",
-  configurable: false
+  name: "nothere",
+  type: "input"
 };
 
 describe("PrefGroup", function() {
