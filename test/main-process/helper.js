@@ -9,9 +9,11 @@
 const winston = require("winston");
 const tmp = require("tmp");
 let logfile = tmp.tmpNameSync();
-winston.info(
-  "Test mode log config - only errors to console, all to " + logfile
-);
+
+const console = new winston.transports.Console({
+  level: "info",
+  format: winston.format.simple()
+});
 winston.configure({
   transports: [
     new winston.transports.File({
@@ -19,6 +21,11 @@ winston.configure({
       filename: logfile,
       json: false
     }),
-    new winston.transports.Console({ level: "error" })
+    console
   ]
 });
+winston.info(
+  "Test mode log config - following this message only errors to console, all to " +
+    logfile
+);
+console.level = "error";

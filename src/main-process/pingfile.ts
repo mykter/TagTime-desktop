@@ -259,7 +259,7 @@ export class PingFile {
     if (fs.existsSync(this.path)) {
       // The ping should be on a new line, so check whether the final byte
       // already is \n
-      const buffer = new Buffer(1);
+      const buffer = Buffer.alloc(1);
       const fd = fs.openSync(this.path, "r");
       if (fs.readSync(fd, buffer, 0, 1, fs.fstatSync(fd).size - 1) === 1) {
         // test bytes read to cope with empty file

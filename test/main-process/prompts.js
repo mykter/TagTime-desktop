@@ -71,7 +71,7 @@ describe("Prompts", function() {
      * Create the spectron instance
      */
     beforeEach(function() {
-      sandbox = sinon.sandbox.create();
+      sandbox = sinon.createSandbox();
       sandbox.useFakeTimers(start);
     });
 
@@ -92,7 +92,10 @@ describe("Prompts", function() {
       global.pings = {};
       global.pings.next = sinon.stub().callsFake(function(time) {
         if (time < start) {
-          throw "ping.next called with a time before start (" + start + "): " + time;
+          throw "ping.next called with a time before start (" +
+            start +
+            "): " +
+            time;
         } else if (time < start + 1000) {
           return start + 1000;
         } else if (time < start + 3000) {
