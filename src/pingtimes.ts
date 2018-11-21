@@ -5,15 +5,29 @@
  */
 
 import * as moment from "moment";
-import * as Random from "random-js";
 
 type UnixTime = number;
+export class RandomGenerator {
+  private IA: number = 16807;
+  private IM: number = 2147483647;
+  seed: number = 0;
+  constructor() {
+  }
+  public setSeed(seed : number){
+    this.seed = seed;
+  }
+  public ran0() {
+    this.seed = this.IA * this.seed % this.IM;
+    return this.seed/this.IM
+  }
+}
+
 export class PingTimes {
   /**
    * The birth of tagtime.
    * The earliest possible ping in any sequence is on the epoch.
    */
-  public static epoch: UnixTime = 1184083200 * 1000;
+  public static epoch: UnixTime = 1184097393 * 1000;
 
   public period: number;
   public seed: number;
@@ -29,7 +43,7 @@ export class PingTimes {
    */
   private pings: UnixTime[] = [];
 
-  private engine: Random.Engine | undefined;
+  private engine: RandomGenerator = new RandomGenerator();
 
   /**
    * @param {integer} period The mean period in milliseconds
@@ -40,7 +54,7 @@ export class PingTimes {
     this.period = period;
     this.seed = seed;
     if (startOfPings) {
-      this.startOfPings = moment(startOfPings).valueOf(); // convert to js Time Value
+      this.startOfPings = moment(startOfPings).valueOf();
     } else {
       this.startOfPings = PingTimes.epoch;
     }
@@ -89,14 +103,7 @@ export class PingTimes {
    * Re-initialise rand with the root seed
    */
   private reseed() {
-    /* NOTE: because we're using a different PRNG to original tagtime,
-     * sequences generated from the same seed won't match up.
-     * To manage this, we never try and validate pings prior to startOfPings.
-     * Subsequent pings will continue to follow the same distribution.
-     *
-     * Seed with a 32bit integer
-     */
-    this.engine = Random.engines.mt19937().seed(this.seed);
+    this.engine.setSeed(this.seed);
   }
 
   /**
@@ -107,7 +114,7 @@ export class PingTimes {
     if (!this.engine) {
       this.reseed();
     }
-    return Random.real(0, 1)(this.engine!);
+    return this.engine.ran0();
   }
 
   /**
