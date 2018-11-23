@@ -117,7 +117,7 @@ export class Config {
       name: ConfigName.seed,
       type: "number",
       label:
-        "Seed for your sequence of pings (random whole number; not backwards compatible with classic TagTime)",
+        "Seed for your sequence of pings (random whole number)",
       configurable: true,
       default: null // set at runtime
     },
