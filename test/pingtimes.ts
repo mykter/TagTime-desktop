@@ -89,7 +89,7 @@ describe("Pingtimes", function() {
     this.timeout(10000); // When coverage instrumented, this is slooow
 
     // Fix the seed so we don't get spurious failures
-    pings.seed = 0;
+    pings.seed = 1;
     // a smaller period should lead to more collisions, so a better mode
     pings.period = 3 * 1000 * 60;
     pings.reset();
