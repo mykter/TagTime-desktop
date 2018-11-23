@@ -5,23 +5,9 @@
  */
 
 import * as moment from "moment";
+import { RandomGenerator } from "./randomgenerator"
 
 type UnixTime = number;
-export class RandomGenerator {
-  private IA: number = 16807;
-  private IM: number = 2147483647;
-  seed: number = 0;
-  constructor() {
-  }
-  public setSeed(seed : number){
-    this.seed = seed;
-  }
-  public ran0() {
-    this.seed = this.IA * this.seed % this.IM;
-    return this.seed/this.IM
-  }
-}
-
 export class PingTimes {
   /**
    * The birth of tagtime.
