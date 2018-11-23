@@ -5,7 +5,7 @@ import stats = require("stats-lite");
 import { PingTimes } from "../src/pingtimes";
 
 describe("Pingtimes", function() {
-  const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
+  const time = PingTimes.epoch + 50000000; // close to the epoch speeds things up
   const notBefore = time - 10000000;
   let pings: PingTimes;
 
