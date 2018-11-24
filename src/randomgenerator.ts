@@ -1,3 +1,5 @@
+// Implements a pseudo random number generator to match the original Tagtime Ping schedule
+// This isn't a perfect algorithm, see https://github.com/tagtime/TagTime/issues/62
 export class RandomGenerator {
   private IA: number = 16807;
   private IM: number = 2147483647;

@@ -12,6 +12,7 @@ export class PingTimes {
   /**
    * The birth of tagtime.
    * The earliest possible ping in any sequence is on the epoch.
+   * We use the newest value from the original TagTime implementation (changed in 9/2018)
    */
   public static epoch: UnixTime = 1184097393 * 1000;
 
