@@ -185,7 +185,7 @@ export class Config {
     const initialConfig = Config.defaultDict();
     // These two default config values are set here rather than in fieldInfo because the "app"
     // object isn't available in the test context
-    initialConfig.seed = require("random-js")().integer(0, Math.pow(2, 32) - 1);
+    initialConfig.seed = 11193462
     initialConfig.pingFilePath = path.join(this.configPath, pingFileName);
 
     const options: { defaults: {}; cwd?: string } = { defaults: initialConfig };
