@@ -127,3 +127,23 @@ describe("Pingtimes", function() {
     }
   });
 });
+
+describe("PingtimesReproducesOriginalImplementation", function() {
+  let pings: PingTimes;
+  beforeEach(function() {
+    // we use the seed from the TagTime implementation
+    pings = new PingTimes(45 * 60 * 1000, 11193462 , PingTimes.epoch);
+  });
+
+  describe("next()", function() {
+    it("first ping should reproduce original implementation", function() {
+      const time = PingTimes.epoch+1;
+      pings.next(time).should.be.equal(1184098754*1000);
+    });
+
+    it("ping should match original implementation in 2018",function(){
+      const time = 1543080000*1000;
+      pings.next(time).should.be.equal(1543081241*1000);
+    })
+  });
+});
