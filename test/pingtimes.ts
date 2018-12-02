@@ -126,36 +126,33 @@ describe("Pingtimes", function() {
       modeMatcher(gapsMode);
     }
   });
-});
 
-describe("PingtimesReproducesOriginalImplementation", function() {
-  let pings: PingTimes;
-  beforeEach(function() {
-    // we use the seed from the TagTime implementation
-    pings = new PingTimes(45 * 60 * 1000, 11193462 , PingTimes.epoch);
-  });
-
-  describe("next()", function() {
-    it("first ping should be reproduced", function() {
-      const time = PingTimes.epoch+1;
-      pings.next(time).should.be.equal(1184098754*1000);
+  describe("backwards compatibility with original TagTime", function() {
+    context("with the default seed", function() {
+      beforeEach(function(){
+        pings = new PingTimes(45 * 60 * 1000, 11193462 , PingTimes.epoch);
+      });
+      it("first ping should be reproduced", function() {
+        const time = PingTimes.epoch+1;
+        pings.next(time).should.be.equal(1184098754*1000);
+      });
+      it("ping in 2018 should be reproduced",function(){
+        const time = 1543080000*1000;
+        pings.next(time).should.be.equal(1543081241*1000);
+      });
     });
-
-    it("first ping should reproduced with different seed", function() {
-      const time = PingTimes.epoch+1;
-      pings.seed = 123456;
-      pings.next(time).should.be.equal(1184097486*1000);
-    });
-
-    it("ping should match original implementation in 2018",function(){
-      const time = 1543080000*1000;
-      pings.next(time).should.be.equal(1543081241*1000);
-    });
-
-    it("ping should match original implementation in 2018 with different seed",function(){
-      const time = 1543080000*1000;
-      pings.seed = 123456;
-      pings.next(time).should.be.equal(1543080933*1000);
+    context("with different seed",function(){
+      beforeEach(function(){
+        pings = new PingTimes(45 * 60 * 1000, 123456, PingTimes.epoch);
+      });
+      it("first ping should be reproduced", function() {
+        const time = PingTimes.epoch+1;
+        pings.next(time).should.be.equal(1184097486*1000);
+      });
+      it("ping in 2018 should be reproduced",function(){
+        const time = 1543080000*1000;
+        pings.next(time).should.be.equal(1543080933*1000);
+      });
     });
   });
 });
