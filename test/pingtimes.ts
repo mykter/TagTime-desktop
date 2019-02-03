@@ -133,12 +133,12 @@ describe("Pingtimes", function() {
         pings = new PingTimes(45 * 60 * 1000, 11193462 , PingTimes.epoch);
       });
       it("first ping should be reproduced", function() {
-        const time = PingTimes.epoch+1;
-        pings.next(time).should.be.equal(1184098754*1000);
+        const t = PingTimes.epoch+1;
+        pings.next(t).should.be.equal(1184098754*1000);
       });
       it("ping in 2018 should be reproduced",function(){
-        const time = 1543080000*1000;
-        pings.next(time).should.be.equal(1543081241*1000);
+        const t = 1543080000*1000;
+        pings.next(t).should.be.equal(1543081241*1000);
       });
     });
     context("with different seed",function(){
@@ -146,12 +146,12 @@ describe("Pingtimes", function() {
         pings = new PingTimes(45 * 60 * 1000, 123456, PingTimes.epoch);
       });
       it("first ping should be reproduced", function() {
-        const time = PingTimes.epoch+1;
-        pings.next(time).should.be.equal(1184097486*1000);
+        const t = PingTimes.epoch+1;
+        pings.next(t).should.be.equal(1184097486*1000);
       });
       it("ping in 2018 should be reproduced",function(){
-        const time = 1543080000*1000;
-        pings.next(time).should.be.equal(1543080933*1000);
+        const t = 1543080000*1000;
+        pings.next(t).should.be.equal(1543080933*1000);
       });
     });
   });
