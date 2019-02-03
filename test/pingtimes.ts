@@ -5,7 +5,7 @@ import stats = require("stats-lite");
 import { PingTimes } from "../src/pingtimes";
 
 describe("Pingtimes", function() {
-  const time = PingTimes.epoch + 30000000; // close to the epoch speeds things up
+  const time = PingTimes.epoch + 50000000; // close to the epoch speeds things up
   const notBefore = time - 10000000;
   let pings: PingTimes;
 
@@ -89,7 +89,7 @@ describe("Pingtimes", function() {
     this.timeout(10000); // When coverage instrumented, this is slooow
 
     // Fix the seed so we don't get spurious failures
-    pings.seed = 0;
+    pings.seed = 1;
     // a smaller period should lead to more collisions, so a better mode
     pings.period = 3 * 1000 * 60;
     pings.reset();
@@ -125,5 +125,34 @@ describe("Pingtimes", function() {
     } else {
       modeMatcher(gapsMode);
     }
+  });
+
+  describe("backwards compatibility with original TagTime", function() {
+    context("with the default seed", function() {
+      beforeEach(function(){
+        pings = new PingTimes(45 * 60 * 1000, 11193462 , PingTimes.epoch);
+      });
+      it("first ping should be reproduced", function() {
+        const t = PingTimes.epoch+1;
+        pings.next(t).should.be.equal(1184098754*1000);
+      });
+      it("ping in 2018 should be reproduced",function(){
+        const t = 1543080000*1000;
+        pings.next(t).should.be.equal(1543081241*1000);
+      });
+    });
+    context("with different seed",function(){
+      beforeEach(function(){
+        pings = new PingTimes(45 * 60 * 1000, 123456, PingTimes.epoch);
+      });
+      it("first ping should be reproduced", function() {
+        const t = PingTimes.epoch+1;
+        pings.next(t).should.be.equal(1184097486*1000);
+      });
+      it("ping in 2018 should be reproduced",function(){
+        const t = 1543080000*1000;
+        pings.next(t).should.be.equal(1543080933*1000);
+      });
+    });
   });
 });

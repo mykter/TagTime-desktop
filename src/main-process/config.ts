@@ -102,7 +102,7 @@ export class Config {
       name: ConfigName.pingFileStart,
       type: "datetime-local",
       label:
-        "Time from which this ping sequence starts (only needed if using a ping file with pings in it from classic TagTime, or with a different seed or period)",
+      "Time from which this ping sequence starts (only needed if using a ping file with pings in it from classic TagTime, or with a different seed or period, choose 07/10/2007, 07:56 PM for compliance with classic TagTime)",
       configurable: true,
       default: null
     },
@@ -117,7 +117,7 @@ export class Config {
       name: ConfigName.seed,
       type: "number",
       label:
-        "Seed for your sequence of pings (random whole number; not backwards compatible with classic TagTime)",
+        "Seed for your sequence of pings (random whole number) choose 11193462 for classic TagTime compliance",
       configurable: true,
       default: null // set at runtime
     },
