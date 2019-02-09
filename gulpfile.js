@@ -116,8 +116,7 @@ exports.build = build;
 let build_tests = gulp.parallel(compile_tests, build);
 exports.build_tests = build_tests;
 
-async function cover_e2e() {
-  await gulp.parallel(build_tests, clean_coverage);
+function coverage() {
   // TODO: this previously depended on babel's istanbul plugin? removed when babel broke, but coverage wasn't working then anyway
   // The e2e tests will pick this up and launch our instrumented app
   process.env.TAGTIME_E2E_COVERAGE_DIR = COVERAGE_DIR;
@@ -126,10 +125,12 @@ async function cover_e2e() {
   mkdirp.sync(COVERAGE_DIR);
   return gulp.src(["app/test/e2e/*.[tj]s"]).pipe(mocha());
 }
+let cover_e2e = gulp.series(
+  gulp.parallel(build_tests, clean_coverage),
+  coverage
+);
 
-async function report_e2e() {
-  await gulp.parallel(cover_e2e, clean_report);
-
+function create_report(cb) {
   mkdirp.sync(REPORT_DIR);
   // tried reporting with writeReports, and it didn't seem to support specifying where the coverage
   // root dir was - it seems to be designed to be used in the inline / unit test case, not the
@@ -139,15 +140,19 @@ async function report_e2e() {
       `--root='${COVERAGE_DIR}' --dir='${REPORT_DIR}'`
   );
   process.stdout.write(text_report);
-  fs.renameSync(
+  fs.rename(
     path.join(REPORT_DIR, "coverage-final.json"),
-    path.join(NYC_DIR, "e2e.json")
+    path.join(NYC_DIR, "e2e.json"),
+    cb
   );
-
-  // Remove the coverage dir else istanbul will fail when trying to build the overall combined
-  // report.
-  return gulp.parallel(clean_coverage, clean_report);
 }
+let report_e2e = gulp.series(
+  gulp.parallel(cover_e2e, clean_report),
+  create_report,
+  // Now remove the coverage dir else istanbul will fail when trying to build the overall combined
+  // report.
+  gulp.parallel(clean_coverage, clean_report)
+);
 exports.report_e2e = report_e2e;
 
 function watch() {
