@@ -26,9 +26,7 @@ install:
   - if [[ $TRAVIS_OS_NAME = "linux" ]]; then sudo snap install --classic snapcraft && source /etc/profile.d/apps-bin-path.sh && snap list && snapcraft --version; fi
   - npm install
 
-cache:
-  directories:
-    - node_modules
+cache: npm
 
 before_script:
   - npm run build
