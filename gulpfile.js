@@ -6,10 +6,9 @@
 
 const gulp = require("gulp");
 const mocha = require("gulp-mocha");
-const sourcemaps = require("gulp-sourcemaps");
 const ts = require("gulp-typescript");
 const sass = require("gulp-sass");
-const patch = require("gulp-apply-patch");
+const apply_patch = require("gulp-apply-patch");
 
 const path = require("path");
 const del = require("del");
@@ -29,17 +28,17 @@ const NODE_MODULES = path.join(BASE_DIR, "node_modules");
 const paths = {
   sources: {
     paths: ["src/**/*.[tj]s?(x)", "src/types/**/*.d.ts"],
-    onchange: "compile"
+    onchange: compile
   },
-  sass: { paths: ["./src/**/*.scss"], onchange: "compile:sass" },
+  sass: { paths: ["./src/**/*.scss"], onchange: compile_sass },
   tests: {
     paths: ["test/**/*.[jt]s", "src/types/global.d.ts"],
-    onchange: "compile:tests"
+    onchange: compile_tests
   },
 
   // gulp.watch <v4 is broken but not documented as such. https://github.com/gulpjs/gulp/issues/651
   // expect to see this watch picking up changes under ./app !
-  static: { paths: ["./src/*.html"], onchange: "copy" }
+  static: { paths: ["./src/*.html"], onchange: copy }
 };
 
 // Need separate projects for parallel builds
@@ -47,7 +46,7 @@ const paths = {
 const tsProjectBuild = ts.createProject("tsconfig.json");
 const tsProjectTests = ts.createProject("tsconfig.json");
 
-gulp.task("patch", function() {
+function patch() {
   // Get all the directories in the patches folder
   let to_patch = fs
     .readdirSync(PATCHES_DIR)
@@ -62,59 +61,63 @@ gulp.task("patch", function() {
 
   return gulp
     .src(globs_to_patch, { base: NODE_MODULES }) // copy only the modules that have patches
-    .pipe(patch(PATCHES_DIR + "/**/*.patch"))
+    .pipe(apply_patch(PATCHES_DIR + "/**/*.patch"))
     .pipe(gulp.dest(PATCHED_MODULES_DIR));
-});
+}
 
-gulp.task("compile", function() {
+function compile() {
   return gulp
-    .src(paths.sources.paths, { base: "./" })
-    .pipe(sourcemaps.init())
+    .src(paths.sources.paths, { base: "./", sourcemaps: true })
     .pipe(tsProjectBuild())
     .js // discard the type outputs (.dts)
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest(BUILD_DIR));
-});
+    .pipe(gulp.dest(BUILD_DIR, { sourcemaps: true }));
+}
 
-gulp.task("compile:tests", function() {
+function compile_tests() {
   return gulp
     .src(paths.tests.paths, { base: "./" })
     .pipe(tsProjectTests())
     .js // discard the type outputs (.dts)
     .pipe(gulp.dest(BUILD_DIR));
-});
+}
 
-gulp.task("compile:sass", function() {
+function compile_sass() {
   return gulp
-    .src(paths.sass.paths, { base: "./" })
-    .pipe(sourcemaps.init())
+    .src(paths.sass.paths, { base: "./", sourcemaps: true })
     .pipe(sass().on("error", sass.logError))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest(BUILD_DIR));
-});
+    .pipe(gulp.dest(BUILD_DIR, { sourcemaps: true }));
+}
 
 // Get any non-js components of the app
-gulp.task("copy", function() {
+function copy() {
   return gulp
     .src(paths.static.paths, { base: "./" })
     .pipe(gulp.dest(BUILD_DIR));
-});
+}
 
-gulp.task("clean:build", function() {
+function clean_build() {
   return del([BUILD_DIR]);
-});
-gulp.task("clean:coverage", function() {
+}
+exports.clean_build = clean_build;
+
+function clean_coverage() {
   return del([COVERAGE_DIR]);
-});
-gulp.task("clean:report", function() {
+}
+function clean_report() {
   return del([REPORT_DIR]);
-});
+}
 
-// Note we aren't running clean:build before this, because it was a pain in combo with watch.
-gulp.task("build", ["compile", "compile:sass", "copy", "patch"]);
-gulp.task("build:tests", ["compile:tests", "build"]);
+exports.clean = gulp.parallel(clean_build, clean_coverage, clean_report);
 
-gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
+// Note we aren't running clean_build before this, because it was a pain in combo with watch.
+let build = gulp.parallel(compile, compile_sass, copy, patch);
+exports.build = build;
+
+let build_tests = gulp.parallel(compile_tests, build);
+exports.build_tests = build_tests;
+
+async function cover_e2e() {
+  await gulp.parallel(build_tests, clean_coverage);
   // TODO: this previously depended on babel's istanbul plugin? removed when babel broke, but coverage wasn't working then anyway
   // The e2e tests will pick this up and launch our instrumented app
   process.env.TAGTIME_E2E_COVERAGE_DIR = COVERAGE_DIR;
@@ -122,9 +125,11 @@ gulp.task("cover:e2e", ["build:tests", "clean:coverage"], function() {
   mkdirp.sync(COVERAGE_ROOT_DIR);
   mkdirp.sync(COVERAGE_DIR);
   return gulp.src(["app/test/e2e/*.[tj]s"]).pipe(mocha());
-});
+}
 
-gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
+async function report_e2e() {
+  await gulp.parallel(cover_e2e, clean_report);
+
   mkdirp.sync(REPORT_DIR);
   // tried reporting with writeReports, and it didn't seem to support specifying where the coverage
   // root dir was - it seems to be designed to be used in the inline / unit test case, not the
@@ -140,18 +145,17 @@ gulp.task("report:e2e", ["cover:e2e", "clean:report"], function() {
   );
 
   // Remove the coverage dir else istanbul will fail when trying to build the overall combined
-  // report. Don't use a clean:cover dependency because it will already have run once so gulp won't
-  // run it again.
-  return del([REPORT_DIR, COVERAGE_DIR]);
-});
+  // report.
+  return gulp.parallel(clean_coverage, clean_report);
+}
+exports.report_e2e = report_e2e;
 
-gulp.task("watch", () => {
+function watch() {
   for (let p in paths) {
-    gulp.watch(paths[p].paths, function(event) {
-      console.log("File " + event.path + " was " + event.type + "...");
-      gulp.start(paths[p].onchange);
-    });
+    gulp.watch(paths[p].paths, paths[p].onchange);
   }
-});
+  return Promise.resolve("done");
+}
 
-gulp.task("default", ["watch", "build:tests"]);
+exports.watch = watch;
+exports.default = gulp.series(clean_build, gulp.parallel(watch, build_tests));
